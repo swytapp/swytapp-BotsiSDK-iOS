@@ -12,6 +12,8 @@ public struct BotsiProfile: Sendable {
     public let customerUserId: String?
     public let accessLevels: [String: BotsiAccessLevel]
     public let subscriptions: [String: BotsiSubscription]
+    public let nonSubscriptions: [String: BotsiNonSubscription]
+    public let custom: [BotsiCustomEntry]
 }
 
 extension BotsiProfile: Hashable {
@@ -26,54 +28,3 @@ extension BotsiProfile: Equatable {
         lhs.profileId == rhs.profileId && lhs.customerUserId == rhs.customerUserId
     }
 }
-
-/*
- "{
-     ok: boolean,
-     data: {
-         ""profileId"": ""string"",
-         ""customerUserId"": ""string"",
-         ""accessLevels"": { [] },
-     ""subscriptions"": { [] },
-     ""nonSubscriptions"": {
-       ""additionalProp1"": {
-         ""isConsumable"": true,
-         ""isOneTime"": true,
-         ""isRefund"": true,
-         ""purchasedAt"": ""string"",
-         ""purchasedId"": ""string"",
-         ""store"": ""string"",
-         ""sourceProductId"": ""string"",
-         ""transactionId"": ""string""
-       },
-       ""additionalProp2"": {
-         ""isConsumable"": true,
-         ""isOneTime"": true,
-         ""isRefund"": true,
-         ""purchasedAt"": ""string"",
-         ""purchasedId"": ""string"",
-         ""store"": ""string"",
-         ""sourceProductId"": ""string"",
-         ""transactionId"": ""string""
-       },
-       ""additionalProp3"": {
-         ""isConsumable"": true,
-         ""isOneTime"": true,
-         ""isRefund"": true,
-         ""purchasedAt"": ""string"",
-         ""purchasedId"": ""string"",
-         ""store"": ""string"",
-         ""sourceProductId"": ""string"",
-         ""transactionId"": ""string""
-       }
-     },
-     ""custom"": [
-       {
-         ""key"": ""string"",
-         ""value"": ""string"",
-         ""id"": ""string""
-       }
-     ]
-     }
- }"
- */
