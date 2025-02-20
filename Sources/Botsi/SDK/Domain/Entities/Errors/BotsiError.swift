@@ -1,0 +1,78 @@
+//
+//  BotsiError.swift
+//  Botsi
+//
+//  Created by Vladyslav on 20.02.2025.
+//
+
+import Foundation
+
+// MARK: - Botsi error protocol
+protocol BotsiErrorConformable {
+    var localizedDescription: String { get }
+}
+
+// MARK: - Botsi enum
+public enum BotsiError: Error, Sendable, BotsiErrorConformable {
+    case invalidProductIdentifier(String)
+    case purchaseFailed(String)
+    case paymentNotAllowed
+    case userCancelled
+    case unknownError(Error)
+    case networkError(String)
+    case receiptValidationFailed(String)
+    case sdkNotActivated
+    
+    /// `wildcard`
+    case customError(String, String)
+
+    /// `error localized description`
+    public var localizedDescription: String {
+        switch self {
+        case .invalidProductIdentifier(let identifier):
+            return "Invalid product identifier: \(identifier)"
+        case .purchaseFailed(let reason):
+            return "Purchase failed: \(reason)"
+        case .paymentNotAllowed:
+            return "Payment is not allowed on this device."
+        case .userCancelled:
+            return "User cancelled the purchase."
+        case .unknownError(let error):
+            return "An unknown error occurred: \(error.localizedDescription)"
+        case .networkError(let message):
+            return "Network error: \(message)"
+        case .receiptValidationFailed(let message):
+            return "Receipt validation failed: \(message)"
+        case .customError(let title, let message):
+            return "\(title): \(message)"
+        case .sdkNotActivated:
+            return "Unable to activate SDK"
+        }
+    }
+}
+
+// MARK: - Botsi Error Builder
+public struct BotsiErrorBuilder {
+    private var title: String?
+    private var message: String?
+    
+    public init() {}
+    
+    public func withTitle(_ title: String) -> BotsiErrorBuilder {
+        var builder = self
+        builder.title = title
+        return builder
+    }
+    
+    public func withMessage(_ message: String) -> BotsiErrorBuilder {
+        var builder = self
+        builder.message = message
+        return builder
+    }
+    
+    public func build() -> BotsiError {
+        let errorTitle = title ?? "Error"
+        let errorMessage = message ?? "An unexpected error occurred."
+        return .customError(errorTitle, errorMessage)
+    }
+}
