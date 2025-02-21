@@ -16,34 +16,36 @@ public final class Botsi: Sendable {
     /// `payment & transaction`
 //    let purchasesManager: BotsiPurchasesManagerConformable
     
-    private let botsiBackend: BotsiBackend
+    let botsiClient: BotsiHttpClient
     
     init(from configuration: BotsiConfiguration) async {
         self.sdkApiKey = configuration.sdkApiKey
         self.enableObserver = configuration.enableObserver
         
-        self.botsiBackend = BotsiBackend()
-        
-        
-//        self.purchasesManager
+        self.botsiClient = BotsiHttpClient(with: configuration)
     }
 }
 
 public extension Botsi {
     
     /// `activation method for Botsi SDK`
-    nonisolated static func activate(with adapter: BotsiConfiguration.BotsiConfigurationAdapter) async throws {
-        try await activate(with: adapter.buildConfiguration())
+    nonisolated static func activate(with config: BotsiConfiguration) async throws {
+        try await proceedWithActivation(with: config)
     }
     
-    private static func activate(with configuration: BotsiConfiguration) async throws {
+    private static func proceedWithActivation(with config: BotsiConfiguration) async throws {
         let activationTask = BotsiActivationTask {
-            let botsi = await Botsi(from: configuration)
+            let botsi = await Botsi(from: config)
             setSharedSDK(botsi)
             return botsi
         }
         setActivatingSDK(activationTask)
         _ = await activationTask.value
+    }
+    
+    /// `test create profile method outside`
+    nonisolated static func createProfile() async throws {
+        try await activatedSDK.botsiClient.createUserProfile()
     }
 }
 
@@ -58,25 +60,6 @@ enum BotsiOperationIdentifier: String {
    
     case makePurchase
     case restorePurchases
-}
-
-// MARK: - Backend
-
-public struct BotsiBackend : Sendable{
-    private let decoder: JSONDecoder = {
-        let decoder = JSONDecoder()
-        return decoder
-    }()
-    
-    private let encoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        return encoder
-    }()
-    
-    
-    struct URLConstants {
-        static let backendHost: URL = URL(string: "https://api.adapty.io/api/v1")!
-    }
 }
 
 /*

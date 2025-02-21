@@ -12,7 +12,7 @@ public struct BotsiConfiguration: Sendable {
     typealias BotsiDelegateQueue = DispatchQueue
     static let `default` = (
         enableObserver: false,
-        backend: BotsiBackend.URLConstants.backendHost
+        backend: BotsiHttpClient.URLConstants.backendHost
     )
 
     let sdkApiKey: String
@@ -20,7 +20,7 @@ public struct BotsiConfiguration: Sendable {
     
     let enableObserver: Bool
     let delegateQueue: BotsiDelegateQueue?
-    let backend: BotsiBackend
+    let backend: URL
 }
 
 public extension BotsiConfiguration {
@@ -29,17 +29,19 @@ public extension BotsiConfiguration {
         var sdkApiKey: String { get }
         var enableObserver: Bool { get }
         var backendHost: URL { get }
+        
+        func buildConfiguration() -> BotsiConfiguration
     }
     
-    static func build(with sdkApiKey: String, enableObserver: Bool) -> BotsiConfigurationAdapterConformable {
-        return BotsiConfigurationFactory.createAdapter(with: sdkApiKey, enableObserver: enableObserver)
+    static func build(with sdkApiKey: String, enableObserver: Bool) -> Self {
+        return BotsiConfigurationFactory.createAdapter(with: sdkApiKey, enableObserver: enableObserver).buildConfiguration()
     }
 }
 
 public extension BotsiConfiguration {
     fileprivate struct BotsiConfigurationFactory {
         public static func createAdapter(with sdkApiKey: String, enableObserver: Bool) -> BotsiConfigurationAdapter {
-            return BotsiConfigurationAdapter(sdkApiKey: sdkApiKey, enableObserver: enableObserver, backendHost: BotsiBackend.URLConstants.backendHost)
+            return BotsiConfigurationAdapter(sdkApiKey: sdkApiKey, enableObserver: enableObserver, backendHost: BotsiHttpClient.URLConstants.backendHost)
         }
     }
     
@@ -55,9 +57,7 @@ public extension BotsiConfiguration {
         }
         
         public func buildConfiguration() -> BotsiConfiguration {
-            let backend = BotsiBackend()
-            
-            return .init(sdkApiKey: self.sdkApiKey, customerUserId: nil, enableObserver: self.enableObserver, delegateQueue: nil, backend: backend)
+            return .init(sdkApiKey: self.sdkApiKey, customerUserId: nil, enableObserver: self.enableObserver, delegateQueue: nil, backend: self.backendHost)
         }
     }
 }

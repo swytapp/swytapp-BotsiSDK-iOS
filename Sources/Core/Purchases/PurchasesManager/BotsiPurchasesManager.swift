@@ -8,6 +8,7 @@
 import StoreKit
 import Foundation
 
+@available(macOS 12.0, *)
 protocol BotsiPurchasesManagerConformable: Sendable {
     func completeTransaction(with transaction: SKPaymentTransaction) async -> BotsiPaymentTransaction
     
@@ -37,7 +38,6 @@ struct BotsiPaymentTransaction: Sendable {
     let priceLocale: String?
     let storeCountry: String?
     let subscriptionOffer: BotsiSubscriptionOffer?
-    let environment: String?
     
     init(with product: SKProduct, transaction: SKPaymentTransaction, variationId: String?, persistentVariationId: String?) {
         
