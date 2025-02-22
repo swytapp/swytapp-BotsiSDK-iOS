@@ -43,7 +43,7 @@ extension Botsi {
     }
 
     static func withActivatedSDK<T: Sendable>(
-        identifier: BotsiOperationIdentifier,
+        identifier: BotsiRequestIdentifier,
         function: StaticString = #function,
         operation: @BotsiActor @Sendable @escaping (Botsi) async throws -> T
     ) async throws -> T {
