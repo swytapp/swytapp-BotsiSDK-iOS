@@ -32,18 +32,39 @@ public struct BotsiHttpClient: Sendable {
         self.session = session
     }
     
-    func createUserProfile() async {
+    func createUserProfile(with identifier: String) async {
         do {
-            let uuid = UUID().uuidString
-            var request = CreateProfileRequest(uuid: uuid)
+            var request = CreateProfileRequest(uuid: identifier)
             request.headers = [
                 "Authorization": "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE",
                 "Content-type": "application/json"
             ]
+            
+            let model = CreateProfilePostModel(meta: CreateProfileMeta(
+                storeCountry: "GR",
+                botsiSdkVersion: "1.0.0",
+                advertisingId: UUID().uuidString,
+                androidId: UUID().uuidString,
+                appBuild: "1",
+                androidAppSetId: UUID().uuidString,
+                appVersion: "1",
+                device: "iPhone 12",
+                deviceId: UUID().uuidString,
+                locale: "en-US",
+                os: "ios",
+                platform: "ios",
+                timezone: "Europe/Kiev"))
+            
+            let b = try JSONEncoder().encode(model)
+            
+            request.body = b
+            
             print("url: \(request.relativePath) ")
             let response: BotsiHTTPResponse<Data> = try await session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
+            
+            
             
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
             let createProfileResult: CreateProfileResponse = try wrapper.decode()
@@ -54,6 +75,26 @@ public struct BotsiHttpClient: Sendable {
             print("Request failed with error: \(error)")
         }
     }
+}
+
+struct CreateProfilePostModel: Encodable {
+    let meta: CreateProfileMeta
+}
+
+struct CreateProfileMeta: Encodable {
+    let storeCountry: String
+    let botsiSdkVersion: String
+    let advertisingId: String
+    let androidId: String
+    let appBuild: String
+    let androidAppSetId: String
+    let appVersion: String
+    let device: String
+    let deviceId: String
+    let locale: String
+    let os: String
+    let platform: String
+    let timezone: String
 }
 
 struct CreateProfileRequest: BotsiHTTPRequest {

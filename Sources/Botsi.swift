@@ -13,6 +13,8 @@ public final class Botsi: Sendable {
     
     package let enableObserver: Bool
     
+    // TODO: profileManager
+    
     /// `payment & transaction`
 //    let purchasesManager: BotsiPurchasesManagerConformable
     
@@ -23,6 +25,13 @@ public final class Botsi: Sendable {
         self.enableObserver = configuration.enableObserver
         
         self.botsiClient = BotsiHttpClient(with: configuration)
+        
+        /// `TODO: we need to update profile`
+        ///  Check if it is stored locally or we need to create one from backend
+        ///  We need to schedule update: to be decided
+        ///  Assign received profile to local cachingmanager
+    
+        
     }
 }
 
@@ -35,6 +44,14 @@ public extension Botsi {
     
     private static func proceedWithActivation(with config: BotsiConfiguration) async throws {
         let activationTask = BotsiActivationTask {
+            
+            // TODO: Extend with:
+            // 1. Backend instance later (if more than one is needed)
+            // 2. Environment data
+            // 3. Refactor configuration
+            
+            
+            
             let botsi = await Botsi(from: config)
             setSharedSDK(botsi)
             return botsi
@@ -43,24 +60,53 @@ public extension Botsi {
         _ = await activationTask.value
     }
     
-    /// `test create profile method outside`
-    nonisolated static func createProfile() async throws {
-        try await activatedSDK.botsiClient.createUserProfile()
-    }
-}
-
-
-enum BotsiOperationIdentifier: String {
-    case activate
-    case authenticate
-    case logout
-
-    case getProfile
-    case updateProfile
    
-    case makePurchase
-    case restorePurchases
+    ///
+    ///  TODO: TASKS
+    ///
+    ///   23.02
+    ///  1. createProfile -  Fetch data from backend and write a mapper into BotsiProfile
+    ///  2. getProfile - Receive the BotsiProfile by local user identifier
+    ///  3. Check environment values that are passed
+    ///  4. Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
+    ///
+    ///  5*. Create simple Storage Manager for storing BotsiProfile in UserDefaults
+    ///
+    ///   24.02
+    ///  1. Storekit 1 & 2 make a transaction by received [product_ids] from backend
+    ///  2. Check if we need to receive product from backend or show from StoreKit for now
+    ///  3*. Create small SwiftUI application for 3 endpoints
+    ///
+    ///   25.02-26.02
+    ///  1. Create mock validatePurchase request with appropriate parameters
+    ///  2. Clone Vizzy app, extend with Botsi
+    ///
+    ///
+    ///
+    ///
+    
+    /// `test create profile method outside`
+    typealias ProfileIdentifier = String
+    nonisolated static func createProfile(with id: ProfileIdentifier) async throws {
+        try await activatedSDK.botsiClient.createUserProfile(with: id)
+    }
+    
+    //
+    
+    private func createProfile(with id: ProfileIdentifier) async throws -> BotsiProfile? {
+        try await botsiClient.createUserProfile(with: id)
+        return nil
+    }
+    
+//    public nonisolated static func getProfile() async throws -> BotsiProfile {
+//        try await withActivatedSDK(methodName: .getProfile) { sdk in
+//             /*try await sdk.createdProfileManager.getProfile(*/)
+//        }
+//    }
+    
+    
 }
+
 
 /*
  SDKProject/
