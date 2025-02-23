@@ -14,6 +14,9 @@ protocol BotsiErrorConformable {
 
 // MARK: - Botsi enum
 public enum BotsiError: Error, Sendable, BotsiErrorConformable {
+    /// `user errors`
+    case userCreationFailed
+    
     case invalidProductIdentifier(String)
     case purchaseFailed(String)
     case paymentNotAllowed
@@ -29,6 +32,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     /// `error localized description`
     public var localizedDescription: String {
         switch self {
+        case .userCreationFailed:
+            return "User creation failed."
         case .invalidProductIdentifier(let identifier):
             return "Invalid product identifier: \(identifier)"
         case .purchaseFailed(let reason):

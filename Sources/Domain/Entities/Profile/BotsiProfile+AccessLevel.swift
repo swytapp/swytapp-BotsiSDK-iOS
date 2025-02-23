@@ -7,7 +7,7 @@
 import Foundation
 
 extension BotsiProfile {
-    public struct BotsiAccessLevel: Sendable, Hashable {
+    public struct BotsiAccessLevel: Sendable, Hashable, Codable {
         public let createdDate: String
         public let id: String // identifier for the access level you set up in the Botsi Dashboard.
         public let isActive: Bool // Returns true if this access level is currently active. Typically, you can verify this property to assess whether a user has access to premium features.

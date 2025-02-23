@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct BotsiProfile: Sendable {
+public struct BotsiProfile: Sendable, Codable {
     public let profileId: String
     public let customerUserId: String?
     public let accessLevels: [String: BotsiAccessLevel]

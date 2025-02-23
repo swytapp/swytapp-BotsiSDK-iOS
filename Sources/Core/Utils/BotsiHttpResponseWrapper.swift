@@ -36,6 +36,17 @@ enum BotsiHTTPDecodingError: Error, LocalizedError {
     }
 }
 
+enum BotsiHTTPEnecodingError: Error, LocalizedError {
+    case encodingFailed(String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .encodingFailed(let message):
+            return "Encoding failed: \(message)"
+        }
+    }
+}
+
 struct BotsiHTTPResponseWrapper {
     private let data: Data
     private let decoder: HTTPDecoderHelper

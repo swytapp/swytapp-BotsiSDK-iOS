@@ -6,7 +6,7 @@
 //
 
 extension BotsiProfile {
-    public struct BotsiCustomEntry: Sendable, Hashable {
+    public struct BotsiCustomEntry: Sendable, Hashable, Codable {
         public let key: String
         public let value: String
         public let id: String

@@ -88,14 +88,15 @@ public extension Botsi {
     /// `test create profile method outside`
     typealias ProfileIdentifier = String
     nonisolated static func createProfile(with id: ProfileIdentifier) async throws {
-        try await activatedSDK.botsiClient.createUserProfile(with: id)
+        try await activatedSDK.createUserProfile(with: id)
     }
     
     //
     
-    private func createProfile(with id: ProfileIdentifier) async throws -> BotsiProfile? {
-        try await botsiClient.createUserProfile(with: id)
-        return nil
+    @discardableResult
+    private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile? {
+        let createProfile = UserProfileRepository(httpClient: botsiClient)
+        return try await createProfile.createUserProfile(identifier: id)
     }
     
 //    public nonisolated static func getProfile() async throws -> BotsiProfile {

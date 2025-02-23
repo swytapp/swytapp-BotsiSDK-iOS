@@ -8,7 +8,7 @@
 import Foundation
 
 extension BotsiProfile {
-    public struct BotsiNonSubscription: Sendable, Hashable {
+    public struct BotsiNonSubscription: Sendable, Hashable, Codable {
         public let isConsumable: Bool
         public let isOneTime: Bool
         public let isRefund: Bool
