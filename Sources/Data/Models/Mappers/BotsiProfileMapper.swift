@@ -16,24 +16,22 @@ struct CreateProfileMapper: DomainMapper {
     
     typealias DomainModel = BotsiProfile
     
-    func toDTO(from model: BotsiEnvironment) -> CreateProfileRequestDto {
-        // TODO: get environemnt variables
-        
+    func toDTO(from env: BotsiEnvironment) -> CreateProfileRequestDto {
         return CreateProfileRequestDto(
             meta: CreateProfileMetaDto(
-                storeCountry: "UA",
-                botsiSdkVersion: "1.0.0", // Hardcoded for now
-                advertisingId: UUID().uuidString,
-                androidId: UUID().uuidString,
-                appBuild: "1",
-                androidAppSetId: UUID().uuidString,
-                appVersion: "1",
-                device: "iPhone12",
-                deviceId: UUID().uuidString,
-                locale: "en-US",
-                os: "apple",
-                platform: "ios",
-                timezone: "Europe/Kiev"
+                storeCountry: env.storeCountry,
+                botsiSdkVersion: env.botsiSdkVersion,
+                advertisingId: env.advertisingId,
+                androidId: env.androidId,
+                appBuild: env.appBuild,
+                androidAppSetId: env.androidAppSetId,
+                appVersion: env.appVersion,
+                device: env.device,
+                deviceId: env.deviceId,
+                locale: env.locale,
+                os: env.os,
+                platform: env.platform,
+                timezone: env.timezone
             )
         )
     }

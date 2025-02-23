@@ -27,7 +27,8 @@ final class UserProfileRepository: BotsiProfileRepository {
                 "Content-type": "application/json"
             ]
             
-            let body = try mapper.toDTO(from: BotsiEnvironment.shared).toData()
+            let environment = try await BotsiEnvironment()
+            let body = try mapper.toDTO(from: environment).toData()
             request.body = body
             
             print("url: \(request.relativePath) ")

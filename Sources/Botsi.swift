@@ -46,7 +46,7 @@ public final class Botsi: Sendable {
             }
             return
         }
-        print("Fetchd user profile with id: \(profile.profileId)")
+        print("Fetched user profile with id: \(profile.profileId)")
     }
 }
 
@@ -84,7 +84,6 @@ public extension Botsi {
     ///  2. ✅ getProfile - Receive the BotsiProfile by local user identifier
     ///  3. Check environment values that are passed
     ///  4. Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
-    ///
     ///  5*. ✅ Create simple Storage Manager for storing BotsiProfile in UserDefaults
     ///
     ///   24.02
