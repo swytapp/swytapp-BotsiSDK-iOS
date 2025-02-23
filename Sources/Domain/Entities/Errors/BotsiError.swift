@@ -16,6 +16,7 @@ protocol BotsiErrorConformable {
 public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     /// `user errors`
     case userCreationFailed
+    case userProfileNotFound
     
     case invalidProductIdentifier(String)
     case purchaseFailed(String)
@@ -34,6 +35,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
         switch self {
         case .userCreationFailed:
             return "User creation failed."
+        case .userProfileNotFound:
+            return "User profile not found."
         case .invalidProductIdentifier(let identifier):
             return "Invalid product identifier: \(identifier)"
         case .purchaseFailed(let reason):

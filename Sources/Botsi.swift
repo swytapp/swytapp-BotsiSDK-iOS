@@ -81,7 +81,7 @@ public extension Botsi {
     ///
     ///   23.02
     ///  1. ✅ createProfile -  Fetch data from backend and write a mapper into BotsiProfile
-    ///  2. getProfile - Receive the BotsiProfile by local user identifier
+    ///  2. ✅ getProfile - Receive the BotsiProfile by local user identifier
     ///  3. Check environment values that are passed
     ///  4. Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
     ///
@@ -106,12 +106,24 @@ public extension Botsi {
         try await activatedSDK.createUserProfile(with: id)
     }
     
-    //
+    nonisolated static func getProfile() async throws {
+        try await activatedSDK.getUserProfile()
+    }
     
     @discardableResult
     private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
         return try await createProfile.createUserProfile(identifier: id)
+    }
+    
+    @discardableResult
+    private func getUserProfile() async throws -> BotsiProfile {
+        if let storedProfile = try await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) {
+            let repository = GetUserProfileRepository(httpClient: botsiClient)
+            return try await repository.getUserProfile(identifier: storedProfile.profileId)
+        } else {
+            throw BotsiError.userProfileNotFound
+        }
     }
     
 //    public nonisolated static func getProfile() async throws -> BotsiProfile {
