@@ -15,6 +15,8 @@ public final class Botsi: Sendable {
     
     // TODO: profileManager
     
+    private let storage: BotsiStorageManager = .shared
+    
     /// `payment & transaction`
 //    let purchasesManager: BotsiPurchasesManagerConformable
     
@@ -26,12 +28,23 @@ public final class Botsi: Sendable {
         
         self.botsiClient = BotsiHttpClient(with: configuration)
         
+        /// `retrieve user`
+        ///  create use manager
+        await verifyUser(with: sdkApiKey)
+        
         /// `TODO: we need to update profile`
         ///  Check if it is stored locally or we need to create one from backend
         ///  We need to schedule update: to be decided
         ///  Assign received profile to local cachingmanager
+    }
     
-        
+    private func verifyUser(with profileId: String) async {
+        guard let _ = try? await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+            if let profile = try? await createUserProfile(with: profileId) {
+                try? await storage.save(profile, forKey: UserDefaultKeys.User.userProfile)
+            }
+            return
+        }
     }
 }
 
@@ -65,12 +78,12 @@ public extension Botsi {
     ///  TODO: TASKS
     ///
     ///   23.02
-    ///  1. createProfile -  Fetch data from backend and write a mapper into BotsiProfile
+    ///  1. ✅ createProfile -  Fetch data from backend and write a mapper into BotsiProfile
     ///  2. getProfile - Receive the BotsiProfile by local user identifier
     ///  3. Check environment values that are passed
     ///  4. Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
     ///
-    ///  5*. Create simple Storage Manager for storing BotsiProfile in UserDefaults
+    ///  5*. ✅ Create simple Storage Manager for storing BotsiProfile in UserDefaults
     ///
     ///   24.02
     ///  1. Storekit 1 & 2 make a transaction by received [product_ids] from backend
@@ -94,7 +107,7 @@ public extension Botsi {
     //
     
     @discardableResult
-    private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile? {
+    private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
         return try await createProfile.createUserProfile(identifier: id)
     }
