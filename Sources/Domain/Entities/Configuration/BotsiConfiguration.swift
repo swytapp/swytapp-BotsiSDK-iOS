@@ -27,14 +27,22 @@ public extension BotsiConfiguration {
     
     protocol BotsiConfigurationAdapterConformable {
         var sdkApiKey: String { get }
+        var profileIdentifier: String? { get }
         var enableObserver: Bool { get }
         var backendHost: URL { get }
         
         func buildConfiguration() -> BotsiConfiguration
     }
     
-    static func build(with sdkApiKey: String, enableObserver: Bool) -> Self {
+    static func build(sdkApiKey: String, enableObserver: Bool) -> Self {
         return BotsiConfigurationFactory.createAdapter(with: sdkApiKey, enableObserver: enableObserver).buildConfiguration()
+    }
+    
+    @discardableResult
+    func set(profileIdentifier: String) -> Self {
+        return BotsiConfigurationFactory.createAdapter(with: sdkApiKey, enableObserver: enableObserver)
+            .set(profileIdentifier: profileIdentifier)
+            .buildConfiguration()
     }
 }
 
@@ -46,18 +54,24 @@ public extension BotsiConfiguration {
     }
     
     struct BotsiConfigurationAdapter: BotsiConfigurationAdapterConformable {
+        public private(set) var profileIdentifier: String?
         public private(set) var sdkApiKey: String
         public private(set) var enableObserver: Bool
         public private(set) var backendHost: URL
         
-        init(sdkApiKey: String, enableObserver: Bool, backendHost: URL) {
+        init(sdkApiKey: String, profileIdentifier: String? = nil, enableObserver: Bool, backendHost: URL) {
             self.sdkApiKey = sdkApiKey
             self.enableObserver = enableObserver
             self.backendHost = backendHost
+            self.profileIdentifier = profileIdentifier
         }
         
         public func buildConfiguration() -> BotsiConfiguration {
             return .init(sdkApiKey: self.sdkApiKey, customerUserId: nil, enableObserver: self.enableObserver, delegateQueue: nil, backend: self.backendHost)
+        }
+        
+        public func set(profileIdentifier: String) -> Self {
+            return .init(sdkApiKey: sdkApiKey, profileIdentifier: profileIdentifier, enableObserver: enableObserver, backendHost: backendHost)
         }
     }
 }

@@ -36,6 +36,7 @@ class BotsiPurchasesViewModel: ObservableObject {
             with: "api_key",
             enableObserver: true
         )
+        botsiConfiguration.set(profileIdentifier: "profile_id")
         self.botsiConfiguration = botsiConfiguration
     }
     

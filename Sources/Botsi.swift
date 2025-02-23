@@ -30,7 +30,7 @@ public final class Botsi: Sendable {
         
         /// `retrieve user`
         ///  create use manager
-        await verifyUser(with: sdkApiKey)
+        await verifyUser()
         
         /// `TODO: we need to update profile`
         ///  Check if it is stored locally or we need to create one from backend
@@ -38,13 +38,15 @@ public final class Botsi: Sendable {
         ///  Assign received profile to local cachingmanager
     }
     
-    private func verifyUser(with profileId: String) async {
-        guard let _ = try? await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
-            if let profile = try? await createUserProfile(with: profileId) {
+    private func verifyUser() async {
+        guard let profile = try? await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+            let uuid = UUID().uuidString
+            if let profile = try? await createUserProfile(with: uuid) {
                 try? await storage.save(profile, forKey: UserDefaultKeys.User.userProfile)
             }
             return
         }
+        print("Fetchd user profile with id: \(profile.profileId)")
     }
 }
 
