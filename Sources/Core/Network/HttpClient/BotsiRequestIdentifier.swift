@@ -1,0 +1,25 @@
+//
+//  BotsiRequestIdentifier.swift
+//  Botsi
+//
+//  Created by Vladyslav on 22.02.2025.
+//
+
+// MARK: Route for endpoint
+public struct BotsiRequestIdentifier: Sendable {
+    static let activate: String = ""
+    static let authenticate: String = ""
+    static let logout: String = ""
+
+    static let getProfile: String = ""
+    static let createProfile: String = "profiles"
+    static let updateProfile: String = ""
+   
+    static let fetchProductIds: String = ""
+    static let makePurchase: String = ""
+    static let restorePurchases: String = ""
+}
+
+public struct BotsiHTTPRequestPath: Sendable {
+    let identifier: String
+}
