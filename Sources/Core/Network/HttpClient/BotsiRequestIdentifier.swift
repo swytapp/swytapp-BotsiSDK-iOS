@@ -6,19 +6,20 @@
 //
 
 // MARK: Route for endpoint
-public enum BotsiRequestIdentifier: String, Sendable {
-    case activate
-    case authenticate
-    case logout
+public struct BotsiRequestIdentifier: Sendable {
+    static let activate: String = ""
+    static let authenticate: String = ""
+    static let logout: String = ""
 
-    case getProfile
-    case createProfile = "profiles"
-    case updateProfile
+    static let getProfile: String = ""
+    static let createProfile: String = "profiles"
+    static let updateProfile: String = ""
    
-    case makePurchase
-    case restorePurchases
+    static let fetchProductIds: String = ""
+    static let makePurchase: String = ""
+    static let restorePurchases: String = ""
 }
 
 public struct BotsiHTTPRequestPath: Sendable {
-    var identifier: BotsiRequestIdentifier
+    let identifier: String
 }

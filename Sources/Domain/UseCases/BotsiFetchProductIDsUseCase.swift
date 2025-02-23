@@ -1,5 +1,5 @@
 //
-//  BotsiGetProfileUseCase.swift
+//  BotsiFetchProductIDsUseCase.swift
 //  Botsi
 //
 //  Created by Vladyslav on 23.02.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BotsiGetProfileUseCase {
+struct BotsiFetchProductIDsUseCase {
     private let repository: BotsiGetProfileRepository
 
     init(repository: BotsiGetProfileRepository) {
@@ -20,10 +20,10 @@ struct BotsiGetProfileUseCase {
 }
 
 // MARK: - CreateProfile request
-struct GetProfileRequest: BotsiHTTPRequest {
+struct FetchProductIDsRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     
-    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.getProfile)
+    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.fetchProductIds)
     
     var method: BotsiHTTPMethod = .get
     
@@ -31,10 +31,10 @@ struct GetProfileRequest: BotsiHTTPRequest {
     
     var body: Data? = nil
     
-    private let uuid: String
+    private let storeName: String
     
-    init(uuid: String) {
-        self.uuid = uuid
+    init(storeName: String) {
+        self.storeName = storeName
     }
     
     func convertToURLRequest(configuration: HTTPCodableConfiguration, additional: (any HTTPRequestAdditional)?) throws -> URLRequest {
@@ -44,7 +44,7 @@ struct GetProfileRequest: BotsiHTTPRequest {
         }
         
         var urlComponents = URLComponents(string: url.absoluteString)
-        urlComponents?.path += "/\(uuid)"
+        urlComponents?.path += "\(storeName)/products/products-ids/app_store"
         
         guard let finalUrl = urlComponents?.url else {
             throw BotsiError.networkError("Unable to build final url request")

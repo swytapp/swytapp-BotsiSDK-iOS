@@ -109,6 +109,13 @@ public extension Botsi {
         try await activatedSDK.getUserProfile()
     }
     
+    nonisolated static func fetchProductIDs() async throws {
+        try await activatedSDK.fetchProductIDs()
+    }
+    
+    // MARK: - Private
+    
+    // MARK: - User
     @discardableResult
     private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
@@ -124,14 +131,12 @@ public extension Botsi {
             throw BotsiError.userProfileNotFound
         }
     }
-    
-//    public nonisolated static func getProfile() async throws -> BotsiProfile {
-//        try await withActivatedSDK(methodName: .getProfile) { sdk in
-//             /*try await sdk.createdProfileManager.getProfile(*/)
-//        }
-//    }
-    
-    
+
+    // MARK: - Product IDs request
+    private func fetchProductIDs() async throws {
+        let fetchProductIDsRepository = FetchProductIDsRepository(httpClient: botsiClient)
+        return try await fetchProductIDsRepository.fetchProductIds(from: "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE")
+    }
 }
 
 

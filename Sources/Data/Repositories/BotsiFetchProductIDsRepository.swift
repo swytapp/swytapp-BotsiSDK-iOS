@@ -1,0 +1,45 @@
+//
+//  BotsiFetchProductIDsRepository.swift
+//  Botsi
+//
+//  Created by Vladyslav on 23.02.2025.
+//
+
+import Foundation
+
+protocol BotsiFetchProductIDsRepository {
+    func fetchProductIds(from storeName: String) async throws
+}
+
+final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
+    private let httpClient: BotsiHttpClient
+
+    init(httpClient: BotsiHttpClient) {
+        self.httpClient = httpClient
+    }
+
+    func fetchProductIds(from storeName: String) async throws {
+        do {
+            var request = FetchProductIDsRequest(storeName: storeName)
+            request.headers = [
+                "Authorization": "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE",
+                "Content-type": "application/json"
+            ]
+            
+            print("url: \(request.relativePath) ")
+            let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
+                return BotsiHTTPResponse(body: dataResponse.data)
+            })
+            
+
+            let wrapper = BotsiHTTPResponseWrapper(data: response.body)
+            let responseDto: ProductIDsDtoResponse = try wrapper.decode()
+            
+            // TODO: Store response into Profile Storage
+            print("Response json: \(responseDto)")
+        } catch {
+            print("Request failed with error: \(error)")
+            throw BotsiError.userCreationFailed
+        }
+    }
+}

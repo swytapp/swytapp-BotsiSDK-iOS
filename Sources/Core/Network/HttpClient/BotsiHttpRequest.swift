@@ -20,7 +20,7 @@ protocol BotsiHTTPRequest {
 
 extension BotsiHTTPRequest {
     var relativePath: String {
-        return "/api/sdk/\(self.endpoint.identifier.rawValue)"
+        return "/api/sdk/\(self.endpoint.identifier)"
     }
 
     var url: URL? { return self.url(proxyURL: nil) }
