@@ -18,7 +18,8 @@ public final class Botsi: Sendable {
     private let storage: BotsiStorageManager = .shared
     
     /// `payment & transaction`
-//    let purchasesManager: BotsiPurchasesManagerConformable
+    private let storeKit1Handler: StoreKit1Handler
+//    private let storeKit2Handler: StoreKit2Handler?
     
     let botsiClient: BotsiHttpClient
     
@@ -28,14 +29,17 @@ public final class Botsi: Sendable {
         
         self.botsiClient = BotsiHttpClient(with: configuration)
         
-        /// `retrieve user`
-        ///  create use manager
-        await verifyUser()
+//        if #available(iOS 15.0, macOS 12.0, *) {
+////            self.storeKit2Handler = StoreKit2Handler(client: botsiClient)
+//            self.storeKit1Handler = nil
+//        } else {
+            let storeKit1Handler = StoreKit1Handler(client: botsiClient)
+            self.storeKit1Handler = storeKit1Handler
+            await self.storeKit1Handler.startObservingTransactions()
+//            self.storeKit2Handler = nil
+//        }
         
-        /// `TODO: we need to update profile`
-        ///  Check if it is stored locally or we need to create one from backend
-        ///  We need to schedule update: to be decided
-        ///  Assign received profile to local cachingmanager
+        await verifyUser() // CRUD operation for profile
     }
     
     private func verifyUser() async {
@@ -65,8 +69,6 @@ public extension Botsi {
             // 2. Environment data
             // 3. Refactor configuration
             
-            
-            
             let botsi = await Botsi(from: config)
             setSharedSDK(botsi)
             return botsi
@@ -82,13 +84,13 @@ public extension Botsi {
     ///   23.02
     ///  1. ✅ createProfile -  Fetch data from backend and write a mapper into BotsiProfile
     ///  2. ✅ getProfile - Receive the BotsiProfile by local user identifier
-    ///  3. Check environment values that are passed
-    ///  4. Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
+    ///  3 .✅ Check environment values that are passed
+    ///  4. ✅ Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
     ///  5*. ✅ Create simple Storage Manager for storing BotsiProfile in UserDefaults
     ///
     ///   24.02
-    ///  1. Storekit 1 & 2 make a transaction by received [product_ids] from backend
-    ///  2. Check if we need to receive product from backend or show from StoreKit for now
+    ///  1. ✅ Storekit 1 & 2 make a transaction by received [product_ids] from backend
+    ///  2. ✅ Check if we need to receive product from backend or show from StoreKit for now
     ///  3*. Create small SwiftUI application for 3 endpoints
     ///
     ///   25.02-26.02
@@ -133,9 +135,48 @@ public extension Botsi {
     }
 
     // MARK: - Product IDs request
-    private func fetchProductIDs() async throws {
+    @discardableResult
+    private func fetchProductIDs() async throws -> [String] {
         let fetchProductIDsRepository = FetchProductIDsRepository(httpClient: botsiClient)
         return try await fetchProductIDsRepository.fetchProductIds(from: "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE")
+    }
+    
+    // MARK: - Purchase request
+    nonisolated static func makePurchase(_ productId: String) async throws {
+        try await activatedSDK.makePurchase(from: productId)
+    }
+    
+    func makePurchase(from id: String) async throws {
+    
+            do {
+                if #available(iOS 15.0, *) {
+                    await makePurchaseSK2(productID: id)
+                } else {
+                    let product = try await storeKit1Handler.retrieveSK1Product(with: id)
+                    await storeKit1Handler.purchaseSK1(product)
+                }
+            } catch {
+                print("Failed to purchase: \(error.localizedDescription)")
+            }
+    }
+}
+
+
+// TODO: needs to be reworked, not OK
+@available(iOS 15.0, *)
+extension Botsi {
+    private func makeStoreKit2Handler() -> StoreKit2Handler {
+        StoreKit2Handler(client: botsiClient)
+    }
+        
+    fileprivate func makePurchaseSK2(productID: String) async {
+        do {
+            let sk2Handler = makeStoreKit2Handler()
+            let product = try await sk2Handler.retrieveProductAsync(with: productID)
+            try await sk2Handler.purchaseSK2(product)
+        } catch {
+            print("StoreKit2 purchase error:", error)
+        }
     }
 }
 

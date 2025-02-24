@@ -75,7 +75,7 @@ final class StoreKit1Provider: StorefrontProvider {
 final class StoreKit2Provider: StorefrontProvider {
     func fetchStorefront() async throws -> BotsiStorefront {
         let storefront = await Storefront.current
-        print("STOREFRONT: \(storefront)")
+        print("STOREFRONT: \(String(describing: storefront))")
         return BotsiStorefront(id: storefront?.id ?? "unknown", countryCode: storefront?.countryCode ?? "default")
     }
 }
@@ -125,7 +125,7 @@ extension BotsiEnvironment {
 
         static let name: String = {
             #if os(macOS) || targetEnvironment(macCatalyst)
-                let service = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"))
+            let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("IOPlatformExpertDevice"))
 
                 var modelIdentifier: String?
                 if let modelData = IORegistryEntryCreateCFProperty(service, "model" as CFString, kCFAllocatorDefault, 0).takeRetainedValue() as? Data {

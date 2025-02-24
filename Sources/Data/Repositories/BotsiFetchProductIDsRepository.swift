@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiFetchProductIDsRepository {
-    func fetchProductIds(from storeName: String) async throws
+    func fetchProductIds(from storeName: String) async throws -> [String]
 }
 
 final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
@@ -18,7 +18,7 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
         self.httpClient = httpClient
     }
 
-    func fetchProductIds(from storeName: String) async throws {
+    func fetchProductIds(from storeName: String) async throws ->  [String] {
         do {
             var request = FetchProductIDsRequest(storeName: storeName)
             request.headers = [
@@ -37,6 +37,8 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
             
             // TODO: Store response into Profile Storage
             print("Response json: \(responseDto)")
+            
+            return responseDto.data
         } catch {
             print("Request failed with error: \(error)")
             throw BotsiError.userCreationFailed
