@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import StoreKit
 
 @BotsiActor
 public final class Botsi: Sendable {
@@ -107,12 +108,17 @@ public extension Botsi {
         try await activatedSDK.createUserProfile(with: id)
     }
     
-    nonisolated static func getProfile() async throws {
-        try await activatedSDK.getUserProfile()
+    nonisolated static func getProfile() async throws -> BotsiProfile {
+        return try await activatedSDK.getUserProfile()
     }
     
-    nonisolated static func fetchProductIDs() async throws {
-        try await activatedSDK.fetchProductIDs()
+    nonisolated static func fetchProductIDs() async throws -> [String] {
+        return try await activatedSDK.fetchProductIDs()
+    }
+    
+    @available(iOS 15.0, *)
+    nonisolated static func fetchProducts(from ids: [String]) async throws -> [Product] {
+        return try await activatedSDK.retrieveProducts(from: ids)
     }
     
     // MARK: - Private
@@ -141,23 +147,29 @@ public extension Botsi {
         return try await fetchProductIDsRepository.fetchProductIds(from: "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE")
     }
     
-    // MARK: - Purchase request
-    nonisolated static func makePurchase(_ productId: String) async throws {
-        try await activatedSDK.makePurchase(from: productId)
+    @available(iOS 15.0, *)
+    private func retrieveProducts(from ids: [String]) async throws -> [Product] {
+        try await retrievePurchases(from: ids)
     }
     
-    func makePurchase(from id: String) async throws {
+    // MARK: - Purchase request
+    nonisolated static func makePurchase(_ productId: String) async throws -> BotsiPaymentTransaction {
+        return try await activatedSDK.makePurchase(from: productId)
+    }
     
-            do {
-                if #available(iOS 15.0, *) {
-                    await makePurchaseSK2(productID: id)
-                } else {
-                    let product = try await storeKit1Handler.retrieveSK1Product(with: id)
-                    await storeKit1Handler.purchaseSK1(product)
-                }
-            } catch {
-                print("Failed to purchase: \(error.localizedDescription)")
+    func makePurchase(from id: String) async throws -> BotsiPaymentTransaction {
+        do {
+            if #available(iOS 15.0, *) {
+                return try await makePurchaseSK2(productIDs: [id])
+            } else {
+                let product = try await storeKit1Handler.retrieveSK1Product(with: id)
+                await storeKit1Handler.purchaseSK1(product)
+                throw BotsiError.transactionFailed
             }
+        } catch {
+            throw BotsiError.transactionFailed
+            print("Failed to purchase: \(error.localizedDescription)")
+        }
     }
 }
 
@@ -169,13 +181,28 @@ extension Botsi {
         StoreKit2Handler(client: botsiClient)
     }
         
-    fileprivate func makePurchaseSK2(productID: String) async {
+    fileprivate func makePurchaseSK2(productIDs: [String]) async throws -> BotsiPaymentTransaction {
         do {
             let sk2Handler = makeStoreKit2Handler()
-            let product = try await sk2Handler.retrieveProductAsync(with: productID)
-            try await sk2Handler.purchaseSK2(product)
+            let products = try await sk2Handler.retrieveProductAsync(with: productIDs)
+            guard let product = products.first else {
+                print("Can't find first product")
+                throw BotsiError.transactionFailed
+            }
+            return try await sk2Handler.purchaseSK2(product)
         } catch {
             print("StoreKit2 purchase error:", error)
+            throw BotsiError.transactionFailed
+        }
+    }
+    
+    fileprivate func retrievePurchases(from ids: [String]) async throws -> [Product] {
+        do {
+            let sk2Handler = makeStoreKit2Handler()
+            let products = try await sk2Handler.retrieveProductAsync(with: ids)
+            return products
+        } catch {
+            return []
         }
     }
 }
