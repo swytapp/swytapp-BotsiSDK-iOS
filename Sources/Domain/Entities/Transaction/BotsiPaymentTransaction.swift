@@ -7,7 +7,25 @@
 
 import StoreKit
 
-struct BotsiPaymentTransaction: Sendable {
+public struct BotsiPaymentTransaction: Sendable, CustomStringConvertible {
+    public var description: String {
+        return """
+            BotsiPaymentTransaction:
+        
+            transactionId: \(transactionId)
+            originalTransactionId: \(originalTransactionId)
+            vendorProductId: \(vendorProductId)
+            productVariationId: \(productVariationId ?? "-")
+            persistentProductVariationId: \(persistentProductVariationId ?? "-")
+            price: \(price ?? 0)
+            priceLocale: \(priceLocale ?? "-")
+            storeCountry: \(storeCountry ?? "-")
+        
+            subscriptionOffer: \(subscriptionOffer.debugDescription)
+        
+        """
+    }
+    
     
     enum OfferType: Int {
         case unknown = 0
@@ -45,7 +63,7 @@ struct BotsiPaymentTransaction: Sendable {
     @available(iOS 15.0, *)
     init(with product: Product, transaction: Transaction, variationId: String?, persistentVariationId: String?) {
         
-        // let offer = BotsiSubscriptionOffer(transaction: transaction, product: product)
+        let offer = BotsiSubscriptionOffer(transaction: transaction, product: product)
         self.transactionId = String(transaction.id)
         self.originalTransactionId = String(transaction.originalID)
         self.vendorProductId = product.id
@@ -62,12 +80,22 @@ struct BotsiPaymentTransaction: Sendable {
         } else {
             self.storeCountry = product.subscriptionPeriodFormatStyle.locale.identifier
         }
-        self.subscriptionOffer = nil
+        self.subscriptionOffer = offer
     }
 }
 
 // MARK: Offer
-public struct BotsiSubscriptionOffer: Sendable {
+public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
+    
+    public var description: String {
+        return """
+            id: \(id ?? "-")
+            period: \(period.debugDescription ?? "-")
+            paymentMode: \(paymentMode)
+            offerType: \(offerType)
+            price: \(price ?? 0)
+        """
+    }
     
     public enum BotsiPaymentMode: String, Sendable {
         case payAsYouGo
@@ -144,6 +172,14 @@ public struct BotsiSubscriptionOffer: Sendable {
         } else {
             self.init(id: offerId, offerType: .promotional)
         }
+    }
+    
+    @available(iOS 15.0, *)
+    init?(
+        transaction: Transaction,
+        product: Product?
+    ) {
+        self.init(id: transaction.offerID, period: .none, paymentMode: .payAsYouGo, offerType: .unknown, price: transaction.price)
     }
 }
 

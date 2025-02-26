@@ -27,6 +27,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case receiptValidationFailed(String)
     case sdkNotActivated
     
+    case transactionFailed
+    
     /// `wildcard`
     case customError(String, String)
 
@@ -37,6 +39,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "User creation failed."
         case .userProfileNotFound:
             return "User profile not found."
+        case .transactionFailed:
+            return "Transaction failed."
         case .invalidProductIdentifier(let identifier):
             return "Invalid product identifier: \(identifier)"
         case .purchaseFailed(let reason):

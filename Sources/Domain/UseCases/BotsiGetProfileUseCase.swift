@@ -23,7 +23,7 @@ struct BotsiGetProfileUseCase {
 struct GetProfileRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     
-    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.getProfile)
+    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.createProfile)
     
     var method: BotsiHTTPMethod = .get
     

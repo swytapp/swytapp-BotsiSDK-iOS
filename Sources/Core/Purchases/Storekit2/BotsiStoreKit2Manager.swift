@@ -29,8 +29,8 @@ public actor StoreKit2Handler: PurchasingHandler {
         )))
     }
     
-    public func retrieveProductAsync(with productID: String) async throws -> Product {
-        let products = try await Product.products(for: [productID])
+    public func retrieveProductAsync(with productIDs: [String]) async throws -> [Product] {
+        let products = try await Product.products(for: productIDs)
         guard let product = products.first else {
             throw NSError(
                 domain: "StoreKit2Handler",
@@ -38,34 +38,38 @@ public actor StoreKit2Handler: PurchasingHandler {
                 userInfo: [NSLocalizedDescriptionKey: "No matching StoreKit2 Product found."]
             )
         }
-        return product
+        return products
     }
     
     nonisolated public func purchaseSK1(_ skProduct: SKProduct) { }
     
-    public func purchaseSK2(_ product: Product) async throws {
-        let result = try await product.purchase()
+    public func purchaseSK2(_ product: Product) async throws -> BotsiPaymentTransaction {
+        let result = try await product.purchase() // add for await verification in Transaction.updates { listener
         
         switch result {
         case .success(let verification):
             switch verification {
             case .unverified(_,_):
                 print("TRANSACTION_UNVERIFIED")
+                throw BotsiError.transactionFailed
             case .verified(let transaction):
-                let transaction = await mapper.completeTransaction(with: transaction, product: product)
-                print("TRANSACTION_DATA: \(transaction)")
-                //
+                let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
+                print("TRANSACTION_DATA: \(botsiTransaction)")
+                await transaction.finish()
+                return botsiTransaction
             }
-            
-            // Handle successful purchase and verification
-            // verification will be a Transaction type that requires verifying
-            print("Purchased successfully: \(verification)")
         case .userCancelled:
             print("User canceled the purchase.")
+            throw BotsiError.transactionFailed
+            
         case .pending:
             print("Purchase pending.")
+            throw BotsiError.transactionFailed
+           
         @unknown default:
             print("Unknown result from StoreKit2.")
+            throw BotsiError.transactionFailed
+            
         }
     }
 }

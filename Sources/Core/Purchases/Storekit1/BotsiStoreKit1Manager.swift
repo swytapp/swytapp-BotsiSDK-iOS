@@ -15,12 +15,12 @@ public protocol PurchasingHandler: AnyObject {
     )
     
     @available(iOS 15.0, *)
-    func retrieveProductAsync(with productID: String) async throws -> Product
+    func retrieveProductAsync(with productIDs: [String]) async throws -> [Product]
 
     func purchaseSK1(_ skProduct: SKProduct)
     
     @available(iOS 15.0, *)
-    func purchaseSK2(_ product: Product) async throws
+    func purchaseSK2(_ product: Product) async throws -> BotsiPaymentTransaction
 }
 
 // MARK: - StoreKit 1
@@ -75,10 +75,11 @@ public actor StoreKit1Handler {
             with productID: String,
             completion: @escaping (Result<SKProduct, Error>) -> Void
         ) {
-            // ...
-            // Do your SKProductsRequest logic,
-            // store `completion` in the actor’s state,
-            // and call it in the delegate response.
+            self.fetchCompletion = completion
+
+            let request = SKProductsRequest(productIdentifiers: [productID])
+            request.delegate = self.delegate // the internal delegate that you forward to
+            request.start()
     }
     
     /// Initiates a purchase for the given `SKProduct`.
@@ -139,15 +140,44 @@ public actor StoreKit1Handler {
     
     // MARK: - Transaction Helpers
     private func handlePurchased(_ transaction: SKPaymentTransaction) {
+        logTransactionDetails(transaction)
         if let purchasedProduct = currentSKProduct {
-            print("Purchased product: \(purchasedProduct.productIdentifier)")
+            Task {
+                let transaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
+                print("SK1: \(transaction)")
+            }
         }
+        
+       
+        //
         
         SKPaymentQueue.default().finishTransaction(transaction)
         currentSKProduct = nil
         
         // TODO: Make API call?
     }
+    
+    func logTransactionDetails(_ transaction: SKPaymentTransaction) {
+        print("==== Transaction Details ====")
+        print("transactionIdentifier: \(transaction.transactionIdentifier ?? "nil")")
+        print("transactionDate: \(transaction.transactionDate?.description ?? "nil")")
+        print("transactionState: \(transaction.transactionState)")
+        print("payment.productIdentifier: \(transaction.payment.productIdentifier)")
+        print("payment.quantity: \(transaction.payment.quantity)")
+        
+        if let originalTransaction = transaction.original {
+            print("originalTransactionIdentifier: \(originalTransaction.transactionIdentifier ?? "nil")")
+            print("originalTransactionDate: \(originalTransaction.transactionDate?.description ?? "nil")")
+        }
+        
+        if let error = transaction.error as NSError? {
+            print("error.code: \(error.code)")
+            print("error.domain: \(error.domain)")
+            print("error.localizedDescription: \(error.localizedDescription)")
+        }
+        print("=============================")
+    }
+
     
     private func handleRestored(_ transaction: SKPaymentTransaction) {
         // For restoration logic
