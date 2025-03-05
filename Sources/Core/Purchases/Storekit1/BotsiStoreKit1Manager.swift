@@ -25,7 +25,6 @@ public protocol PurchasingHandler: AnyObject {
 
 // MARK: - StoreKit 1
 public actor StoreKit1Handler {
-    
     // MARK: - Private State
     
     /// A completion to be invoked when `retrieveProduct` finishes.
@@ -147,10 +146,6 @@ public actor StoreKit1Handler {
                 print("SK1: \(transaction)")
             }
         }
-        
-       
-        //
-        
         SKPaymentQueue.default().finishTransaction(transaction)
         currentSKProduct = nil
         

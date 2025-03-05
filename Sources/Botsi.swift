@@ -19,8 +19,9 @@ public final class Botsi: Sendable {
     private let storage: BotsiStorageManager = .shared
     
     /// `payment & transaction`
-    private let storeKit1Handler: StoreKit1Handler
-//    private let storeKit2Handler: StoreKit2Handler?
+    private let storeKit1Handler: StoreKit1Handler?
+    
+    private let storeKit2Handler: StoreKit2Handler?
     
     let botsiClient: BotsiHttpClient
     
@@ -30,15 +31,16 @@ public final class Botsi: Sendable {
         
         self.botsiClient = BotsiHttpClient(with: configuration)
         
-//        if #available(iOS 15.0, macOS 12.0, *) {
-////            self.storeKit2Handler = StoreKit2Handler(client: botsiClient)
-//            self.storeKit1Handler = nil
-//        } else {
+        if #available(iOS 15.0, *) {
+            self.storeKit2Handler = StoreKit2Handler(client: botsiClient)
+            
+            self.storeKit1Handler = nil
+        } else {
             let storeKit1Handler = StoreKit1Handler(client: botsiClient)
             self.storeKit1Handler = storeKit1Handler
-            await self.storeKit1Handler.startObservingTransactions()
-//            self.storeKit2Handler = nil
-//        }
+            await self.storeKit1Handler?.startObservingTransactions()
+            self.storeKit2Handler = nil
+        }
         
         await verifyUser() // CRUD operation for profile
     }
@@ -152,55 +154,46 @@ public extension Botsi {
         try await retrievePurchases(from: ids)
     }
     
-    // MARK: - Purchase request
-    nonisolated static func makePurchase(_ productId: String) async throws -> BotsiPaymentTransaction {
-        return try await activatedSDK.makePurchase(from: productId)
+    // MARK: - Purchase request (is triggered from an app)
+    nonisolated static func makePurchase(_ productId: String) async throws {
+        try await activatedSDK.makePurchase(from: productId)
     }
     
-    func makePurchase(from id: String) async throws -> BotsiPaymentTransaction {
+    func makePurchase(from id: String) async throws {
         do {
             if #available(iOS 15.0, *) {
-                return try await makePurchaseSK2(productIDs: [id])
+                guard let handler = storeKit2Handler else {
+                    throw BotsiError.customError("purchaseError", "unable to unwrap storekit 2 handler")
+                }
+                let products = try await handler.retrieveProductAsync(with: [id])
+                guard let product = products.first else {
+                    throw BotsiError.customError("productError", "unable to retrieve first product from array")
+                }
+                try await handler.purchaseSK2(product)
             } else {
-                let product = try await storeKit1Handler.retrieveSK1Product(with: id)
-                await storeKit1Handler.purchaseSK1(product)
-                throw BotsiError.transactionFailed
+                guard let handler = storeKit1Handler else {
+                    throw BotsiError.customError("purchaseError", "unable to unwrap storekit 1 handler")
+                }
+                let product = try await handler.retrieveSK1Product(with: id)
+                await storeKit1Handler?.purchaseSK1(product)
             }
         } catch {
-            throw BotsiError.transactionFailed
             print("Failed to purchase: \(error.localizedDescription)")
+            throw BotsiError.transactionFailed
         }
     }
 }
 
 
-// TODO: needs to be reworked, not OK
+
+/// `This one is useful in testing, while no Products from Backend are received`
+/// `We manually fetch the products in order to display them to the user`
 @available(iOS 15.0, *)
 extension Botsi {
-    private func makeStoreKit2Handler() -> StoreKit2Handler {
-        StoreKit2Handler(client: botsiClient)
-    }
-        
-    fileprivate func makePurchaseSK2(productIDs: [String]) async throws -> BotsiPaymentTransaction {
-        do {
-            let sk2Handler = makeStoreKit2Handler()
-            let products = try await sk2Handler.retrieveProductAsync(with: productIDs)
-            guard let product = products.first else {
-                print("Can't find first product")
-                throw BotsiError.transactionFailed
-            }
-            return try await sk2Handler.purchaseSK2(product)
-        } catch {
-            print("StoreKit2 purchase error:", error)
-            throw BotsiError.transactionFailed
-        }
-    }
-    
     fileprivate func retrievePurchases(from ids: [String]) async throws -> [Product] {
         do {
-            let sk2Handler = makeStoreKit2Handler()
-            let products = try await sk2Handler.retrieveProductAsync(with: ids)
-            return products
+            let products = try await storeKit2Handler?.retrieveProductAsync(with: ids)
+            return products ?? []
         } catch {
             return []
         }
