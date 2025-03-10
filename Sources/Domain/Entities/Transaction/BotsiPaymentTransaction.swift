@@ -14,73 +14,101 @@ public struct BotsiPaymentTransaction: Sendable, CustomStringConvertible {
         
             transactionId: \(transactionId)
             originalTransactionId: \(originalTransactionId)
-            vendorProductId: \(vendorProductId)
-            productVariationId: \(productVariationId ?? "-")
-            persistentProductVariationId: \(persistentProductVariationId ?? "-")
-            price: \(price ?? 0)
+            vendorProductId: \(sourceProductId)
+            price: \(originalPrice ?? 0)
             priceLocale: \(priceLocale ?? "-")
             storeCountry: \(storeCountry ?? "-")
-        
-            subscriptionOffer: \(subscriptionOffer.debugDescription)
+            subscriptionOffer: \(offer.debugDescription)
         
         """
     }
     
-    
-    enum OfferType: Int {
+    enum OfferType: Int, CustomStringConvertible {
         case unknown = 0
         case introductory = 1
         case promotional = 2
         case code = 3
         case winBack = 4
+        
+        var description: String {
+            switch self {
+            case .unknown: return "unknown"
+            case .introductory: return "introductory"
+            case .promotional: return "promotional"
+            case .code: return "code"
+            case .winBack: return "winBack"
+            }
+        }
     }
     
     // MARK: Main transaction content
     let transactionId: String
     let originalTransactionId: String
-    let vendorProductId: String
-    let productVariationId: String?
-    let persistentProductVariationId: String?
-    let price: Decimal?
+    let sourceProductId: String
+    let originalPrice: Decimal?
     let priceLocale: String?
     let storeCountry: String?
-    let subscriptionOffer: BotsiSubscriptionOffer?
     
-    init(with product: SKProduct, transaction: SKPaymentTransaction, variationId: String?, persistentVariationId: String?) {
-        
+    let offer: BotsiSubscriptionOffer?
+    
+    let promotionalOfferId: String
+    let discountPrice: String
+    let productId: String
+    let environment: String
+    
+    /// `hardcoded`
+    let paywallId: String = "somePaywallId"
+    let placementId: String = "somePlacementId"
+    let isSubscription: Bool = true
+    
+    init(with product: SKProduct, transaction: SKPaymentTransaction) {
         let offer = BotsiSubscriptionOffer(transaction: transaction, product: product)
-        self.transactionId = transaction.transactionIdentifier ?? transaction.original?.transactionIdentifier ?? "" // extend to include some id
+        self.transactionId = transaction.transactionIdentifier ?? transaction.original?.transactionIdentifier ?? ""
         self.originalTransactionId = transaction.original?.transactionIdentifier ?? transaction.transactionIdentifier ?? ""
-        self.vendorProductId = transaction.payment.productIdentifier
-        self.productVariationId = variationId
-        self.persistentProductVariationId = persistentVariationId
-        self.price = product.price.decimalValue
+        self.sourceProductId = transaction.payment.productIdentifier
+        self.originalPrice = product.price.decimalValue
         self.priceLocale = product.priceLocale.currencyCode
         self.storeCountry = product.priceLocale.regionCode
-        self.subscriptionOffer = offer
+        self.offer = offer
+        self.promotionalOfferId = offer?.id ?? ""
+        self.discountPrice = "\(offer?.price ?? 0)"
+        self.productId = product.productIdentifier
+        self.environment = BotsiPaymentTransaction.getEnvironmentSK1()
     }
     
     @available(iOS 15.0, *)
-    init(with product: Product, transaction: Transaction, variationId: String?, persistentVariationId: String?) {
+    init(with product: Product, transaction: Transaction) {
         
         let offer = BotsiSubscriptionOffer(transaction: transaction, product: product)
         self.transactionId = String(transaction.id)
         self.originalTransactionId = String(transaction.originalID)
-        self.vendorProductId = product.id
-        self.productVariationId = variationId
-        self.persistentProductVariationId = persistentVariationId
-        self.price = Decimal(string: product.price.description)
+        self.sourceProductId = transaction.productID
+        self.originalPrice = Decimal(string: product.price.description)
         self.priceLocale = product.priceFormatStyle.currencyCode
         if #available(macOS 13, *) {
             if #available(iOS 16, *) {
                 self.storeCountry = Locale.current.region?.identifier
+                switch transaction.environment {
+                case .sandbox:
+                    self.environment = "Sandbox"
+                case .production:
+                    self.environment = "Production"
+                default:
+                    self.environment = "Unknown"
+                }
             } else {
-                self.storeCountry = ""
+                self.storeCountry = product.subscriptionPeriodFormatStyle.locale.identifier
+                self.environment = BotsiPaymentTransaction.getEnvironmentSK1()
             }
+            
         } else {
             self.storeCountry = product.subscriptionPeriodFormatStyle.locale.identifier
+            self.environment = BotsiPaymentTransaction.getEnvironmentSK1()
         }
-        self.subscriptionOffer = offer
+        self.offer = offer
+        self.promotionalOfferId = offer?.id ?? ""
+        self.discountPrice = "\(offer?.price ?? 0)"
+        self.productId = product.id
     }
 }
 
@@ -90,8 +118,8 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
     public var description: String {
         return """
             id: \(id ?? "-")
-            period: \(period.debugDescription ?? "-")
-            paymentMode: \(paymentMode)
+            period: \(periodUnit.debugDescription)
+            paymentMode: \(type)
             offerType: \(offerType)
             price: \(price ?? 0)
         """
@@ -105,8 +133,8 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
     }
     
     let id: String?
-    let period: BotsiSubscriptionPeriod?
-    let paymentMode: BotsiPaymentMode
+    let periodUnit: BotsiSubscriptionPeriod?
+    let type: BotsiPaymentMode
     let offerType: BotsiPaymentTransaction.OfferType
     let price: Decimal?
 
@@ -115,8 +143,8 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
         offerType: BotsiPaymentTransaction.OfferType
     ) {
         self.id = id
-        period = nil
-        paymentMode = .unknown
+        periodUnit = nil
+        type = .unknown
         self.offerType = offerType
         price = nil
     }
@@ -129,8 +157,8 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
         price: Decimal?
     ) {
         self.id = id
-        self.period = period
-        self.paymentMode = paymentMode
+        self.periodUnit = period
+        self.type = paymentMode
         self.offerType = offerType
         self.price = price
     }
@@ -188,7 +216,7 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
 // MARK: - Subscription period
 public struct BotsiSubscriptionPeriod: Sendable, Hashable {
     
-    public enum BotsiSubscriptionPeriodUnit: UInt, Sendable, Hashable {
+    public enum BotsiSubscriptionPeriodUnit: String, Sendable, Hashable {
         case day
         case week
         case month
@@ -265,6 +293,21 @@ extension SKProduct.PeriodUnit {
         case .month: .month
         case .year: .year
         @unknown default: .unknown
+        }
+    }
+}
+
+extension BotsiPaymentTransaction {
+    static private func getEnvironmentSK1() -> String {
+        guard let appStoreReceiptURL = Bundle.main.appStoreReceiptURL else {
+            return "Unknown"
+        }
+        
+        let receiptPath = appStoreReceiptURL.path
+        if receiptPath.contains("sandboxReceipt") {
+            return "Sandbox"
+        } else {
+            return "Production"
         }
     }
 }

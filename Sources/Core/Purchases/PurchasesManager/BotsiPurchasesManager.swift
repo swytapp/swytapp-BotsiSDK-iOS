@@ -14,13 +14,13 @@ extension BotsiPurchasesManagerConformable {
     
     /// `Convenience method for StoreKit 1 transactions.`
     func completeTransaction(with transaction: SKPaymentTransaction, product: SKProduct) async -> BotsiPaymentTransaction {
-        return BotsiPaymentTransaction(with: product, transaction: transaction, variationId: nil, persistentVariationId: nil)
+        return BotsiPaymentTransaction(with: product, transaction: transaction)
     }
     
     /// `Convenience method for StoreKit 2 transactions.`
     @available(iOS 15.0, *)
     func completeTransaction(with transaction: Transaction, product: Product) async -> BotsiPaymentTransaction {
-        return BotsiPaymentTransaction(with: product, transaction: transaction, variationId: nil, persistentVariationId: nil)
+        return BotsiPaymentTransaction(with: product, transaction: transaction)
     }
 }
 

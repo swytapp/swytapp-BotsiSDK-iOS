@@ -36,12 +36,14 @@ public actor StoreKit1Handler {
     private let delegate = StoreKit1HandlerDelegate()
     
     private let client: BotsiHttpClient
+    private let storage: BotsiStorageManager
     private let mapper: BotsiStoreKit1TransactionMapper = .init()
     
     // MARK: - Initialization
     
-    public init(client: BotsiHttpClient) {
+    public init(client: BotsiHttpClient, storage: BotsiStorageManager) {
         self.client = client
+        self.storage = storage
         delegate.handler = self
     }
     
@@ -142,8 +144,13 @@ public actor StoreKit1Handler {
         logTransactionDetails(transaction)
         if let purchasedProduct = currentSKProduct {
             Task {
-                let transaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
-                print("SK1: \(transaction)")
+                let botsiTransaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
+                do {
+                    try await validateTransaction(botsiTransaction)
+                } catch {
+                    handleFailed(transaction)
+                }
+               
             }
         }
         SKPaymentQueue.default().finishTransaction(transaction)
@@ -190,6 +197,15 @@ public actor StoreKit1Handler {
         SKPaymentQueue.default().finishTransaction(transaction)
         currentSKProduct = nil
         // TODO: Failure callbacks
+    }
+    
+    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws {
+        guard let storedProfile = try await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+            throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
+        }
+        let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
+        let profileFetched = try await repository.validateTransaction(transaction: transaction)
+        print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
     }
 }
 

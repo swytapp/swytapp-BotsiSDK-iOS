@@ -17,7 +17,7 @@ enum BotsiStorageError: Error {
 }
 
 /// `Secure storage manager using an actor for concurrency safety`
-actor BotsiStorageManager {
+public actor BotsiStorageManager {
     
     static let shared = BotsiStorageManager()
     

@@ -20,7 +20,6 @@ public final class Botsi: Sendable {
     
     /// `payment & transaction`
     private let storeKit1Handler: StoreKit1Handler?
-    
     private let storeKit2Handler: StoreKit2Handler?
     
     let botsiClient: BotsiHttpClient
@@ -32,11 +31,11 @@ public final class Botsi: Sendable {
         self.botsiClient = BotsiHttpClient(with: configuration)
         
         if #available(iOS 15.0, *) {
-            self.storeKit2Handler = StoreKit2Handler(client: botsiClient)
+            self.storeKit2Handler = StoreKit2Handler(client: botsiClient, storage: storage)
             
             self.storeKit1Handler = nil
         } else {
-            let storeKit1Handler = StoreKit1Handler(client: botsiClient)
+            let storeKit1Handler = StoreKit1Handler(client: botsiClient, storage: storage)
             self.storeKit1Handler = storeKit1Handler
             await self.storeKit1Handler?.startObservingTransactions()
             self.storeKit2Handler = nil
@@ -56,8 +55,8 @@ public final class Botsi: Sendable {
         print("Fetched user profile with id: \(profile.profileId)")
     }
 }
-
-public extension Botsi {
+// https://swytapp-test.com.ua/api/sdk/purchases/apple-store/validate
+public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-store/validate
     
     /// `activation method for Botsi SDK`
     nonisolated static func activate(with config: BotsiConfiguration) async throws {
@@ -83,26 +82,12 @@ public extension Botsi {
    
     ///
     ///  TODO: TASKS
-    ///
-    ///   23.02
-    ///  1. ✅ createProfile -  Fetch data from backend and write a mapper into BotsiProfile
-    ///  2. ✅ getProfile - Receive the BotsiProfile by local user identifier
-    ///  3 .✅ Check environment values that are passed
-    ///  4. ✅ Prepare /sdk/{apiKey}/products/products-ids/app-store and wrappers for this
-    ///  5*. ✅ Create simple Storage Manager for storing BotsiProfile in UserDefaults
-    ///
-    ///   24.02
-    ///  1. ✅ Storekit 1 & 2 make a transaction by received [product_ids] from backend
-    ///  2. ✅ Check if we need to receive product from backend or show from StoreKit for now
-    ///  3*. Create small SwiftUI application for 3 endpoints
-    ///
-    ///   25.02-26.02
-    ///  1. Create mock validatePurchase request with appropriate parameters
-    ///  2. Clone Vizzy app, extend with Botsi
-    ///
-    ///
-    ///
-    ///
+    /// ✅
+    ///  1. add validate purchase BE request + extend purchasing handlers
+    ///  2. restorePurchases
+    ///  3. create analytics wrapper
+    ///  4. user management system
+    ///  5. test in-app purchase and subscription types
     
     /// `test create profile method outside`
     typealias ProfileIdentifier = String

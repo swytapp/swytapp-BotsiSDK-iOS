@@ -10,10 +10,12 @@ import StoreKit
 public actor StoreKit2Handler {
     
     private let client: BotsiHttpClient
+    private let storage: BotsiStorageManager
     private let mapper: BotsiStoreKit2TransactionMapper = .init()
     
-    public init(client: BotsiHttpClient) {
+    public init(client: BotsiHttpClient, storage: BotsiStorageManager) {
         self.client = client
+        self.storage = storage
         Task {
             if #available(iOS 15.0, *) {
                 await self.startObservingTransactionUpdates()
@@ -49,6 +51,7 @@ public actor StoreKit2Handler {
             case .verified(let transaction):
                 let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
                 print("TRANSACTION_DATA: \(botsiTransaction)")
+                try await validateTransaction(botsiTransaction)
                 await transaction.finish()
             }
         case .userCancelled:
@@ -56,7 +59,8 @@ public actor StoreKit2Handler {
             throw BotsiError.transactionFailed
         case .pending:
             print("Purchase pending.")
-            let transaction = try await waitForTransactionUpdate(product)
+            let botsiTransaction = try await waitForTransactionUpdate(product)
+            try await validateTransaction(botsiTransaction)
             print("processing transaction")
         @unknown default:
             print("Unknown result from StoreKit2.")
@@ -70,11 +74,11 @@ public actor StoreKit2Handler {
             switch transaction {
             case .verified(let verifiedTransaction):
                 let botsiTransaction = await mapper.completeTransaction(with: verifiedTransaction, product: product)
-                print("TRANSACTION_UPDATE: \(botsiTransaction)")
                 await verifiedTransaction.finish()
                 return botsiTransaction
-            case .unverified(_, _):
+            case .unverified(let unverifiedTransaction, _):
                 print("Unverified transaction found. Ignoring.")
+                await unverifiedTransaction.finish()
                 throw BotsiError.customError("Storekit2", "Unverified transaction")
             }
         }
@@ -96,5 +100,14 @@ public actor StoreKit2Handler {
                 print("Unverified transaction found. Ignoring.")
             }
         }
+    }
+    
+    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws {
+        guard let storedProfile = try await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+            throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
+        }
+        let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
+        let profileFetched = try await repository.validateTransaction(transaction: transaction)
+        print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
     }
 }
