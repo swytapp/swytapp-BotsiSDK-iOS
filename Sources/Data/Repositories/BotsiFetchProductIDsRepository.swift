@@ -22,7 +22,7 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
         do {
             var request = FetchProductIDsRequest(storeName: storeName)
             request.headers = [
-                "Authorization": "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE",
+                "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
             

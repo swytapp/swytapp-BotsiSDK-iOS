@@ -57,8 +57,8 @@ public struct BotsiPaymentTransaction: Sendable, CustomStringConvertible {
     let environment: String
     
     /// `hardcoded`
-    let paywallId: String = "somePaywallId"
-    let placementId: String = "somePlacementId"
+    let paywallId: String = ""
+    let placementId: String = ""
     let isSubscription: Bool = true
     
     init(with product: SKProduct, transaction: SKPaymentTransaction) {
@@ -90,11 +90,11 @@ public struct BotsiPaymentTransaction: Sendable, CustomStringConvertible {
                 self.storeCountry = Locale.current.region?.identifier
                 switch transaction.environment {
                 case .sandbox:
-                    self.environment = "Sandbox"
+                    self.environment = "sandbox"
                 case .production:
-                    self.environment = "Production"
+                    self.environment = "production"
                 default:
-                    self.environment = "Unknown"
+                    self.environment = "unknown"
                 }
             } else {
                 self.storeCountry = product.subscriptionPeriodFormatStyle.locale.identifier
@@ -126,10 +126,10 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
     }
     
     public enum BotsiPaymentMode: String, Sendable {
-        case payAsYouGo
-        case payUpFront
-        case freeTrial
-        case unknown
+        case payAsYouGo = "pay_as_you_go"
+        case payUpFront = "pay_up_front"
+        case freeTrial = "free_trial"
+        case unknown = "unknown"
     }
     
     let id: String?
@@ -171,8 +171,11 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
             let discount = product?.subscriptionOffer( // SKProductDiscount
                 byType: .introductory
             )
+            
+            // product?.subscriptionPeriod?.toCustomPeriod
 
-            guard let discount else { return nil } // SKProductDiscount
+            guard let discount else {
+                return nil } // SKProductDiscount
 
             self.init(
                 id: nil,
@@ -207,7 +210,8 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
         transaction: Transaction,
         product: Product?
     ) {
-        self.init(id: transaction.offerID, period: .none, paymentMode: .payAsYouGo, offerType: .unknown, price: transaction.price)
+        // TODO:
+        self.init(id: transaction.offerID, period: .init(unit: .month, numberOfUnits: 1), paymentMode: .payAsYouGo, offerType: .unknown, price: transaction.price)
     }
 }
 
@@ -300,14 +304,14 @@ extension SKProduct.PeriodUnit {
 extension BotsiPaymentTransaction {
     static private func getEnvironmentSK1() -> String {
         guard let appStoreReceiptURL = Bundle.main.appStoreReceiptURL else {
-            return "Unknown"
+            return "unknown"
         }
         
         let receiptPath = appStoreReceiptURL.path
         if receiptPath.contains("sandboxReceipt") {
-            return "Sandbox"
+            return "sandbox"
         } else {
-            return "Production"
+            return "production"
         }
     }
 }

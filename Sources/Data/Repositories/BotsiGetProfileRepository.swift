@@ -24,7 +24,7 @@ final class GetUserProfileRepository: BotsiGetProfileRepository {
         do {
             var request = GetProfileRequest(uuid: identifier)
             request.headers = [
-                "Authorization": "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE",
+                "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
             

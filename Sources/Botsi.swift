@@ -10,13 +10,14 @@ import StoreKit
 
 @BotsiActor
 public final class Botsi: Sendable {
-    let sdkApiKey: String
+    let sdkApiKey: String // test `pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE`
     
     package let enableObserver: Bool
     
     // TODO: profileManager
     
     private let storage: BotsiStorageManager = .shared
+    static let lifecycle = BotsiLifecycle()
     
     /// `payment & transaction`
     private let storeKit1Handler: StoreKit1Handler?
@@ -28,7 +29,7 @@ public final class Botsi: Sendable {
         self.sdkApiKey = configuration.sdkApiKey
         self.enableObserver = configuration.enableObserver
         
-        self.botsiClient = BotsiHttpClient(with: configuration)
+        self.botsiClient = BotsiHttpClient(with: configuration, key: configuration.sdkApiKey)
         
         if #available(iOS 15.0, *) {
             self.storeKit2Handler = StoreKit2Handler(client: botsiClient, storage: storage)
@@ -64,21 +65,19 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
     }
     
     private static func proceedWithActivation(with config: BotsiConfiguration) async throws {
-        let activationTask = BotsiActivationTask {
-            
-            // TODO: Extend with:
-            // 1. Backend instance later (if more than one is needed)
-            // 2. Environment data
-            // 3. Refactor configuration
-            
+        try await lifecycle.initializeIfNeeded {
             let botsi = await Botsi(from: config)
-            setSharedSDK(botsi)
             return botsi
         }
-        setActivatingSDK(activationTask)
-        _ = await activationTask.value
     }
     
+    static func withInitializedSDK<T: Sendable>(
+        identifier: BotsiRequestIdentifier,
+        caller: StaticString = #function,
+        operation: @Sendable @escaping (Botsi) async throws -> T
+    ) async throws -> T {
+        try await lifecycle.withInitializedSDK(operation: operation)
+    }
    
     ///
     ///  TODO: TASKS
@@ -90,25 +89,42 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
     ///  5. test in-app purchase and subscription types
     
     /// `test create profile method outside`
-    typealias ProfileIdentifier = String
-    nonisolated static func createProfile(with id: ProfileIdentifier) async throws {
-        try await activatedSDK.createUserProfile(with: id)
+    
+//    nonisolated static func createProfile(with id: ProfileIdentifier) async throws {
+//        let r = try await lifecycle.withInitializedSDK { botsi in
+//            try await botsi.createUserProfile(with: id)
+//        }
+//        
+//    }
+    
+    static var isInitialized: Bool {
+        get async {
+            await lifecycle.isInitialized
+        }
     }
     
+    // MARK: - Profile
+    
+    typealias ProfileIdentifier = String
     nonisolated static func getProfile() async throws -> BotsiProfile {
-        return try await activatedSDK.getUserProfile()
+        return try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.getUserProfile()
+        }
     }
     
     nonisolated static func fetchProductIDs() async throws -> [String] {
-        return try await activatedSDK.fetchProductIDs()
+        return try await lifecycle.withInitializedSDK { botsi in
+            return try await botsi.fetchProductIDs()
+        }
     }
     
     @available(iOS 15.0, *)
     nonisolated static func fetchProducts(from ids: [String]) async throws -> [Product] {
-        return try await activatedSDK.retrieveProducts(from: ids)
+        return try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.retrieveProducts(from: ids)
+        }
     }
     
-    // MARK: - Private
     
     // MARK: - User
     @discardableResult
@@ -131,7 +147,7 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
     @discardableResult
     private func fetchProductIDs() async throws -> [String] {
         let fetchProductIDsRepository = FetchProductIDsRepository(httpClient: botsiClient)
-        return try await fetchProductIDsRepository.fetchProductIds(from: "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE")
+        return try await fetchProductIDsRepository.fetchProductIds(from: sdkApiKey)
     }
     
     @available(iOS 15.0, *)
@@ -141,7 +157,9 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
     
     // MARK: - Purchase request (is triggered from an app)
     nonisolated static func makePurchase(_ productId: String) async throws {
-        try await activatedSDK.makePurchase(from: productId)
+        return try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.makePurchase(from: productId)
+        }
     }
     
     func makePurchase(from id: String) async throws {

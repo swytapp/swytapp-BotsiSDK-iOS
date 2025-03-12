@@ -2,7 +2,7 @@
 //  BotsiValidateTransactionRepository.swift
 //  Botsi
 //
-//  Created by Vladyslav Maslennikov on 10.03.2025.
+//  Created by Vladyslav on 10.03.2025.
 //
 
 import Foundation
@@ -26,7 +26,7 @@ final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
         do {
             var request = ValidateTransactionRequest()
             request.headers = [
-                "Authorization": "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE",
+                "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
             let requestParameters = (transaction, profileId)

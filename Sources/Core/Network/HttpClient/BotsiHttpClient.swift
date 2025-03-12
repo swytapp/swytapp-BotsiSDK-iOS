@@ -10,17 +10,19 @@ import Foundation
 // MARK: - Backend
 public struct BotsiHttpClient: Sendable {
     
+    let sdkApiKey: String
     let session: BotsiHTTPSession
     
     struct URLConstants {
         static let backendHost: URL = URL(string: "https://swytapp-test.com.ua")!
     }
     
-    init(with configuration: BotsiConfiguration) {
+    init(with configuration: BotsiConfiguration, key: String) {
         let config = HTTPCodableConfiguration(sessionConfiguration: .default)
         let errorHandler = HTTPErrorHandler()
         let session = BotsiHTTPSession(configuration: config, errorHandler: errorHandler)
         self.session = session
+        self.sdkApiKey = key
     }
 }
 

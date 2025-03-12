@@ -2,7 +2,7 @@
 //  BotsiValidateTransactionUseCase.swift
 //  Botsi
 //
-//  Created by Vladyslav Maslennikov on 10.03.2025.
+//  Created by Vladyslav on 10.03.2025.
 //
 
 import Foundation
