@@ -41,7 +41,7 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
             return responseDto.data
         } catch {
             print("Request failed with error: \(error)")
-            throw BotsiError.userCreationFailed
+            throw BotsiError.fetchingProductIdsFailed
         }
     }
 }

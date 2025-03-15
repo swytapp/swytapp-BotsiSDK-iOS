@@ -42,7 +42,7 @@ final class GetUserProfileRepository: BotsiGetProfileRepository {
 
         } catch {
             print("Request failed with error: \(error)")
-            throw BotsiError.userCreationFailed
+            throw BotsiError.userGetProfileFailed
         }
     }
 }

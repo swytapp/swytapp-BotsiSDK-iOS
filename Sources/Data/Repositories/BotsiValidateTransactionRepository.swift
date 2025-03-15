@@ -49,7 +49,7 @@ final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
 
         } catch {
             print("Request failed with error: \(error)")
-            throw BotsiError.userCreationFailed
+            throw BotsiError.transactionFailed
         }
     }
 }

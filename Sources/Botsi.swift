@@ -67,8 +67,7 @@ public final class Botsi: Sendable {
     }
 }
 
-// https://swytapp-test.com.ua/api/sdk/purchases/apple-store/validate
-public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-store/validate
+public extension Botsi {
     
     /// `activation method for Botsi SDK`
     nonisolated static func activate(with config: BotsiConfiguration) async throws {

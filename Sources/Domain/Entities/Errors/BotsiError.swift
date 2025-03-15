@@ -17,6 +17,9 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     /// `user errors`
     case userCreationFailed
     case userProfileNotFound
+    case userGetProfileFailed
+    
+    case fetchingProductIdsFailed
     
     case invalidProductIdentifier(String)
     case purchaseFailed(String)
@@ -62,6 +65,10 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "Unable to activate SDK"
         case .restoreFailed:
             return "Restore failed"
+        case .fetchingProductIdsFailed:
+            return "Fetching product ids failed"
+        case .userGetProfileFailed:
+            return "Get request for user profile failed"
         }
     }
 }

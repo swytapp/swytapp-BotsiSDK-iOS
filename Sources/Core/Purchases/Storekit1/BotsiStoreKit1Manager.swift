@@ -266,7 +266,7 @@ public actor StoreKit1Handler {
         guard let storedProfile = await storage.getProfile() else {
             throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
         }
-        let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId, configuration: configuration)
+        let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
         let profileFetched = try await repository.restore(transaction: transaction)
         BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched

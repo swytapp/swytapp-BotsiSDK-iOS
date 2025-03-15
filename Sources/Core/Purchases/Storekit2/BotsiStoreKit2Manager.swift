@@ -113,6 +113,16 @@ public actor StoreKit2Handler {
         print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched
     }
+    
+    private func restoreTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+        guard let storedProfile = await storage.getProfile() else {
+            throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
+        }
+        let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
+        let profileFetched = try await repository.restore(transaction: transaction)
+        BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
+        return profileFetched
+    }
 
     @available(iOS 15.0, *)
     public func restorePurchases() async throws -> BotsiProfile {
@@ -135,7 +145,7 @@ public actor StoreKit2Handler {
                     product: product
                 )
                 
-                let profile = try await validateTransaction(botsiTransaction)
+                let profile = try await restoreTransaction(botsiTransaction)
                 finalProfile = profile
 
                 await transaction.finish()

@@ -15,17 +15,14 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
     private let httpClient: BotsiHttpClient
     private let mapper: BotsiRestorePurchaseMapper
     private let profileId: String
-    private let configuration: BotsiConfiguration
 
     init(httpClient: BotsiHttpClient,
          profileId: String,
-         mapper: BotsiRestorePurchaseMapper = BotsiRestorePurchaseMapper(),
-         configuration: BotsiConfiguration
+         mapper: BotsiRestorePurchaseMapper = BotsiRestorePurchaseMapper()
     ) {
         self.httpClient = httpClient
         self.mapper = mapper
         self.profileId = profileId
-        self.configuration = configuration
     }
 
     func restore(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {

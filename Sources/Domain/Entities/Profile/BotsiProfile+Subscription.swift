@@ -19,15 +19,15 @@ extension BotsiProfile {
         public let isRefund: Bool
         public let willRenew: Bool
         public let isInGracePeriod: Bool
-        public let cancellationReason: String
-        public let offerId: String
+        public let cancellationReason: String?
+        public let offerId: String?
         public let startsAt: String
         public let renewedAt: String
         public let expiresAt: String
-        public let activeIntroductoryOfferType: String
+        public let activeIntroductoryOfferType: String?
         public let activePromotionalOfferType: String
-        public let activePromotionalOfferId: String
-        public let unsubscribedAt: String
-        public let billingIssueDetectedAt: String
+        public let activePromotionalOfferId: String?
+        public let unsubscribedAt: String?
+        public let billingIssueDetectedAt: String?
     }
 }
