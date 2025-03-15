@@ -13,10 +13,9 @@ public final class Botsi: Sendable {
     let sdkApiKey: String // test `pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE`
     
     package let enableObserver: Bool
-    
-    // TODO: profileManager
-    
-    private let storage: BotsiStorageManager = .shared
+        
+    fileprivate let profileStorage: BotsiProfileStorage
+    fileprivate let cachedTransactionsStore: BotsiSyncedTransactionStore
     static let lifecycle = BotsiLifecycle()
     
     /// `payment & transaction`
@@ -30,13 +29,24 @@ public final class Botsi: Sendable {
         self.enableObserver = configuration.enableObserver
         
         self.botsiClient = BotsiHttpClient(with: configuration, key: configuration.sdkApiKey)
+        self.profileStorage = await BotsiProfileStorage()
+        
+        let cachedTransactionsStore = await BotsiSyncedTransactionStore()
+        self.cachedTransactionsStore = cachedTransactionsStore
         
         if #available(iOS 15.0, *) {
-            self.storeKit2Handler = StoreKit2Handler(client: botsiClient, storage: storage)
-            
+            self.storeKit2Handler = StoreKit2Handler(
+                client: botsiClient,
+                storage: profileStorage
+            )
             self.storeKit1Handler = nil
         } else {
-            let storeKit1Handler = StoreKit1Handler(client: botsiClient, storage: storage)
+            let storeKit1Handler = StoreKit1Handler(
+                client: botsiClient,
+                storage: profileStorage,
+                configuration: configuration,
+                cachedTransactionsStore: self.cachedTransactionsStore
+            )
             self.storeKit1Handler = storeKit1Handler
             await self.storeKit1Handler?.startObservingTransactions()
             self.storeKit2Handler = nil
@@ -46,16 +56,17 @@ public final class Botsi: Sendable {
     }
     
     private func verifyUser() async {
-        guard let profile = try? await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+        guard let profile = await profileStorage.getProfile() else {
             let uuid = UUID().uuidString
             if let profile = try? await createUserProfile(with: uuid) {
-                try? await storage.save(profile, forKey: UserDefaultKeys.User.userProfile)
+                await profileStorage.setProfile(profile)
             }
             return
         }
         print("Fetched user profile with id: \(profile.profileId)")
     }
 }
+
 // https://swytapp-test.com.ua/api/sdk/purchases/apple-store/validate
 public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-store/validate
     
@@ -79,17 +90,8 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
         try await lifecycle.withInitializedSDK(operation: operation)
     }
    
-    ///
-    ///  TODO: TASKS
-    /// ✅
-    ///  1. add validate purchase BE request + extend purchasing handlers
-    ///  2. restorePurchases
-    ///  3. create analytics wrapper
-    ///  4. user management system
-    ///  5. test in-app purchase and subscription types
-    
+
     /// `test create profile method outside`
-    
 //    nonisolated static func createProfile(with id: ProfileIdentifier) async throws {
 //        let r = try await lifecycle.withInitializedSDK { botsi in
 //            try await botsi.createUserProfile(with: id)
@@ -135,7 +137,7 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
     
     @discardableResult
     private func getUserProfile() async throws -> BotsiProfile {
-        if let storedProfile = try await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) {
+        if let storedProfile = await profileStorage.getProfile() {
             let repository = GetUserProfileRepository(httpClient: botsiClient)
             return try await repository.getUserProfile(identifier: storedProfile.profileId)
         } else {
@@ -156,13 +158,13 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
     }
     
     // MARK: - Purchase request (is triggered from an app)
-    nonisolated static func makePurchase(_ productId: String) async throws {
+    nonisolated static func makePurchase(_ productId: String) async throws -> BotsiProfile {
         return try await lifecycle.withInitializedSDK { botsi in
             try await botsi.makePurchase(from: productId)
         }
     }
     
-    func makePurchase(from id: String) async throws {
+    func makePurchase(from id: String) async throws -> BotsiProfile {
         do {
             if #available(iOS 15.0, *) {
                 guard let handler = storeKit2Handler else {
@@ -172,17 +174,60 @@ public extension Botsi { // https://swytapp-test.com.ua/sdk/purchases/apple-stor
                 guard let product = products.first else {
                     throw BotsiError.customError("productError", "unable to retrieve first product from array")
                 }
-                try await handler.purchaseSK2(product)
+                let profile = try await handler.purchaseSK2(product)
+                return profile
             } else {
                 guard let handler = storeKit1Handler else {
                     throw BotsiError.customError("purchaseError", "unable to unwrap storekit 1 handler")
                 }
                 let product = try await handler.retrieveSK1Product(with: id)
-                await storeKit1Handler?.purchaseSK1(product)
+                let profile = try await handler.purchaseSK1(product)
+                return profile
             }
         } catch {
             print("Failed to purchase: \(error.localizedDescription)")
             throw BotsiError.transactionFailed
+        }
+    }
+    
+    private func restorePurchases() async throws -> BotsiProfile {
+        do {
+            if #available(iOS 15.0, *) {
+                guard let handler = storeKit2Handler else {
+                    throw BotsiError.customError("restoreError", "unable to unwrap storekit 2 handler")
+                }
+                let userProfile = try await handler.restorePurchases()
+                return userProfile
+                // TODO:
+            } else {
+                guard let handler = storeKit1Handler else {
+                    throw BotsiError.customError("restoreError", "unable to unwrap storekit 1 handler")
+                }
+                let userProfile = try await handler.restorePurchases()
+                return userProfile
+            }
+        } catch {
+            print("Failed to restore: \(error.localizedDescription)")
+            throw BotsiError.restoreFailed
+        }
+        
+        /*
+         MARK: Receipt - Bundle.main.appStoreReceiptUrl
+         
+         StoreKit 1
+         - restoreCompletedTransactions()
+         - * or SKReceiptRefreshRequest
+         
+         StoreKit 2
+         - AppStore.sync()
+         - for await verificationResult in Transaction.currentEntitlements { }
+         
+         */
+    }
+    
+    nonisolated static func restorePurchases() async throws -> BotsiProfile {
+        try await lifecycle.withInitializedSDK { botsi in
+            return try await botsi.restorePurchases()
         }
     }
 }

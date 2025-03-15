@@ -28,6 +28,7 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case sdkNotActivated
     
     case transactionFailed
+    case restoreFailed
     
     /// `wildcard`
     case customError(String, String)
@@ -59,6 +60,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "\(title): \(message)"
         case .sdkNotActivated:
             return "Unable to activate SDK"
+        case .restoreFailed:
+            return "Restore failed"
         }
     }
 }

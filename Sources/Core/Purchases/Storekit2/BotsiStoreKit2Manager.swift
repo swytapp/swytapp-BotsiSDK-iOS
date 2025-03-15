@@ -10,10 +10,10 @@ import StoreKit
 public actor StoreKit2Handler {
     
     private let client: BotsiHttpClient
-    private let storage: BotsiStorageManager
+    private let storage: BotsiProfileStorage
     private let mapper: BotsiStoreKit2TransactionMapper = .init()
     
-    public init(client: BotsiHttpClient, storage: BotsiStorageManager) {
+    public init(client: BotsiHttpClient, storage: BotsiProfileStorage) {
         self.client = client
         self.storage = storage
         Task {
@@ -39,7 +39,7 @@ public actor StoreKit2Handler {
     }
     
     @available(iOS 15.0, *)
-    public func purchaseSK2(_ product: Product) async throws {
+    public func purchaseSK2(_ product: Product) async throws -> BotsiProfile {
         let result = try await product.purchase()
         
         switch result {
@@ -51,8 +51,9 @@ public actor StoreKit2Handler {
             case .verified(let transaction):
                 let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
                 print("TRANSACTION_DATA: \(botsiTransaction)")
-                try await validateTransaction(botsiTransaction)
+                let profile = try await validateTransaction(botsiTransaction)
                 await transaction.finish()
+                return profile
             }
         case .userCancelled:
             print("User canceled the purchase.")
@@ -60,8 +61,9 @@ public actor StoreKit2Handler {
         case .pending:
             print("Purchase pending.")
             let botsiTransaction = try await waitForTransactionUpdate(product)
-            try await validateTransaction(botsiTransaction)
+            let profile = try await validateTransaction(botsiTransaction)
             print("processing transaction")
+            return profile
         @unknown default:
             print("Unknown result from StoreKit2.")
             throw BotsiError.transactionFailed
@@ -102,12 +104,48 @@ public actor StoreKit2Handler {
         }
     }
     
-    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws {
-        guard let storedProfile = try await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+        guard let storedProfile = await storage.getProfile() else {
             throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
         }
         let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
         let profileFetched = try await repository.validateTransaction(transaction: transaction)
         print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
+        return profileFetched
+    }
+
+    @available(iOS 15.0, *)
+    public func restorePurchases() async throws -> BotsiProfile {
+        try await AppStore.sync()
+        
+        var finalProfile: BotsiProfile? = nil
+        
+        for await verificationResult in Transaction.currentEntitlements { // (active, unconsumed, or non-expired)
+            switch verificationResult {
+            case .unverified(_, let error):
+                print("Unverified transaction found: \(error.localizedDescription)")
+                
+            case .verified(let transaction):
+                
+                guard let product = try await retrieveProductAsync(with: [transaction.productID]).first else {
+                    continue
+                }
+                let botsiTransaction = await mapper.completeTransaction(
+                    with: transaction,
+                    product: product
+                )
+                
+                let profile = try await validateTransaction(botsiTransaction)
+                finalProfile = profile
+
+                await transaction.finish()
+            }
+        }
+        
+        guard let final = finalProfile else {
+            throw BotsiError.customError("StoreKit2.Restore", "No valid restored entitlements found.")
+        }
+        
+        return final
     }
 }

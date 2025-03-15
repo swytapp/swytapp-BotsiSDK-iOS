@@ -18,7 +18,7 @@ public struct BotsiRequestIdentifier: Sendable {
     static let fetchProductIds: String = ""
     static let makePurchase: String = ""
     static let validateTransaction: String = "purchases/apple-store/validate"
-    static let restorePurchases: String = ""
+    static let restorePurchases: String = "purchases/apple-store/restore"
 }
 
 public struct BotsiHTTPRequestPath: Sendable {

@@ -29,21 +29,36 @@ public actor StoreKit1Handler {
     
     /// A completion to be invoked when `retrieveProduct` finishes.
     private var fetchCompletion: ((Result<SKProduct, Error>) -> Void)?
+    
+    private var purchaseContinuation: CheckedContinuation<BotsiProfile, Error>?
+    private var restoreContinuation: CheckedContinuation<BotsiProfile, Error>?
+
+    /// `if multiple transactions are restored, store the latest profile`
+    private var lastRestoredProfile: BotsiProfile?
 
     private var currentSKProduct: SKProduct?
     
-    /// Our internal delegate to handle StoreKit callbacks.
+    /// `internal delegate to handle StoreKit callbacks`
     private let delegate = StoreKit1HandlerDelegate()
     
     private let client: BotsiHttpClient
-    private let storage: BotsiStorageManager
+    private let storage: BotsiProfileStorage
     private let mapper: BotsiStoreKit1TransactionMapper = .init()
+    private let cachedTransactionStore: BotsiSyncedTransactionStore
+    private let configuration: BotsiConfiguration
     
     // MARK: - Initialization
     
-    public init(client: BotsiHttpClient, storage: BotsiStorageManager) {
+    public init(
+        client: BotsiHttpClient,
+        storage: BotsiProfileStorage,
+        configuration: BotsiConfiguration,
+        cachedTransactionsStore: BotsiSyncedTransactionStore)
+    {
         self.client = client
         self.storage = storage
+        self.cachedTransactionStore = cachedTransactionsStore
+        self.configuration = configuration
         delegate.handler = self
     }
     
@@ -83,11 +98,34 @@ public actor StoreKit1Handler {
             request.start()
     }
     
-    /// Initiates a purchase for the given `SKProduct`.
-    public func purchaseSK1(_ product: SKProduct) {
+    public func purchaseSK1(_ product: SKProduct) async throws -> BotsiProfile {
         currentSKProduct = product
         let payment = SKPayment(product: product)
         SKPaymentQueue.default().add(payment)
+        
+        guard purchaseContinuation == nil else {
+               throw BotsiError.customError("Purchase In Progress", "Another purchase is currently being processed.")
+           }
+       currentSKProduct = product
+        
+       return try await withCheckedThrowingContinuation { continuation in
+           self.purchaseContinuation = continuation
+
+           let payment = SKPayment(product: product)
+           SKPaymentQueue.default().add(payment)
+       }
+    }
+    
+    /// `Restore`
+    public func restorePurchases() async throws -> BotsiProfile {
+        guard restoreContinuation == nil else {
+            throw BotsiError.customError("Restore In Progress", "Another restore is currently happening.")
+        }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            self.restoreContinuation = continuation
+            SKPaymentQueue.default().restoreCompletedTransactions()
+        }
     }
     
     // MARK: - Internal Actor Methods (Called by Delegate)
@@ -126,12 +164,12 @@ public actor StoreKit1Handler {
             case .restored:
                 handleRestored(transaction)
             case .failed:
-                handleFailed(transaction)
+                handleFailed(transaction, source: .failed)
             case .purchasing:
-                // No special action needed
+                // log if needed, no actions for now
                 break
             case .deferred:
-                // The transaction is pending approval (e.g., parental controls)
+                // the transaction is pending approval (e.g., parental controls)
                 break
             @unknown default:
                 break
@@ -146,17 +184,19 @@ public actor StoreKit1Handler {
             Task {
                 let botsiTransaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
                 do {
-                    try await validateTransaction(botsiTransaction)
+                    let profile = try await validateTransaction(botsiTransaction)
+                    await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
+                    
+                    purchaseContinuation?.resume(returning: profile)
+                    purchaseContinuation = nil
                 } catch {
-                    handleFailed(transaction)
+                    handleFailed(transaction, source: .purchase)
                 }
                
             }
         }
         SKPaymentQueue.default().finishTransaction(transaction)
         currentSKProduct = nil
-        
-        // TODO: Make API call?
     }
     
     func logTransactionDetails(_ transaction: SKPaymentTransaction) {
@@ -182,30 +222,72 @@ public actor StoreKit1Handler {
 
     
     private func handleRestored(_ transaction: SKPaymentTransaction) {
-        // For restoration logic
+        if let purchasedProduct = currentSKProduct {
+            Task {
+                let botsiTransaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
+                do {
+                    let profile = try await restoreTransaction(botsiTransaction)
+                    await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
+                    
+                    lastRestoredProfile = profile
+                } catch {
+                    handleFailed(transaction, source: .restore)
+                    
+                }
+            }
+        }
         SKPaymentQueue.default().finishTransaction(transaction)
-        
         currentSKProduct = nil
-        // TODO: Restoration callbacks
     }
     
-    private func handleFailed(_ transaction: SKPaymentTransaction) {
+    private func handleFailed(_ transaction: SKPaymentTransaction, source: UpdateTransactionSource) {
         if let error = transaction.error {
             print("Purchase failed: \(error.localizedDescription)")
+            
+            purchaseContinuation?.resume(throwing: error)
+            purchaseContinuation = nil
         }
         
         SKPaymentQueue.default().finishTransaction(transaction)
         currentSKProduct = nil
-        // TODO: Failure callbacks
     }
     
-    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws {
-        guard let storedProfile = try await storage.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
+    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+        guard let storedProfile = await storage.getProfile() else {
             throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
         }
         let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
         let profileFetched = try await repository.validateTransaction(transaction: transaction)
-        print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
+        BotsiLog.info("Profile received after validating transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
+        return profileFetched
+    }
+    
+    private func restoreTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+        guard let storedProfile = await storage.getProfile() else {
+            throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
+        }
+        let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId, configuration: configuration)
+        let profileFetched = try await repository.restore(transaction: transaction)
+        BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
+        return profileFetched
+    }
+    
+    func refreshReceipt() async throws -> Data {
+        let helper = ReceiptRefreshHelper()
+        let receiptData = try await helper.refreshReceipt()
+        return receiptData
+    }
+    
+    internal func onRestoreCompletedTransactionsFinished() {
+        if let profile = lastRestoredProfile {
+            restoreContinuation?.resume(returning: profile)
+        } else {
+            let error = BotsiError.customError("Restore", "No restored transactions or no valid profile received.")
+            restoreContinuation?.resume(throwing: error)
+        }
+        
+        restoreContinuation = nil
+        lastRestoredProfile = nil
     }
 }
 
@@ -213,7 +295,6 @@ private class StoreKit1HandlerDelegate: NSObject, SKProductsRequestDelegate, SKP
     weak var handler: StoreKit1Handler?
     
     // MARK: - SKProductsRequestDelegate
-    
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         guard let handler = handler else { return }
         Task {
@@ -229,11 +310,25 @@ private class StoreKit1HandlerDelegate: NSObject, SKProductsRequestDelegate, SKP
     }
     
     // MARK: - SKPaymentTransactionObserver
-    
     public func paymentQueue(_ queue: SKPaymentQueue, updatedTransactions transactions: [SKPaymentTransaction]) {
         guard let handler = handler else { return }
         Task {
             await handler.onUpdatedTransactions(transactions)
         }
+    }
+    
+    public func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
+        guard let handler = handler else { return }
+        Task {
+            await handler.onRestoreCompletedTransactionsFinished()
+        }
+    }
+}
+
+extension StoreKit1Handler {
+    enum UpdateTransactionSource {
+        case purchase
+        case restore
+        case failed
     }
 }

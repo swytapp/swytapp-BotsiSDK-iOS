@@ -8,5 +8,7 @@
 struct UserDefaultKeys {
     struct User {
         static let userProfile: String = "user_profile"
+        static let syncedTransactions: String = "synced_transactions"
+        static let lastSyncedTransactionId: String = "last_synced_transaction_id"
     }
 }
