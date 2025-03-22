@@ -14,8 +14,12 @@ struct BotsiRestorePurchaseUseCase {
         self.repository = repository
     }
 
-    func execute(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+    /*func execute(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
         return try await repository.restore(transaction: transaction)
+    }*/
+    
+    func execute(profileId: String, receipt: Data) async throws -> BotsiProfile {
+        return try await repository.restore(receipt: receipt)
     }
 }
 

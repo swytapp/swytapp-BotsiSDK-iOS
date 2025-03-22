@@ -7,22 +7,6 @@
 
 import StoreKit
 
-/// `A unified protocol for both StoreKit1 and StoreKit2 handlers.`
-public protocol PurchasingHandler: AnyObject {
-    func retrieveProduct(
-        with productID: String,
-        completion: @escaping (Result<SKProduct, Error>) -> Void
-    )
-    
-    @available(iOS 15.0, *)
-    func retrieveProductAsync(with productIDs: [String]) async throws -> [Product]
-
-    func purchaseSK1(_ skProduct: SKProduct)
-    
-    @available(iOS 15.0, *)
-    func purchaseSK2(_ product: Product) async throws -> BotsiPaymentTransaction
-}
-
 // MARK: - StoreKit 1
 public actor StoreKit1Handler {
     // MARK: - Private State
@@ -94,7 +78,7 @@ public actor StoreKit1Handler {
             self.fetchCompletion = completion
 
             let request = SKProductsRequest(productIdentifiers: [productID])
-            request.delegate = self.delegate // the internal delegate that you forward to
+            request.delegate = self.delegate
             request.start()
     }
     
@@ -118,14 +102,7 @@ public actor StoreKit1Handler {
     
     /// `Restore`
     public func restorePurchases() async throws -> BotsiProfile {
-        guard restoreContinuation == nil else {
-            throw BotsiError.customError("Restore In Progress", "Another restore is currently happening.")
-        }
-
-        return try await withCheckedThrowingContinuation { continuation in
-            self.restoreContinuation = continuation
-            SKPaymentQueue.default().restoreCompletedTransactions()
-        }
+        return try await restoreTransactions()
     }
     
     // MARK: - Internal Actor Methods (Called by Delegate)
@@ -226,7 +203,7 @@ public actor StoreKit1Handler {
             Task {
                 let botsiTransaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
                 do {
-                    let profile = try await restoreTransaction(botsiTransaction)
+                    let profile = try await restoreTransactions()
                     await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
                     
                     lastRestoredProfile = profile
@@ -262,17 +239,21 @@ public actor StoreKit1Handler {
         return profileFetched
     }
     
-    private func restoreTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+    private func restoreTransactions() async throws -> BotsiProfile {
         guard let storedProfile = await storage.getProfile() else {
             throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
         }
         let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
-        let profileFetched = try await repository.restore(transaction: transaction)
+        
+        let helper = ReceiptRefreshHelper()
+        let receiptData = try await helper.refreshReceipt()
+        let profileFetched = try await repository.restore(receipt: receiptData)
+        await storage.setProfile(profileFetched)
         BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched
     }
     
-    func refreshReceipt() async throws -> Data {
+    public func refreshReceipt() async throws -> Data {
         let helper = ReceiptRefreshHelper()
         let receiptData = try await helper.refreshReceipt()
         return receiptData
@@ -323,6 +304,15 @@ private class StoreKit1HandlerDelegate: NSObject, SKProductsRequestDelegate, SKP
             await handler.onRestoreCompletedTransactionsFinished()
         }
     }
+    
+    /*guard restoreContinuation == nil else {
+        throw BotsiError.customError("Restore In Progress", "Another restore is currently happening.")
+    }
+
+    return try await withCheckedThrowingContinuation { continuation in
+        self.restoreContinuation = continuation
+        SKPaymentQueue.default().restoreCompletedTransactions()
+    }*/
 }
 
 extension StoreKit1Handler {

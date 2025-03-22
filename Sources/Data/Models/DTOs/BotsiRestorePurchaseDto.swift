@@ -21,6 +21,11 @@ struct BotsiRestorePurchaseRequestDto: Encodable {
     let os: String
 }
 
+struct BotsiValidateReceiptRequestDto: Encodable {
+    let receipt: Data
+    let profileId: String
+}
+
 // MARK: - Response model
 struct BotsiRestorePurchaseResponseDto: Codable {
     let ok: Bool

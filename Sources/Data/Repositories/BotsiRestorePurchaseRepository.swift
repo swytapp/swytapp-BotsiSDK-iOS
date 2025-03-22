@@ -8,7 +8,8 @@
 import Foundation
 
 protocol BotsiRestorePurchaseRepository {
-    func restore(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile
+    // func restore(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile // with transaction
+    func restore(receipt: Data) async throws -> BotsiProfile // with receipt
 }
 
 final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
@@ -24,8 +25,37 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
         self.mapper = mapper
         self.profileId = profileId
     }
+    
+    func restore(receipt: Data) async throws -> BotsiProfile {
+        do {
+            var request = RestorePurchaseRequest()
+            request.headers = [
+                "Authorization": httpClient.sdkApiKey,
+                "Content-type": "application/json"
+            ]
+            
+            let requestParameters = (profileId, receipt)
+            let body = try mapper.toDTO(from: requestParameters).toData()
+            request.body = body
+            
+            print("Restoring transaction url: \(request.relativePath)")
+            let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
+                return BotsiHTTPResponse(body: dataResponse.data)
+            })
 
-    func restore(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+            let wrapper = BotsiHTTPResponseWrapper(data: response.body)
+            let responseDto: BotsiRestorePurchaseResponseDto = try wrapper.decode()
+            
+            print("Restore response json: \(responseDto)")
+            return mapper.toDomain(from: responseDto)
+
+        } catch {
+            print("Restore request failed with error: \(error)")
+            throw BotsiError.restoreFailed
+        }
+    }
+
+    /*func restore(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
         do {
             var request = RestorePurchaseRequest()
             request.headers = [
@@ -56,5 +86,5 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
             print("Restore request failed with error: \(error)")
             throw BotsiError.restoreFailed
         }
-    }
+    }*/
 }

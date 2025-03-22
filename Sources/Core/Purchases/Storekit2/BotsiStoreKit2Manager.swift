@@ -19,6 +19,7 @@ public actor StoreKit2Handler {
         Task {
             if #available(iOS 15.0, *) {
                 await self.startObservingTransactionUpdates()
+                // add refersh receipt request
             } else {
                 // Fallback on earlier versions
             }
@@ -114,48 +115,34 @@ public actor StoreKit2Handler {
         return profileFetched
     }
     
-    private func restoreTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+    private func restoreTransactions() async throws -> BotsiProfile {
         guard let storedProfile = await storage.getProfile() else {
             throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
         }
         let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
-        let profileFetched = try await repository.restore(transaction: transaction)
+        let helper = ReceiptRefreshHelper()
+        let receiptData = try await helper.refreshReceipt()
+        let profileFetched = try await repository.restore(receipt: receiptData)
         BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched
+    }
+    
+    private func fetchTransactions() async throws {
+        if #available(iOS 15.0, *) {
+            _ = await Transaction.currentEntitlements.compactMap { $0.debugDescription }.reduce([], +).count
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     @available(iOS 15.0, *)
     public func restorePurchases() async throws -> BotsiProfile {
-        try await AppStore.sync()
-        
-        var finalProfile: BotsiProfile? = nil
-        
-        for await verificationResult in Transaction.currentEntitlements { // (active, unconsumed, or non-expired)
-            switch verificationResult {
-            case .unverified(_, let error):
-                print("Unverified transaction found: \(error.localizedDescription)")
-                
-            case .verified(let transaction):
-                
-                guard let product = try await retrieveProductAsync(with: [transaction.productID]).first else {
-                    continue
-                }
-                let botsiTransaction = await mapper.completeTransaction(
-                    with: transaction,
-                    product: product
-                )
-                
-                let profile = try await restoreTransaction(botsiTransaction)
-                finalProfile = profile
-
-                await transaction.finish()
-            }
-        }
-        
-        guard let final = finalProfile else {
-            throw BotsiError.customError("StoreKit2.Restore", "No valid restored entitlements found.")
-        }
-        
-        return final
+        return try await restoreTransactions()
+    }
+    
+    public func refreshReceipt() async throws -> Data {
+        let helper = ReceiptRefreshHelper()
+        let receiptData = try await helper.refreshReceipt()
+        return receiptData
     }
 }

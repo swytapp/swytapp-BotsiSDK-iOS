@@ -33,6 +33,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case transactionFailed
     case restoreFailed
     
+    case getPaywallFailed
+    
     /// `wildcard`
     case customError(String, String)
 
@@ -69,6 +71,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "Fetching product ids failed"
         case .userGetProfileFailed:
             return "Get request for user profile failed"
+        case .getPaywallFailed:
+            return "Get request for user paywall with placement id failed"
         }
     }
 }

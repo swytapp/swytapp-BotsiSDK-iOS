@@ -197,7 +197,6 @@ public extension Botsi {
                 }
                 let userProfile = try await handler.restorePurchases()
                 return userProfile
-                // TODO:
             } else {
                 guard let handler = storeKit1Handler else {
                     throw BotsiError.customError("restoreError", "unable to unwrap storekit 1 handler")
@@ -233,10 +232,23 @@ public extension Botsi {
 
 
 
-/// `This one is useful in testing, while no Products from Backend are received`
-/// `We manually fetch the products in order to display them to the user`
-@available(iOS 15.0, *)
-extension Botsi {
+public extension Botsi {
+    nonisolated static func getPaywall(from placementId: String) async throws -> BotsiPaywall {
+        try await lifecycle.withInitializedSDK { botsi in
+            return try await botsi.getPaywall(from: placementId)
+        }
+    }
+    
+    @discardableResult
+    private func getPaywall(from id: String) async throws -> BotsiPaywall {
+        guard let profile = await profileStorage.getProfile() else {
+            throw BotsiError.userProfileNotFound
+        }
+        let repository = GetPaywallRepository(httpClient: botsiClient, profileId: profile.profileId)
+        return try await repository.getPaywall(id: id)
+    }
+    
+    @available(iOS 15.0, *)
     fileprivate func retrievePurchases(from ids: [String]) async throws -> [Product] {
         do {
             let products = try await storeKit2Handler?.retrieveProductAsync(with: ids)
@@ -246,65 +258,3 @@ extension Botsi {
         }
     }
 }
-
-
-/*
- SDKProject/
- │── SDK/
- │   ├── Core/ // MARK: Holds the foundational services for networking, authentication, caching, and utility functions.
- │   │   ├── Network/
- │   │   │   ├── HTTPManager.swift
- │   │   │   ├── APIClient.swift
- │   │   │   ├── Endpoints.swift
- │   │   ├── Storage/
- │   │   │   ├── CacheManager.swift
- │   │   │   ├── KeychainManager.swift
- │   │   │   ├── UserDefaultsManager.swift
- |   |   |---Purchases/
- |   |   |   |---Storekit1&2.swift
- │   │   ├── Auth/
- │   │   │   ├── AuthManager.swift
- │   │   │   ├── TokenStorage.swift
- │   │   ├── Utils/
- │   │   │   ├── Logger.swift
- │   │   │   ├── Extensions/
- │   │   │   │   ├── URLSession+Extension.swift
- │   │   │   │   ├── Codable+Extension.swift
- │   │   │   │   ├── ErrorHandling.swift
- │   │   ├── DependencyInjection/
- │   │   │   ├── ServiceLocator.swift
- │   ├── Data/ // MARK: Handles fetching, storing, and mapping data between layers.
- │   │   ├── Models/
- │   │   │   ├── DTOs/ // MARK: Defines data transfer objects received from APIs. check android
- │   │   │   │   ├── SomeDTO.swift
- │   │   │   ├── Mappers/ // MARK:  Converts DTOs to domain entities.
- │   │   │   │   ├── SomeEntityMapper.swift
- │   │   ├── Repositories/ // MARK: Interfaces for data fetching. Concrete implementations fetch data from the network or cache.
- │   │   │   ├── SomeRepository.swift
- │   │   │   ├── SomeRepositoryImpl.swift
- │   ├── Domain/ // MARK: Pure business logic and core domain models.
- │   │   ├── Entities/ // MARK:  Represents immutable core models.
- │   │   │   ├── SomeEntity.swift
- │   │   ├── UseCases/
- │   │   │   ├── SomeUseCase.swift // MARK:  Implements business logic and interacts with repositories.
- │   ├── Presentation/ (Optional for UI SDKs)
- │   │   ├── UIComponents/
- │   │   │   ├── CustomButton.swift
- │   │   ├── ViewModels/
- │   │   │   ├── SomeViewModel.swift
- │   ├── Config/
- │   │   ├── SDKConfiguration.swift
- │── ExampleApp/ (For testing the SDK)
- │── Tests/
- │   ├── UnitTests/
- │   │   ├── DataTests/
- │   │   │   ├── SomeRepositoryTests.swift
- │   │   ├── DomainTests/
- │   │   │   ├── SomeUseCaseTests.swift
- │   │   ├── NetworkingTests/
- │   │   │   ├── APIClientTests.swift
- │   ├── IntegrationTests/
- │── SDKProject.podspec (or Package.swift for SPM)
- │── README.md
-
- */
