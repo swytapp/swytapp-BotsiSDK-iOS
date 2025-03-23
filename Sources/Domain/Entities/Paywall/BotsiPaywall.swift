@@ -13,10 +13,10 @@ public struct BotsiPaywall: Sendable, Codable {
     public let remoteConfigs: String?
     public let revision: Int
     public let abTestId: Int?
-    public let sourceProducts: [BotsiProduct]
+    public let sourceProducts: [BotsiSourceProduct]
 }
 
-public struct BotsiProduct: Sendable, Codable {
+public struct BotsiSourceProduct: Sendable, Codable {
     public let botsiProductId: Int
     public let isConsumable: Bool
     public let sourcePoductId: String

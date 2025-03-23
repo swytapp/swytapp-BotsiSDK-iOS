@@ -11,8 +11,9 @@ import StoreKit
 public actor StoreKit1Handler {
     // MARK: - Private State
     
-    /// A completion to be invoked when `retrieveProduct` finishes.
-    private var fetchCompletion: ((Result<SKProduct, Error>) -> Void)?
+    /// A completions to retrieve SKProduct(s)
+    private var fetchProductCompletion: ((Result<SKProduct, Error>) -> Void)?
+    private var fetchProductsCompletion: ((Result<[SKProduct], Error>) -> Void)?
     
     private var purchaseContinuation: CheckedContinuation<BotsiProfile, Error>?
     private var restoreContinuation: CheckedContinuation<BotsiProfile, Error>?
@@ -71,13 +72,39 @@ public actor StoreKit1Handler {
         }
     }
     
+    public func retrieveSK1Products(from productIds: [String]) async throws -> [SK1ProductDetails] {
+        try await withCheckedThrowingContinuation { continuation in
+            self.retrieveProductCallbackVersion(with: Set(productIds)) { result in
+                switch result {
+                case .success(let skProducts):
+                    let sorted = self.sortProducts(skProducts, by: productIds)
+                    let productDetails = sorted.map { $0.toSK1ProductDetails() }
+                    continuation.resume(returning: productDetails)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     private func retrieveProductCallbackVersion(
             with productID: String,
             completion: @escaping (Result<SKProduct, Error>) -> Void
         ) {
-            self.fetchCompletion = completion
+            self.fetchProductCompletion = completion
 
             let request = SKProductsRequest(productIdentifiers: [productID])
+            request.delegate = self.delegate
+            request.start()
+    }
+    
+    private func retrieveProductCallbackVersion(
+        with productIds: Set<String>,
+            completion: @escaping (Result<[SKProduct], Error>) -> Void
+        ) {
+            self.fetchProductsCompletion = completion
+
+            let request = SKProductsRequest(productIdentifiers: productIds)
             request.delegate = self.delegate
             request.start()
     }
@@ -109,27 +136,47 @@ public actor StoreKit1Handler {
     
     /// `Called from the delegate when products are received.`
     internal func onDidReceiveProductsResponse(_ response: SKProductsResponse) {
-        guard let completion = fetchCompletion else { return }
-        fetchCompletion = nil
-        
-        guard let product = response.products.first else {
-            let error = NSError(
-                domain: "StoreKit1Handler",
-                code: -2,
-                userInfo: [NSLocalizedDescriptionKey: "No matching SKProduct found."]
-            )
-            completion(.failure(error))
+        if let completion = fetchProductCompletion {
+            
+            fetchProductCompletion = nil
+            
+            guard let product = response.products.first else {
+                let error = NSError(
+                    domain: "StoreKit1Handler",
+                    code: -2,
+                    userInfo: [NSLocalizedDescriptionKey: "No matching SKProduct found."]
+                )
+                completion(.failure(error))
+                return
+            }
+            completion(.success(product))
+        } else if let completion = fetchProductsCompletion {
+            fetchProductsCompletion = nil
+            
+            let products = response.products
+            completion(.success(products))
+        } else {
             return
         }
-        
-        completion(.success(product))
+    }
+
+    private func sortProducts(_ products: [SKProduct], by identifiers: [String]) -> [SKProduct] {
+        var productMap = [String: SKProduct]()
+        for product in products {
+            productMap[product.productIdentifier] = product
+        }
+        return identifiers.compactMap { productMap[$0] }
     }
     
     /// `Called from the delegate when the request fails.`
     internal func onDidFailRequest(_ error: Error) {
-        guard let completion = fetchCompletion else { return }
-        fetchCompletion = nil
-        completion(.failure(error))
+        if let completion = fetchProductCompletion {
+            fetchProductCompletion = nil
+            completion(.failure(error))
+        } else if let completion = fetchProductsCompletion {
+            fetchProductsCompletion = nil
+            completion(.failure(error))
+        } else { return }
     }
     
     /// `Called from the delegate whenever transactions are updated (purchased, restored, failed, etc.).`

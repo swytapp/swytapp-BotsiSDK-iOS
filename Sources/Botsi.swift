@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import StoreKit
 
 @BotsiActor
 public final class Botsi: Sendable {
@@ -52,12 +51,18 @@ public final class Botsi: Sendable {
             self.storeKit2Handler = nil
         }
         
-        await verifyUser() // CRUD operation for profile
+        await verifyUser()
+        
+        do {
+            try await restorePurchases()
+        } catch {
+            print("Unable to refresh receipt on init.")
+        }
     }
     
     private func verifyUser() async {
         guard let profile = await profileStorage.getProfile() else {
-            let uuid = UUID().uuidString
+            let uuid = await profileStorage.getNewProfileUUID()
             if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
             }
@@ -105,7 +110,6 @@ public extension Botsi {
     }
     
     // MARK: - Profile
-    
     typealias ProfileIdentifier = String
     nonisolated static func getProfile() async throws -> BotsiProfile {
         return try await lifecycle.withInitializedSDK { botsi in
@@ -118,14 +122,6 @@ public extension Botsi {
             return try await botsi.fetchProductIDs()
         }
     }
-    
-    @available(iOS 15.0, *)
-    nonisolated static func fetchProducts(from ids: [String]) async throws -> [Product] {
-        return try await lifecycle.withInitializedSDK { botsi in
-            try await botsi.retrieveProducts(from: ids)
-        }
-    }
-    
     
     // MARK: - User
     @discardableResult
@@ -149,11 +145,6 @@ public extension Botsi {
     private func fetchProductIDs() async throws -> [String] {
         let fetchProductIDsRepository = FetchProductIDsRepository(httpClient: botsiClient)
         return try await fetchProductIDsRepository.fetchProductIds(from: sdkApiKey)
-    }
-    
-    @available(iOS 15.0, *)
-    private func retrieveProducts(from ids: [String]) async throws -> [Product] {
-        try await retrievePurchases(from: ids)
     }
     
     // MARK: - Purchase request (is triggered from an app)
@@ -189,6 +180,7 @@ public extension Botsi {
         }
     }
     
+    @discardableResult
     private func restorePurchases() async throws -> BotsiProfile {
         do {
             if #available(iOS 15.0, *) {
@@ -208,19 +200,6 @@ public extension Botsi {
             print("Failed to restore: \(error.localizedDescription)")
             throw BotsiError.restoreFailed
         }
-        
-        /*
-         MARK: Receipt - Bundle.main.appStoreReceiptUrl
-         
-         StoreKit 1
-         - restoreCompletedTransactions()
-         - * or SKReceiptRefreshRequest
-         
-         StoreKit 2
-         - AppStore.sync()
-         - for await verificationResult in Transaction.currentEntitlements { }
-         
-         */
     }
     
     nonisolated static func restorePurchases() async throws -> BotsiProfile {
@@ -230,8 +209,7 @@ public extension Botsi {
     }
 }
 
-
-
+// MARK: - Paywall & Products
 public extension Botsi {
     nonisolated static func getPaywall(from placementId: String) async throws -> BotsiPaywall {
         try await lifecycle.withInitializedSDK { botsi in
@@ -239,7 +217,6 @@ public extension Botsi {
         }
     }
     
-    @discardableResult
     private func getPaywall(from id: String) async throws -> BotsiPaywall {
         guard let profile = await profileStorage.getProfile() else {
             throw BotsiError.userProfileNotFound
@@ -248,13 +225,25 @@ public extension Botsi {
         return try await repository.getPaywall(id: id)
     }
     
-    @available(iOS 15.0, *)
-    fileprivate func retrievePurchases(from ids: [String]) async throws -> [Product] {
-        do {
-            let products = try await storeKit2Handler?.retrieveProductAsync(with: ids)
-            return products ?? []
-        } catch {
-            return []
+    nonisolated static func getPaywallProducts(from paywall: BotsiPaywall) async throws -> [BotsiProduct] {
+        try await lifecycle.withInitializedSDK { botsi in
+            return try await botsi.retrieveProductDetails(from: paywall.sourceProducts.map { $0.sourcePoductId })
+        }
+    }
+    
+    private func retrieveProductDetails(from identifiers: [String]) async throws -> [BotsiProduct] {
+        if #available(iOS 15.0, *) {
+            guard let handler = storeKit2Handler else {
+                throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 2 handler")
+            }
+            let products = try await handler.retrieveProductAsync(with: identifiers).compactMap { BotsiSK2PaywallProduct(skProduct: $0) }
+            return products
+        } else {
+            guard let handler = storeKit1Handler else {
+                throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 1 handler")
+            }
+            let products = try await handler.retrieveSK1Products(from: identifiers).compactMap { BotsiSK1PaywallProduct(skProduct: $0.skProduct )}
+            return products
         }
     }
 }

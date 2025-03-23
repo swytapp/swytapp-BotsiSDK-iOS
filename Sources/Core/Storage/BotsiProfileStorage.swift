@@ -54,7 +54,9 @@ public actor BotsiProfileStorage: Sendable {
     }
     
     func getNewProfileUUID() -> String {
-        return BotsiProfileStorage.generateProfileId()
+        let uuid = BotsiProfileStorage.generateProfileId()
+        profileId = uuid
+        return uuid
     }
 
     func getProfile(

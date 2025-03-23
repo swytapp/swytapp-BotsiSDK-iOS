@@ -36,7 +36,17 @@ public actor StoreKit2Handler {
                 userInfo: [NSLocalizedDescriptionKey: "No matching StoreKit2 Product found."]
             )
         }
-        return products
+        let sortedProducts = sortProducts(products, by: productIDs)
+        return sortedProducts
+    }
+    
+    @available(iOS 15.0, *)
+    private func sortProducts(_ products: [Product], by identifiers: [String]) -> [Product] {
+        var productMap = [String: Product]()
+        for product in products {
+            productMap[product.id] = product
+        }
+        return identifiers.compactMap { productMap[$0] }
     }
     
     @available(iOS 15.0, *)
@@ -111,6 +121,7 @@ public actor StoreKit2Handler {
         }
         let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
         let profileFetched = try await repository.validateTransaction(transaction: transaction)
+        await storage.setProfile(profileFetched)
         print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched
     }
@@ -123,6 +134,7 @@ public actor StoreKit2Handler {
         let helper = ReceiptRefreshHelper()
         let receiptData = try await helper.refreshReceipt()
         let profileFetched = try await repository.restore(receipt: receiptData)
+        await storage.setProfile(profileFetched)
         BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched
     }

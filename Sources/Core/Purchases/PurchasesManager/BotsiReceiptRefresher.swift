@@ -29,6 +29,7 @@ final class ReceiptRefreshHelper: NSObject {
         request = nil
         guard let continuation = continuation else { return }
         self.continuation = nil
+        self.request?.cancel()
         
         switch result {
         case .success(let data):
@@ -47,14 +48,19 @@ extension ReceiptRefreshHelper: SKRequestDelegate {
             let receiptData = try? Data(contentsOf: receiptURL),
             !receiptData.isEmpty
         else {
+            self.request = nil
             finishContinuation(result: .failure(ReceiptError.missingReceipt))
             return
         }
         
+        self.request?.cancel()
+        self.request = nil
         finishContinuation(result: .success(receiptData))
     }
     
     func request(_ request: SKRequest, didFailWithError error: Error) {
+        self.request?.cancel()
+        self.request = nil
         finishContinuation(result: .failure(error))
     }
 }
