@@ -46,7 +46,7 @@ final class GetPaywallRepository: BotsiGetPaywallRepository {
             return mapper.toDomain(from: responseDto)
         } catch {
             print("Get paywall request failed with error: \(error)")
-            throw BotsiError.getPaywallFailed
+            throw BotsiError.paywallFetchingFailed
         }
     }
 }

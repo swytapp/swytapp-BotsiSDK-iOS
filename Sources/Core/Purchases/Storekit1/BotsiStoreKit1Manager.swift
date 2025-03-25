@@ -32,6 +32,9 @@ public actor StoreKit1Handler {
     private let cachedTransactionStore: BotsiSyncedTransactionStore
     private let configuration: BotsiConfiguration
     
+    private var pendingProducts: [String: SKProduct] = [:]
+    private var processingTransactions = Set<String>()
+    
     // MARK: - Initialization
     
     public init(
@@ -53,7 +56,10 @@ public actor StoreKit1Handler {
     }
     
     deinit {
-        // end observing
+        Task.detached { [delegate] in
+            delegate.handler = nil
+            SKPaymentQueue.default().remove(delegate)
+        }
     }
     
     // MARK: - Public Methods
@@ -110,9 +116,9 @@ public actor StoreKit1Handler {
     }
     
     public func purchaseSK1(_ product: SKProduct) async throws -> BotsiProfile {
-        currentSKProduct = product
+        /*currentSKProduct = product
         let payment = SKPayment(product: product)
-        SKPaymentQueue.default().add(payment)
+        SKPaymentQueue.default().add(payment)*/
         
         guard purchaseContinuation == nil else {
                throw BotsiError.customError("Purchase In Progress", "Another purchase is currently being processed.")
@@ -204,23 +210,62 @@ public actor StoreKit1Handler {
     // MARK: - Transaction Helpers
     private func handlePurchased(_ transaction: SKPaymentTransaction) {
         logTransactionDetails(transaction)
-        if let purchasedProduct = currentSKProduct {
-            Task {
-                let botsiTransaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
-                do {
-                    let profile = try await validateTransaction(botsiTransaction)
-                    await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
-                    
-                    purchaseContinuation?.resume(returning: profile)
-                    purchaseContinuation = nil
-                } catch {
-                    handleFailed(transaction, source: .purchase)
-                }
-               
-            }
+        guard let transactionId = transaction.transactionIdentifier, !processingTransactions.contains(transactionId) else {
+            print("Transaction \(transaction.transactionIdentifier ?? "empty id") already being processed, skipping...")
+            return
         }
-        SKPaymentQueue.default().finishTransaction(transaction)
-        currentSKProduct = nil
+        
+        processingTransactions.insert(transactionId)
+        
+        // Use either the specific product for this transaction or the current product
+        let productId = transaction.payment.productIdentifier
+        
+        Task {
+            defer {
+                processingTransactions.remove(transactionId)
+                pendingProducts[productId] = nil
+                if productId == currentSKProduct?.productIdentifier {
+                    currentSKProduct = nil
+                }
+            }
+            
+            let product: SKProduct
+            if let specificProduct = pendingProducts[productId] {
+                product = specificProduct
+            } else if let currentProduct = currentSKProduct, currentProduct.productIdentifier == productId {
+                product = currentProduct
+            } else {
+                do {
+                    product = try await retrieveSK1Product(with: productId)
+                } catch {
+                    print("Failed to retrieve product for transaction: \(error.localizedDescription)")
+                    handleFailed(transaction, source: .purchase)
+                    return
+                }
+            }
+            
+            let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
+            
+            do {
+                let profile = try await validateTransaction(botsiTransaction)
+                await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
+                
+                if let continuation = purchaseContinuation,
+                   product.productIdentifier == currentSKProduct?.productIdentifier {
+                    continuation.resume(returning: profile)
+                    purchaseContinuation = nil
+                }
+                
+                if restoreContinuation != nil {
+                    lastRestoredProfile = profile
+                }
+            } catch {
+                print("Transaction validation failed: \(error.localizedDescription)")
+                handleFailed(transaction, source: .purchase)
+            }
+            
+            SKPaymentQueue.default().finishTransaction(transaction)
+        }
     }
     
     func logTransactionDetails(_ transaction: SKPaymentTransaction) {
@@ -246,22 +291,48 @@ public actor StoreKit1Handler {
 
     
     private func handleRestored(_ transaction: SKPaymentTransaction) {
-        if let purchasedProduct = currentSKProduct {
-            Task {
-                let botsiTransaction = await mapper.completeTransaction(with: transaction, product: purchasedProduct)
-                do {
-                    let profile = try await restoreTransactions()
-                    await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
-                    
-                    lastRestoredProfile = profile
-                } catch {
-                    handleFailed(transaction, source: .restore)
-                    
+        logTransactionDetails(transaction)
+                
+        let transactionId = transaction.transactionIdentifier ?? transaction.original?.transactionIdentifier ?? UUID().uuidString
+        let productId = transaction.payment.productIdentifier
+        
+        guard !processingTransactions.contains(transactionId) else { return }
+        processingTransactions.insert(transactionId)
+        
+        Task {
+            defer {
+                processingTransactions.remove(transactionId)
+                if productId == currentSKProduct?.productIdentifier {
+                    currentSKProduct = nil
                 }
             }
+            
+            let product: SKProduct
+            if let specificProduct = pendingProducts[productId] {
+                product = specificProduct
+            } else if let currentProduct = currentSKProduct, currentProduct.productIdentifier == productId {
+                product = currentProduct
+            } else {
+                do {
+                    product = try await retrieveSK1Product(with: productId)
+                } catch {
+                    print("Failed to retrieve product for restored transaction: \(error.localizedDescription)")
+                    return
+                }
+            }
+            
+            let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
+            do {
+                let profile = try await validateTransaction(botsiTransaction)
+                await cachedTransactionStore.saveLastSyncedTransaction(botsiTransaction.originalTransactionId)
+                
+                lastRestoredProfile = profile
+            } catch {
+                print("Restore transaction validation failed: \(error.localizedDescription)")
+            }
+            
+            SKPaymentQueue.default().finishTransaction(transaction)
         }
-        SKPaymentQueue.default().finishTransaction(transaction)
-        currentSKProduct = nil
     }
     
     private func handleFailed(_ transaction: SKPaymentTransaction, source: UpdateTransactionSource) {
@@ -319,7 +390,7 @@ public actor StoreKit1Handler {
     }
 }
 
-private class StoreKit1HandlerDelegate: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver {
+private class StoreKit1HandlerDelegate: NSObject, SKProductsRequestDelegate, SKPaymentTransactionObserver, @unchecked Sendable {
     weak var handler: StoreKit1Handler?
     
     // MARK: - SKProductsRequestDelegate

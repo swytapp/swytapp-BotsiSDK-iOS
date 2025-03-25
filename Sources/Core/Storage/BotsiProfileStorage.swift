@@ -69,12 +69,10 @@ public actor BotsiProfileStorage: Sendable {
             return nil
         }
         
-        // If no customerUserId is provided, any profile is valid
         guard let customerUserId else {
             return savedProfile
         }
         
-        // Otherwise, check that it matches
         return (customerUserId == savedProfile.customerUserId)
             ? savedProfile
             : nil
@@ -86,7 +84,7 @@ public actor BotsiProfileStorage: Sendable {
         do {
             try await storageManager.save(newProfile, forKey: UserDefaultKeys.User.userProfile)
             profile = newProfile
-            BotsiLog.debug("Profile saved successfully.")
+            BotsiLog.debug("Profile updated successfully.")
         } catch {
             BotsiLog.error("Failed to save profile. \(error.localizedDescription)")
         }

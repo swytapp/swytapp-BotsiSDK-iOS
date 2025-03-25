@@ -33,7 +33,9 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case transactionFailed
     case restoreFailed
     
-    case getPaywallFailed
+    case paywallFetchingFailed
+    
+    case eventsError
     
     /// `wildcard`
     case customError(String, String)
@@ -70,9 +72,11 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
         case .fetchingProductIdsFailed:
             return "Fetching product ids failed"
         case .userGetProfileFailed:
-            return "Get request for user profile failed"
-        case .getPaywallFailed:
-            return "Get request for user paywall with placement id failed"
+            return "Request for user profile failed"
+        case .paywallFetchingFailed:
+            return "Request for fetching user's paywall with placement id failed"
+        case .eventsError:
+            return "Sending event analytics failed"
         }
     }
 }

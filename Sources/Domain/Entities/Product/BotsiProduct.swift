@@ -55,7 +55,8 @@ extension BotsiSK1Product {
     
     var price: Decimal { skProduct.price as Decimal }
     
-    var currencyCode: String? { skProduct.priceLocale.currencyCode }
+    var currencyCode: String? { skProduct.priceLocale.currencyCode ??
+        Locale.current.currencyCode }
     
     var localizedPrice: String? {
         let formatter = NumberFormatter()
