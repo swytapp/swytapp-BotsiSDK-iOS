@@ -36,6 +36,16 @@ public protocol BotsiProduct: Sendable, CustomStringConvertible {
     var localizedSubscriptionPeriod: String? { get }
 }
 
+public extension BotsiProduct {
+    var isEligibleForIntroOffer: Bool { false }
+    var isEligibleForWinbackOffer: Bool { false }
+    var isEligibleForPromotionalOffer: Bool { false }
+    
+    var introductoryOfferPrice: String? { nil }
+    var promotionalOfferPrices: [String] { [] }
+    var winbackOfferPrice: String? { nil }
+}
+
 // MARK: - SK1
 protocol BotsiSK1Product: BotsiProduct {
     var skProduct: SKProduct { get }
@@ -100,6 +110,22 @@ extension BotsiSK1Product {
     }
 }
 
+extension BotsiSK1Product {
+    typealias OfferType = BotsiPaymentTransaction.OfferType
+    func isEligible(for offerType: OfferType) -> Bool {
+        switch offerType {
+        case .introductory:
+            return isEligibleForIntroOffer
+        case .winBack:
+            return isEligibleForWinbackOffer
+        case .promotional:
+            return isEligibleForPromotionalOffer
+        case .code, .unknown:
+            return false
+        }
+    }
+}
+
 // MARK: - SK2
 
 @available(iOS 15.0, *)
@@ -120,7 +146,7 @@ extension BotsiSK2Product {
     
     var descriptionText: String { skProduct.description }
     
-    var price: Decimal { Decimal(string: skProduct.displayPrice.filter { $0.isNumber || $0 == "." }) ?? 0 }
+    var price: Decimal { Decimal(string: skProduct.displayPrice) ?? 0 }
     
     var currencyCode: String? { skProduct.priceFormatStyle.currencyCode }
     

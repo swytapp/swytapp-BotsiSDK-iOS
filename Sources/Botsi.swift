@@ -95,8 +95,10 @@ public extension Botsi {
     ///       print("Failed to initialize Botsi SDK: \(error)")
     ///   }
     ///   ```
-    nonisolated static func activate(with config: BotsiConfiguration) async throws {
-        try await proceedWithActivation(with: config)
+    
+    nonisolated static func activate(_ key: String) async throws {
+        let configuration = BotsiConfiguration.build(sdkApiKey: key)
+        try await proceedWithActivation(with: configuration)
     }
     
     private static func proceedWithActivation(with config: BotsiConfiguration) async throws {
