@@ -13,12 +13,16 @@ struct BotsiEventMapper: DomainMapper {
     
     typealias DTOResponseModel = BotsiEventsResponseDto
     
-    typealias DTORequestModel = BotsiEventsRequestDto
+    typealias DTORequestModel = [BotsiEventsRequestDto]
     
     typealias DomainModel = Bool
     
-    func toDTO(from parameters: Parameters) -> BotsiEventsRequestDto {
-        return BotsiEventsRequestDto(profileId: parameters.profileId, placementId: parameters.placementId, eventType: parameters.eventType)
+    func toDTO(from parameters: Parameters) -> [BotsiEventsRequestDto] {
+        var events: [BotsiEventsRequestDto] = []
+        
+        let event = BotsiEventsRequestDto(profileId: parameters.profileId, placementId: parameters.placementId, eventType: parameters.eventType)
+        events.append(event)
+        return events
     }
     
     func toDomain(from dto: BotsiEventsResponseDto) -> Bool {

@@ -64,12 +64,18 @@ public final class Botsi: Sendable {
                 do {
                     try await restorePurchases()
                 } catch {
-                    print("Unable to refresh receipt on init.")
+                    BotsiLog.error("Unable to refresh receipt on init.")
                 }
             }
             return
         }
-        print("Fetched user profile with id: \(profile.profileId)")
+        do {
+            let updatedProfile = try await getUserProfile()
+            BotsiLog.info("Fetched user profile with id: \(profile.profileId)")
+            await profileStorage.setProfile(updatedProfile)
+        } catch {
+            BotsiLog.error("Unable to update profile: \(error.localizedDescription)")
+        }
     }
 }
 

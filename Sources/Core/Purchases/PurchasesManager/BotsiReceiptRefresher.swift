@@ -33,6 +33,7 @@ final class ReceiptRefreshHelper: NSObject {
         
         switch result {
         case .success(let data):
+            BotsiLog.info("Bundle receipt refreshed.")
             continuation.resume(returning: data)
         case .failure(let error):
             continuation.resume(throwing: error)

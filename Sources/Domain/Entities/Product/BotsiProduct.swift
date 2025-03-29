@@ -9,7 +9,7 @@ import StoreKit
 
 public protocol BotsiProduct: Sendable, CustomStringConvertible {
     
-    var sk1Product: SKProduct? { get}
+    var sk1Product: SKProduct? { get }
     
     @available(iOS 15.0, macOS 12.0, *)
     var sk2Product: Product? { get }
@@ -101,6 +101,7 @@ extension BotsiSK1Product {
           title: "\(title)",
           descriptionText: "\(descriptionText)",
           price: \(price),
+          currencyCode: \(currencyCode ?? "n/a"),
           localizedPrice: \(localizedPrice ?? "n/a"),
           introductoryPrice: \(introductoryPrice ?? "n/a"),
           isEligibleForIntroOffer: \(isEligibleForIntroOffer),
@@ -146,7 +147,7 @@ extension BotsiSK2Product {
     
     var descriptionText: String { skProduct.description }
     
-    var price: Decimal { Decimal(string: skProduct.displayPrice) ?? 0 }
+    var price: Decimal { skProduct.price }
     
     var currencyCode: String? { skProduct.priceFormatStyle.currencyCode }
     
@@ -184,6 +185,7 @@ extension BotsiSK2Product {
           title: "\(title)",
           descriptionText: "\(descriptionText)",
           price: \(price),
+          currencyCode: \(currencyCode ?? "n/a"),
           localizedPrice: \(localizedPrice ?? "n/a"),
           introductoryPrice: \(introductoryPrice ?? "n/a"),
           isEligibleForIntroOffer: \(isEligibleForIntroOffer),
