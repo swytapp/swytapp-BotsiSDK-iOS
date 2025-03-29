@@ -17,6 +17,9 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     /// `user errors`
     case userCreationFailed
     case userProfileNotFound
+    case userGetProfileFailed
+    
+    case fetchingProductIdsFailed
     
     case invalidProductIdentifier(String)
     case purchaseFailed(String)
@@ -26,6 +29,13 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case networkError(String)
     case receiptValidationFailed(String)
     case sdkNotActivated
+    
+    case transactionFailed
+    case restoreFailed
+    
+    case paywallFetchingFailed
+    
+    case eventsError
     
     /// `wildcard`
     case customError(String, String)
@@ -37,6 +47,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "User creation failed."
         case .userProfileNotFound:
             return "User profile not found."
+        case .transactionFailed:
+            return "Transaction failed."
         case .invalidProductIdentifier(let identifier):
             return "Invalid product identifier: \(identifier)"
         case .purchaseFailed(let reason):
@@ -55,6 +67,16 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "\(title): \(message)"
         case .sdkNotActivated:
             return "Unable to activate SDK"
+        case .restoreFailed:
+            return "Restore failed"
+        case .fetchingProductIdsFailed:
+            return "Fetching product ids failed"
+        case .userGetProfileFailed:
+            return "Request for user profile failed"
+        case .paywallFetchingFailed:
+            return "Request for fetching user's paywall with placement id failed"
+        case .eventsError:
+            return "Sending event analytics failed"
         }
     }
 }

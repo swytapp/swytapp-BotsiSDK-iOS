@@ -34,7 +34,7 @@ public extension BotsiConfiguration {
         func buildConfiguration() -> BotsiConfiguration
     }
     
-    static func build(sdkApiKey: String, enableObserver: Bool) -> Self {
+    static func build(sdkApiKey: String, enableObserver: Bool = false) -> Self {
         return BotsiConfigurationFactory.createAdapter(with: sdkApiKey, enableObserver: enableObserver).buildConfiguration()
     }
     
@@ -59,7 +59,7 @@ public extension BotsiConfiguration {
         public private(set) var enableObserver: Bool
         public private(set) var backendHost: URL
         
-        init(sdkApiKey: String, profileIdentifier: String? = nil, enableObserver: Bool, backendHost: URL) {
+        init(sdkApiKey: String, profileIdentifier: String? = nil, enableObserver: Bool = false, backendHost: URL) {
             self.sdkApiKey = sdkApiKey
             self.enableObserver = enableObserver
             self.backendHost = backendHost

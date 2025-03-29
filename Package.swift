@@ -6,7 +6,7 @@ let package = Package(
     name: "Botsi",
     platforms: [
         .iOS(.v13),
-        .macOS(.v11)
+        .macOS(.v12)
     ],
     products: [
         .library(

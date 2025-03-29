@@ -14,10 +14,14 @@ public struct BotsiRequestIdentifier: Sendable {
     static let getProfile: String = ""
     static let createProfile: String = "profiles"
     static let updateProfile: String = ""
+    
+    static let getPaywall: String = "paywalls"
+    static let events: String = "events"
    
     static let fetchProductIds: String = ""
     static let makePurchase: String = ""
-    static let restorePurchases: String = ""
+    static let validateTransaction: String = "purchases/apple-store/validate"
+    static let restorePurchases: String = "purchases/apple-store/restore"
 }
 
 public struct BotsiHTTPRequestPath: Sendable {

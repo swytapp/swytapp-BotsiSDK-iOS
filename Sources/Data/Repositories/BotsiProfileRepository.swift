@@ -23,7 +23,7 @@ final class UserProfileRepository: BotsiProfileRepository {
         do {
             var request = CreateProfileRequest(uuid: identifier)
             request.headers = [
-                "Authorization": "pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE",
+                "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
             

@@ -1,29 +1,29 @@
 //
-//  BotsiGetProfileUseCase.swift
+//  BotsiGetPaywallUseCase.swift
 //  Botsi
 //
-//  Created by Vladyslav on 23.02.2025.
+//  Created by Vladyslav on 22.03.2025.
 //
 
 import Foundation
 
-struct BotsiGetProfileUseCase {
-    private let repository: BotsiGetProfileRepository
+struct BotsiGetPaywallUseCase {
+    private let repository: BotsiGetPaywallRepository
 
-    init(repository: BotsiGetProfileRepository) {
+    init(repository: BotsiGetPaywallRepository) {
         self.repository = repository
     }
 
-    func execute(identifier: String) async throws -> BotsiProfile {
-        return try await repository.getUserProfile(identifier: identifier)
+    func execute(placementId: String) async throws -> BotsiPaywall {
+        return try await repository.getPaywall(id: placementId)
     }
 }
 
 // MARK: - CreateProfile request
-struct GetProfileRequest: BotsiHTTPRequest {
+struct GetPaywallRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     
-    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.createProfile)
+    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.getPaywall)
     
     var method: BotsiHTTPMethod = .get
     
@@ -31,10 +31,12 @@ struct GetProfileRequest: BotsiHTTPRequest {
     
     var body: Data? = nil
     
-    private let uuid: String
+    private let placementId: String
+    private let queryParameters: [String: String]?
     
-    init(uuid: String) {
-        self.uuid = uuid
+    init(placementId: String, queryParameters: [String: String]? = nil) {
+        self.placementId = placementId
+        self.queryParameters = queryParameters
     }
     
     func convertToURLRequest(configuration: HTTPCodableConfiguration, additional: (any HTTPRequestAdditional)?) throws -> URLRequest {
@@ -44,7 +46,11 @@ struct GetProfileRequest: BotsiHTTPRequest {
         }
         
         var urlComponents = URLComponents(string: url.absoluteString)
-        urlComponents?.path += "/\(uuid)"
+        urlComponents?.path += "/\(placementId)"
+        
+        if let queryParameters = queryParameters {
+            urlComponents?.queryItems = queryParameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+        }
         
         guard let finalUrl = urlComponents?.url else {
             throw BotsiError.networkError("Unable to build final url request")
