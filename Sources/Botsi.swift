@@ -111,7 +111,7 @@ public extension Botsi {
     static func withInitializedSDK<T: Sendable>(
         identifier: BotsiRequestIdentifier,
         caller: StaticString = #function,
-        operation: @Sendable @escaping (Botsi) async throws -> T
+        operation: @BotsiActor @Sendable @escaping (Botsi) async throws -> T
     ) async throws -> T {
         try await lifecycle.withInitializedSDK(operation: operation)
     }
