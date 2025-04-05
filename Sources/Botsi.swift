@@ -9,7 +9,7 @@ import Foundation
 
 @BotsiActor
 public final class Botsi: Sendable {
-    let sdkApiKey: String // test `pk_O50YzT5HvlY1fSOP.6en44PYDcnIK2HOzIJi9FUYIE`
+    let sdkApiKey: String
     
     private let enableObserver: Bool // TODO:
         
@@ -60,7 +60,7 @@ public final class Botsi: Sendable {
             if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
                 
-                // refactor receipt validation logic
+                // TODO: refactor receipt validation logic
                 do {
                     try await restorePurchases()
                 } catch {
@@ -223,34 +223,29 @@ public extension Botsi {
     ///   } catch {
     ///       print("Purchase failed: \(error)")
     ///   }
-    nonisolated static func makePurchase(_ productId: String) async throws -> BotsiProfile {
+    nonisolated static func makePurchase(_ product: BotsiProduct) async throws -> BotsiProfile {
         return try await lifecycle.withInitializedSDK { botsi in
-            try await botsi.makePurchase(from: productId)
+            try await botsi.makePurchase(from: product)
         }
     }
     
-    func makePurchase(from id: String) async throws -> BotsiProfile {
+    func makePurchase(from product: BotsiProduct) async throws -> BotsiProfile {
         do {
             if #available(iOS 15.0, *) {
                 guard let handler = storeKit2Handler else {
-                    throw BotsiError.customError("purchaseError", "unable to unwrap storekit 2 handler")
-                }
-                let products = try await handler.retrieveProductAsync(with: [id])
-                guard let product = products.first else {
-                    throw BotsiError.customError("productError", "unable to retrieve first product from array")
+                    throw BotsiError.customError("SK2PurchaseError", "unable to unwrap Storekit 2 handler")
                 }
                 let profile = try await handler.purchaseSK2(product)
                 return profile
             } else {
                 guard let handler = storeKit1Handler else {
-                    throw BotsiError.customError("purchaseError", "unable to unwrap storekit 1 handler")
+                    throw BotsiError.customError("SK1PurchaseError", "unable to unwrap Storekit 1 handler")
                 }
-                let product = try await handler.retrieveSK1Product(with: id)
                 let profile = try await handler.purchaseSK1(product)
                 return profile
             }
         } catch {
-            print("Failed to purchase: \(error.localizedDescription)")
+            BotsiLog.error("Failed to purchase: \(error.localizedDescription)")
             throw BotsiError.transactionFailed
         }
     }
@@ -363,22 +358,36 @@ public extension Botsi {
     ///   ```
     nonisolated static func getPaywallProducts(from paywall: BotsiPaywall) async throws -> [BotsiProduct] {
         try await lifecycle.withInitializedSDK { botsi in
-            return try await botsi.retrieveProductDetails(from: paywall.sourceProducts.map { $0.sourcePoductId })
+            return try await botsi.retrieveProductDetails(from: paywall)
         }
     }
     
-    private func retrieveProductDetails(from identifiers: [String]) async throws -> [BotsiProduct] {
+    private func retrieveProductDetails(from paywall: BotsiPaywall) async throws -> [BotsiProduct] {
+        let identifiers = paywall.sourceProducts.map { $0.sourcePoductId }
+        
         if #available(iOS 15.0, *) {
             guard let handler = storeKit2Handler else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 2 handler")
             }
-            let products = try await handler.retrieveProductAsync(with: identifiers).compactMap { BotsiSK2PaywallProduct(skProduct: $0) }
+            let products = try await handler.retrieveProductAsync(with: identifiers).compactMap {
+                BotsiSK2PaywallProduct(
+                    skProduct: $0,
+                    paywallId: paywall.id,
+                    abTestId: paywall.abTestId
+                )
+            }
             return products
         } else {
             guard let handler = storeKit1Handler else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 1 handler")
             }
-            let products = try await handler.retrieveSK1Products(from: identifiers).compactMap { BotsiSK1PaywallProduct(skProduct: $0.skProduct )}
+            let products = try await handler.retrieveSK1Products(from: identifiers).compactMap {
+                BotsiSK1PaywallProduct(
+                    skProduct: $0.skProduct,
+                    paywallId: paywall.id,
+                    abTestId: paywall.abTestId
+                )
+            }
             return products
         }
     }
@@ -388,7 +397,12 @@ public extension Botsi {
     private func sendPaywallTrackEvent(event: BotsiLogEvent) async throws {
         let eventsRepository = EventsRepository(httpClient: botsiClient)
         let useCase = BotsiSendEventUseCase(repository: eventsRepository)
-        try await useCase.execute(profileId: event.profileId, placementId: event.placementId ?? "", eventType: event.type.rawValue)
+        try await useCase.execute(
+            profileId: event.profileId,
+            paywallId: event.paywallId ?? "",
+            abTestId: event.abTestId,
+            eventType: event.type.rawValue
+        )
     }
     
     private func logPaywallShown(_ paywall: BotsiPaywall) async throws {
@@ -403,8 +417,11 @@ public extension Botsi {
             sendEventFunction: sendPaywallTrackEvent
         )
 
+        let abTestIdIsPresent = paywall.abTestId != nil
         let userActionEvent = BotsiLogEvent(
             profileId: profileId,
+            paywallId: "\(paywall.id)",
+            abTestId: abTestIdIsPresent ? "\(paywall.abTestId ?? 0)" : nil,
             type: .userPaywallShown,
             name: "userPaywallPresentedLog",
             message: "Paywall presented.",

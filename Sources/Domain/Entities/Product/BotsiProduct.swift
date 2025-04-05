@@ -15,6 +15,8 @@ public protocol BotsiProduct: Sendable, CustomStringConvertible {
     var sk2Product: Product? { get }
     
     // MARK: - Identifiers
+    var paywallId: Int { get }
+    var abTestId: Int? { get }
     var productId: String { get }
     
     // MARK: - Display Information
@@ -37,6 +39,9 @@ public protocol BotsiProduct: Sendable, CustomStringConvertible {
 }
 
 public extension BotsiProduct {
+    var paywallId: Int? { return nil }
+    var abTestId: Int? { return nil }
+    
     var isEligibleForIntroOffer: Bool { false }
     var isEligibleForWinbackOffer: Bool { false }
     var isEligibleForPromotionalOffer: Bool { false }
@@ -198,9 +203,13 @@ extension BotsiSK2Product {
 // MARK: - SK Products
 struct BotsiSK1PaywallProduct: BotsiSK1Product {
     var skProduct: SKProduct
+    var paywallId: Int
+    var abTestId: Int?
 }
 
 @available(iOS 15.0, *)
 struct BotsiSK2PaywallProduct: BotsiSK2Product {
     var skProduct: Product
+    var paywallId: Int
+    var abTestId: Int?
 }

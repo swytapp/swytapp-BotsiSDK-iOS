@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiEventsRepository {
-    func sendEvent(profileId: String, placementId: String, eventType: String) async throws
+    func sendEvent(profileId: String, paywallId: String, abTestId: String?, eventType: String) async throws
 }
 
 final class EventsRepository: BotsiEventsRepository {
@@ -20,14 +20,14 @@ final class EventsRepository: BotsiEventsRepository {
         self.mapper = mapper
     }
 
-    func sendEvent(profileId: String, placementId: String, eventType: String) async throws {
+    func sendEvent(profileId: String, paywallId: String, abTestId: String? = nil, eventType: String) async throws {
         do {
             var request = SendEventRequest()
             request.headers = [
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
-            let parameters = (profileId, placementId, eventType)
+            let parameters = (profileId, paywallId, abTestId, eventType)
             let body = try mapper.toDTO(from: parameters).toData()
             request.body = body
             

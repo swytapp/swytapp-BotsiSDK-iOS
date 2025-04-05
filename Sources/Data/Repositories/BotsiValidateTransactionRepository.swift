@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiValidateTransactionRepository {
-    func validateTransaction(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile
+    func validateTransaction(transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile
 }
 
 final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
@@ -22,14 +22,14 @@ final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
         self.profileId = profileId
     }
 
-    func validateTransaction(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+    func validateTransaction(transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile {
         do {
             var request = ValidateTransactionRequest()
             request.headers = [
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
-            let requestParameters = (transaction, profileId)
+            let requestParameters = (transaction, profileId, source.rawValue)
             let body = try mapper.toDTO(from: requestParameters).toData()
             request.body = body
             

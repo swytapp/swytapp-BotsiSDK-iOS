@@ -32,6 +32,7 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     
     case transactionFailed
     case restoreFailed
+    case transactionDeferred
     
     case paywallFetchingFailed
     
@@ -49,6 +50,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "User profile not found."
         case .transactionFailed:
             return "Transaction failed."
+        case .transactionDeferred:
+            return "Transaction is deferred."
         case .invalidProductIdentifier(let identifier):
             return "Invalid product identifier: \(identifier)"
         case .purchaseFailed(let reason):

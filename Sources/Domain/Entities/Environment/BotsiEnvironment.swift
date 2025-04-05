@@ -111,7 +111,7 @@ enum StorefrontError: Error {
 
 
 extension Botsi {
-    public nonisolated static let sdkVersion = "1.0.0"
+    public nonisolated static let sdkVersion = "1.0"
 }
 
 // MARK: - Device

@@ -14,8 +14,8 @@ struct BotsiSendEventUseCase {
         self.repository = repository
     }
 
-    func execute(profileId: String, placementId: String, eventType: String) async throws {
-        return try await repository.sendEvent(profileId: profileId, placementId: placementId, eventType: eventType)
+    func execute(profileId: String, paywallId: String, abTestId: String? = nil, eventType: String) async throws {
+        return try await repository.sendEvent(profileId: profileId, paywallId: paywallId, abTestId: abTestId, eventType: eventType)
     }
 }
 

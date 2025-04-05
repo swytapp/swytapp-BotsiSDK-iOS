@@ -10,7 +10,8 @@ import Foundation
 // MARK: - Request model
 struct BotsiEventsRequestDto: Encodable {
     let profileId: String
-    let placementId: String
+    let paywallId: String
+    let abTestId: String?
     let eventType: String
     /*let timestamp: String
     let productDuration: String
