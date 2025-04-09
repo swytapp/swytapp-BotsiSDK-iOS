@@ -17,13 +17,15 @@ extension BotsiPurchasesManagerConformable {
         with transaction: SKPaymentTransaction,
         product: SKProduct,
         paywallId: Int?,
-        abTestId: Int?
+        abTestId: Int?,
+        placementId: String? = nil
     ) async -> BotsiPaymentTransaction {
         return BotsiPaymentTransaction(
             with: product,
             transaction: transaction,
             paywallId: paywallId,
-            abTestId: abTestId
+            abTestId: abTestId,
+            placementId: placementId
         )
     }
     
@@ -33,13 +35,15 @@ extension BotsiPurchasesManagerConformable {
         with transaction: Transaction,
         product: Product,
         paywallId: Int?,
-        abTestId: Int?
+        abTestId: Int?,
+        placementId: String? = nil
     ) async -> BotsiPaymentTransaction {
         return BotsiPaymentTransaction(
             with: product,
             transaction: transaction,
             paywallId: paywallId,
-            abTestId: abTestId
+            abTestId: abTestId,
+            placementId: placementId
         )
     }
 }

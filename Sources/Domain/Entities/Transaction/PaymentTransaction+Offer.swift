@@ -111,7 +111,7 @@ public struct BotsiSubscriptionOffer: Sendable, CustomStringConvertible {
             id: transaction.unfOfferId,
             period: .init(
                 unit: (productOffer?.period)?.unit.toPeriodUnit ?? .unknown,
-                numberOfUnits: (productOffer?.period)?.value ?? -1
+                numberOfUnits: (productOffer?.period)?.value ?? 0
             ),
             paymentMode: (productOffer?.paymentMode)?.asPaymentMode ?? .unknown,
             offerType: offerType,

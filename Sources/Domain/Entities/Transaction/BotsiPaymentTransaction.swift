@@ -24,7 +24,7 @@ public struct BotsiPaymentTransaction: Sendable, CustomStringConvertible {
     
     let paywallId: Int?
     let abTestId: Int?
-    let placementId: String = ""
+    let placementId: String?
     let isSubscription: Bool
     
     public var description: String {

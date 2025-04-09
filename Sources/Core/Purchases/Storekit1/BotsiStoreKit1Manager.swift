@@ -246,14 +246,17 @@ public actor StoreKit1Handler {
                 }
             }
             
-            let (current, cached) = await paywallStorage.getPaywallIds(for: productId)
-            let paywallId = botsiProduct?.paywallId ?? current ?? cached ?? nil
+            let (current, cached) = await paywallStorage.getPaywallMeta(for: productId)
+            let paywallId: Int? = botsiProduct?.paywallId ?? current?.paywallId ?? cached?.paywallId
+            let placementId: String? = botsiProduct?.placementId ?? current?.placementId ?? cached?.placementId
+            let abTestId: Int? = botsiProduct?.abTestId ?? current?.abTestId ?? cached?.abTestId
             
             let botsiTransaction = await mapper.completeTransaction(
                 with: transaction,
                 product: product,
                 paywallId: paywallId,
-                abTestId: botsiProduct?.abTestId
+                abTestId: abTestId,
+                placementId: placementId
             )
             
             do {
@@ -334,12 +337,17 @@ public actor StoreKit1Handler {
                 }
             }
             
-            let (current, cached) = await paywallStorage.getPaywallIds(for: productId)
+            let (current, cached) = await paywallStorage.getPaywallMeta(for: productId)
+            let paywallId: Int? = current?.paywallId ?? cached?.paywallId
+            let placementId: String? = current?.placementId ?? cached?.placementId
+            let abTestId: Int? = current?.abTestId ?? cached?.abTestId
+            
             let botsiTransaction = await mapper.completeTransaction(
                 with: transaction,
                 product: product,
-                paywallId: current ?? cached ?? nil,
-                abTestId: nil
+                paywallId: paywallId,
+                abTestId: abTestId,
+                placementId: placementId
             )
             do {
                 let profile = try await validateTransaction(

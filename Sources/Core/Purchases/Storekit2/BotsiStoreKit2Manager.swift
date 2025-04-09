@@ -68,14 +68,20 @@ public actor StoreKit2Handler {
                     with: transaction,
                     product: skProduct,
                     paywallId: product.paywallId,
-                    abTestId: product.abTestId
+                    abTestId: product.abTestId,
+                    placementId: product.placementId
                 )
                 let profile = try await validateTransaction(
                     botsiTransaction,
                     source: .purchasing
                 )
-                await paywallStorage.setPaywall(
-                    product.paywallId,
+                let paywallMeta = PaywallMeta(
+                    paywallId: product.paywallId,
+                    placementId: product.placementId,
+                    abTestId: product.abTestId
+                )
+                await paywallStorage.setPaywallMeta(
+                    paywallMeta,
                     for: skProduct.id
                 )
                 await transaction.finish()
@@ -112,12 +118,13 @@ public actor StoreKit2Handler {
                     guard let product = try await Product.products(for: [productId]).first else {
                         throw BotsiError.customError("StoreKit2Handler", "Unable to fetch product with id: \(productId)")
                     }
-                    let (current, cached) = await paywallStorage.getPaywallIds(for: productId)
+                    let (current, cached) = await paywallStorage.getPaywallMeta(for: productId)
                     let botsiTransaction = await mapper.completeTransaction(
                         with: transaction,
                         product: product,
-                        paywallId: current ?? cached ?? nil,
-                        abTestId: nil
+                        paywallId: current?.paywallId ?? cached?.paywallId ?? nil,
+                        abTestId: nil,
+                        placementId: current?.placementId ?? cached?.placementId
                     )
               
                     let updatedProfile = try await validateTransaction(

@@ -373,6 +373,7 @@ public extension Botsi {
                 BotsiSK2PaywallProduct(
                     skProduct: $0,
                     paywallId: paywall.id,
+                    placementId: paywall.placementId ?? "",
                     abTestId: paywall.abTestId
                 )
             }
@@ -385,6 +386,7 @@ public extension Botsi {
                 BotsiSK1PaywallProduct(
                     skProduct: $0.skProduct,
                     paywallId: paywall.id,
+                    placementId: paywall.placementId ?? "",
                     abTestId: paywall.abTestId
                 )
             }

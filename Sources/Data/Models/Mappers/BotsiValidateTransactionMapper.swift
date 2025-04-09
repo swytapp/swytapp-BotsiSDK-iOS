@@ -35,8 +35,8 @@ struct BotsiValidateTransactionMapper: DomainMapper {
             environment: transaction.environment,
             profileId: parameters.profileId,
             productId: transaction.productId,
-            placementId: transaction.placementId,
-            paywallId: transaction.paywallId,
+            placementId: transaction.placementId ?? "",
+            paywallId: "\(transaction.paywallId ?? 0)",
             abTestId: transaction.abTestId,
             isSubscription: transaction.isSubscription,
             source: parameters.source

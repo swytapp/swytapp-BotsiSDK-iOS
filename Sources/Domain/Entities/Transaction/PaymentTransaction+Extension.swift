@@ -13,7 +13,8 @@ extension BotsiPaymentTransaction {
     init(with product: SKProduct,
          transaction: SKPaymentTransaction,
          paywallId: Int? = nil,
-         abTestId: Int? = nil
+         abTestId: Int? = nil,
+         placementId: String? = nil
     ) {
         let offer = BotsiSubscriptionOffer(transaction: transaction, product: product)
         self.transactionId = transaction.transactionIdentifier ?? transaction.original?.transactionIdentifier ?? ""
@@ -30,6 +31,7 @@ extension BotsiPaymentTransaction {
         self.paywallId = paywallId
         self.abTestId = abTestId
         self.isSubscription = offer != nil
+        self.placementId = placementId
     }
     
     /// `StoreKit 2 initializer`
@@ -37,7 +39,8 @@ extension BotsiPaymentTransaction {
     init(with product: Product,
          transaction: Transaction,
          paywallId: Int? = nil,
-         abTestId: Int? = nil
+         abTestId: Int? = nil,
+         placementId: String? = nil
     ) {
         let offer = BotsiSubscriptionOffer(transaction: transaction, product: product)
         self.transactionId = String(transaction.id)
@@ -72,6 +75,7 @@ extension BotsiPaymentTransaction {
         self.paywallId = paywallId
         self.abTestId = abTestId
         self.isSubscription = offer != nil
+        self.placementId = placementId
     }
 }
 

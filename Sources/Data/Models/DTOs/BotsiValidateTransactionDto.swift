@@ -23,7 +23,7 @@ struct BotsiValidateTransactionRequestDto: Encodable {
     let profileId: String
     let productId: String
     let placementId: String
-    let paywallId: Int?
+    let paywallId: String?
     let abTestId: Int?
     let isSubscription: Bool
     let source: String
