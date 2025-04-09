@@ -95,7 +95,7 @@ public final class BotsiEventLogger: EventLoggerPort {
                 }
             }
         } catch {
-            print("Failed to send event: \(error)")
+            BotsiLog.error("Failed to send event: \(error.localizedDescription)")
         }
     }
 }

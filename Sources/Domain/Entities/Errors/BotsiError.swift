@@ -14,34 +14,32 @@ protocol BotsiErrorConformable {
 
 // MARK: - Botsi enum
 public enum BotsiError: Error, Sendable, BotsiErrorConformable {
-    /// `user errors`
+    case sdkNotActivated
+    
     case userCreationFailed
     case userProfileNotFound
     case userGetProfileFailed
     
     case fetchingProductIdsFailed
+    case paywallFetchingFailed
     
     case invalidProductIdentifier(String)
     case purchaseFailed(String)
-    case paymentNotAllowed
-    case userCancelled
+    
     case unknownError(Error)
     case networkError(String)
-    case receiptValidationFailed(String)
-    case sdkNotActivated
     
     case transactionFailed
     case restoreFailed
     case transactionDeferred
-    
-    case paywallFetchingFailed
+    case paymentNotAllowed
+    case userCancelled
+    case receiptValidationFailed(String)
     
     case eventsError
     
-    /// `wildcard`
     case customError(String, String)
 
-    /// `error localized description`
     public var localizedDescription: String {
         switch self {
         case .userCreationFailed:

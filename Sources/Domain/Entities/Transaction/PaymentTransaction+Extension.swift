@@ -9,7 +9,6 @@ import StoreKit
 
 extension BotsiPaymentTransaction {
     
-    /// `StoreKit 1 initializer`
     init(with product: SKProduct,
          transaction: SKPaymentTransaction,
          paywallId: Int? = nil,
@@ -34,7 +33,6 @@ extension BotsiPaymentTransaction {
         self.placementId = placementId
     }
     
-    /// `StoreKit 2 initializer`
     @available(iOS 15.0, *)
     init(with product: Product,
          transaction: Transaction,

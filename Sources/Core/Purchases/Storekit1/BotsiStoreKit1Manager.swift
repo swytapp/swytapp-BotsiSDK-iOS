@@ -8,17 +8,14 @@
 import StoreKit
 
 // MARK: - StoreKit 1
+
 public actor StoreKit1Handler {
-    // MARK: - Private State
-    
-    /// A completions to retrieve SKProduct(s)
     private var fetchProductCompletion: ((Result<SKProduct, Error>) -> Void)?
     private var fetchProductsCompletion: ((Result<[SKProduct], Error>) -> Void)?
     
     private var purchaseContinuation: CheckedContinuation<BotsiProfile, Error>?
     private var restoreContinuation: CheckedContinuation<BotsiProfile, Error>?
 
-    /// `if multiple transactions are restored, store the latest profile`
     private var lastRestoredProfile: BotsiProfile?
 
     private var currentSKProduct: SKProduct?
@@ -64,9 +61,6 @@ public actor StoreKit1Handler {
         }
     }
     
-    // MARK: - Public Methods
-    
-    /// `Requests an `SKProduct` for the given product identifier.`
     public func retrieveSK1Product(with productID: String) async throws -> SKProduct {
         try await withCheckedThrowingContinuation { continuation in
             self.retrieveProductCallbackVersion(with: productID) { result in
@@ -137,14 +131,12 @@ public actor StoreKit1Handler {
        }
     }
     
-    /// `Restore`
     public func restorePurchases() async throws -> BotsiProfile {
         return try await restoreTransactions()
     }
     
     // MARK: - Internal Actor Methods (Called by Delegate)
     
-    /// `Called from the delegate when products are received.`
     internal func onDidReceiveProductsResponse(_ response: SKProductsResponse) {
         if let completion = fetchProductCompletion {
             
@@ -178,7 +170,6 @@ public actor StoreKit1Handler {
         return identifiers.compactMap { productMap[$0] }
     }
     
-    /// `Called from the delegate when the request fails.`
     internal func onDidFailRequest(_ error: Error) {
         if let completion = fetchProductCompletion {
             fetchProductCompletion = nil
@@ -189,7 +180,6 @@ public actor StoreKit1Handler {
         } else { return }
     }
     
-    /// `Called from the delegate whenever transactions are updated (purchased, restored, failed, etc.).`
     internal func onUpdatedTransactions(_ transactions: [SKPaymentTransaction]) {
         for transaction in transactions {
             switch transaction.transactionState {
@@ -286,15 +276,15 @@ public actor StoreKit1Handler {
     
     func logTransactionDetails(_ transaction: SKPaymentTransaction) {
         print("==== Transaction Details ====")
-        print("transactionIdentifier: \(transaction.transactionIdentifier ?? "nil")")
-        print("transactionDate: \(transaction.transactionDate?.description ?? "nil")")
-        print("transactionState: \(transaction.transactionState)")
+        print("identifier: \(transaction.transactionIdentifier ?? "")")
+        print("date: \(transaction.transactionDate?.description ?? "")")
+        print("state: \(transaction.transactionState)")
         print("payment.productIdentifier: \(transaction.payment.productIdentifier)")
         print("payment.quantity: \(transaction.payment.quantity)")
         
         if let originalTransaction = transaction.original {
-            print("originalTransactionIdentifier: \(originalTransaction.transactionIdentifier ?? "nil")")
-            print("originalTransactionDate: \(originalTransaction.transactionDate?.description ?? "nil")")
+            print("originalTransactionIdentifier: \(originalTransaction.transactionIdentifier ?? "")")
+            print("originalTransactionDate: \(originalTransaction.transactionDate?.description ?? "")")
         }
         
         if let error = transaction.error as NSError? {
@@ -307,7 +297,9 @@ public actor StoreKit1Handler {
 
     
     private func handleRestored(_ transaction: SKPaymentTransaction) {
+        #if DEBUG
         logTransactionDetails(transaction)
+        #endif
                 
         let transactionId = transaction.transactionIdentifier ?? transaction.original?.transactionIdentifier ?? UUID().uuidString
         let productId = transaction.payment.productIdentifier

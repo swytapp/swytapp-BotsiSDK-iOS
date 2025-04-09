@@ -28,20 +28,16 @@ final class GetUserProfileRepository: BotsiGetProfileRepository {
                 "Content-type": "application/json"
             ]
             
-            print("url: \(request.relativePath) ")
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
             let responseDto: CreateProfileDtoResponse = try wrapper.decode()
-            
-            // TODO: Store response into Profile Storage
-            print("Response json: \(responseDto)")
             return mapper.toDomain(from: responseDto)
 
         } catch {
-            print("Request failed with error: \(error)")
+            BotsiLog.error("Failed to fetch user profile: \(error.localizedDescription)")
             throw BotsiError.userGetProfileFailed
         }
     }

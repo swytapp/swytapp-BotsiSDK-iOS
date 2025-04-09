@@ -31,18 +31,14 @@ final class EventsRepository: BotsiEventsRepository {
             let body = try mapper.toDTO(from: parameters).toData()
             request.body = body
             
-            print("url: \(request.relativePath) ")
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
             
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
-            let responseDto: BotsiEventsResponseDto = try wrapper.decode()
-            
-            BotsiLog.info("EventsRepository raw response: \(responseDto.ok)")
+            let _: BotsiEventsResponseDto = try wrapper.decode()
         } catch {
-            BotsiLog.error("EventsRepository failed with error: \(error)")
             throw BotsiError.eventsError
         }
     }

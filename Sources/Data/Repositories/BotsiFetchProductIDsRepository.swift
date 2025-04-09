@@ -26,7 +26,6 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
                 "Content-type": "application/json"
             ]
             
-            print("url: \(request.relativePath) ")
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
@@ -35,12 +34,9 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
             let responseDto: ProductIDsDtoResponse = try wrapper.decode()
             
-            // TODO: Store response into Profile Storage
-            print("Response json: \(responseDto)")
-            
             return responseDto.data
         } catch {
-            print("Request failed with error: \(error)")
+            BotsiLog.error("Failed to fetch product identifiers: \(error.localizedDescription)")
             throw BotsiError.fetchingProductIdsFailed
         }
     }

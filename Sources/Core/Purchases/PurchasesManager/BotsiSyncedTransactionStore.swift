@@ -7,13 +7,11 @@
 
 import Foundation
 
-/// `Cached transaction logic for later use`
 public actor BotsiSyncedTransactionStore {
     
     private let transactionKey = UserDefaultKeys.User.lastSyncedTransactionId
     private let storage = BotsiStorageManager()
     
-    // cached transaction id
     private var cachedTransactionOriginalIdentifier: String?
     
     init() async {
@@ -31,7 +29,7 @@ public actor BotsiSyncedTransactionStore {
             cachedTransactionOriginalIdentifier = transactionId
         } catch {
             cachedTransactionOriginalIdentifier = nil
-            print("Failed to encode last synced transaction: \(error)")
+            BotsiLog.error("Failed to encode last synced transaction")
         }
     }
     

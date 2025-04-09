@@ -35,9 +35,7 @@ public struct SK1ProductDetails: Sendable {
 }
 
 extension SKProduct {
-    /// Builds an `SK1ProductDetails` from an `SKProduct`.
     func toSK1ProductDetails() -> SK1ProductDetails {
-        // Prepare a currency formatter for display
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
         formatter.locale = self.priceLocale
@@ -45,7 +43,7 @@ extension SKProduct {
 
         let localizedPriceString = formatter.string(from: self.price) ?? "\(self.price)"
         
-        // Check if there's an introductory price and (very basic) "eligibility"
+        // TODO: update eligibility status
         let introPrice = self.introductoryPrice?.price
         let introPriceString = introPrice.flatMap { formatter.string(from: $0) }
         let isEligibleForIntro = (self.introductoryPrice != nil)

@@ -47,7 +47,7 @@ final class GetPaywallRepository: BotsiGetPaywallRepository {
             paywall.placementId = id
             return paywall
         } catch {
-            print("Get paywall request failed with error: \(error)")
+            BotsiLog.error("Failed to fetch paywall \(id): \(error.localizedDescription)")
             throw BotsiError.paywallFetchingFailed
         }
     }

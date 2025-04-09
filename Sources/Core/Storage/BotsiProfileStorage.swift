@@ -20,7 +20,6 @@ public actor BotsiProfileStorage: Sendable {
 
     // MARK: - Initialization
     
-    /// `Load all relevant state from storage`
     init() async {
         do {
             guard let storedProfile = try await storageManager.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {

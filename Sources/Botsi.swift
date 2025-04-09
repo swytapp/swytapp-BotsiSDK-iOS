@@ -17,7 +17,6 @@ public final class Botsi: Sendable {
     fileprivate let cachedTransactionsStore: BotsiSyncedTransactionStore
     static let lifecycle = BotsiLifecycle()
     
-    /// `payment & transaction`
     private let storeKit1Handler: StoreKit1Handler?
     private let storeKit2Handler: StoreKit2Handler?
     
@@ -60,11 +59,10 @@ public final class Botsi: Sendable {
             if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
                 
-                // TODO: refactor receipt validation logic
                 do {
-                    try await restorePurchases()
+                    try await restorePurchases() // TODO: refactor
                 } catch {
-                    BotsiLog.error("Unable to refresh receipt on init.")
+                    BotsiLog.error("Unable to restore purchases.")
                 }
             }
             return

@@ -17,12 +17,12 @@ struct BotsiValidateTransactionRequestDto: Encodable {
     let discountPrice: String
     let priceLocale: String
     let storeCountry: String
-    let offer: BotsiValidateTransactionOfferDto
+    let offer: BotsiValidateTransactionOfferDto?
     let promotionalOfferId: String
     let environment: String
     let profileId: String
     let productId: String
-    let placementId: String
+    let placementId: String?
     let paywallId: String?
     let abTestId: Int?
     let isSubscription: Bool
@@ -30,10 +30,10 @@ struct BotsiValidateTransactionRequestDto: Encodable {
 }
 
 struct BotsiValidateTransactionOfferDto: Encodable {
-    let periodUnit: String
-    let numberOfUnits: Int
-    let type: String
-    let category: String
+    let periodUnit: String?
+    let numberOfUnits: Int?
+    let type: String?
+    let category: String?
 }
 
 // MARK: - Response model

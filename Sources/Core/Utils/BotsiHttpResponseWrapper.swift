@@ -14,7 +14,6 @@ fileprivate struct HTTPDecoderHelper {
         self.jsonDecoder = jsonDecoder
     }
     
-    /// Decodes data into a specified type
     func decode<T: Decodable>(_ type: T.Type, from data: Data) throws -> T {
         do {
             return try jsonDecoder.decode(T.self, from: data)
@@ -24,7 +23,6 @@ fileprivate struct HTTPDecoderHelper {
     }
 }
 
-/// Custom decoding errors
 enum BotsiHTTPDecodingError: Error, LocalizedError {
     case decodingFailed(String)
     
@@ -56,7 +54,6 @@ struct BotsiHTTPResponseWrapper {
         self.data = data
     }
     
-    /// Decodes response data into a custom Decodable type
     func decode<T: Decodable>() throws -> T {
         return try decoder.decode(T.self, from: data)
     }

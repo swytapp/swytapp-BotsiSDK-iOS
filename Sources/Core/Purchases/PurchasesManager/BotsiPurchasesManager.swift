@@ -12,7 +12,6 @@ protocol BotsiPurchasesManagerConformable: Sendable { }
 
 extension BotsiPurchasesManagerConformable {
     
-    /// `Convenience method for StoreKit 1 transactions.`
     func completeTransaction(
         with transaction: SKPaymentTransaction,
         product: SKProduct,
@@ -29,7 +28,6 @@ extension BotsiPurchasesManagerConformable {
         )
     }
     
-    /// `Convenience method for StoreKit 2 transactions.`
     @available(iOS 15.0, *)
     func completeTransaction(
         with transaction: Transaction,

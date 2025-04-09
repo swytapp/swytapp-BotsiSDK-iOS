@@ -14,6 +14,6 @@ enum BotsiHTTPError: Error {
 
 class HTTPErrorHandler {
     func handle(_ error: BotsiHTTPError) {
-        print("HTTP Error Occurred: \(error)")
+        BotsiLog.error("HTTP error: \(error.localizedDescription)")
     }
 }

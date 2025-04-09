@@ -53,37 +53,14 @@ public struct BotsiHTTPSession: Sendable {
         } catch {
             throw handleError(.perform(endpoint, error: error))
         }
-        logRequest(urlRequest)
         
         let dataResponse = try await fetchData(urlRequest, endpoint: endpoint)
-        
-        if let json = try? JSONSerialization.jsonObject(with: dataResponse.data) {
-            print("RAW: \(json)")
-        }
         
         if let validationError = responseValidator(dataResponse) {
             throw handleError(.backend(dataResponse, error: validationError))
         }
         
         return try decodeResponse(dataResponse, with: decoder, urlRequest: urlRequest, endpoint: endpoint)
-    }
-    
-    private func logRequest(_ request: URLRequest) {
-        print("\n➡️ [REQUEST]")
-        print("URL: \(request.url?.absoluteString ?? "nil")")
-        print("Method: \(request.httpMethod ?? "nil")")
-
-        if let headers = request.allHTTPHeaderFields {
-            print("Headers: \(headers)")
-        } else {
-            print("Headers: nil")
-        }
-
-        if let body = request.httpBody, let bodyString = String(data: body, encoding: .utf8) {
-            print("Body: \(bodyString)")
-        } else {
-            print("Body: nil")
-        }
     }
 }
 
