@@ -28,11 +28,13 @@ final class ReceiptRefreshHelper: NSObject {
     private func finishContinuation(result: Result<Data, Error>) {
         request = nil
         guard let continuation = continuation else { return }
-        self.continuation = nil
         self.request?.cancel()
+        self.continuation = nil
         
         switch result {
         case .success(let data):
+            let receiptDecoded = String(data: data, encoding: .utf8)
+            BotsiLog.debug("Receipt (Refresher): \(receiptDecoded ?? "")")
             BotsiLog.info("Bundle receipt refreshed.")
             continuation.resume(returning: data)
         case .failure(let error):
@@ -49,19 +51,17 @@ extension ReceiptRefreshHelper: SKRequestDelegate {
             let receiptData = try? Data(contentsOf: receiptURL),
             !receiptData.isEmpty
         else {
-            self.request = nil
+            self.request?.cancel()
             finishContinuation(result: .failure(ReceiptError.missingReceipt))
             return
         }
         
         self.request?.cancel()
-        self.request = nil
         finishContinuation(result: .success(receiptData))
     }
     
     func request(_ request: SKRequest, didFailWithError error: Error) {
         self.request?.cancel()
-        self.request = nil
         finishContinuation(result: .failure(error))
     }
 }

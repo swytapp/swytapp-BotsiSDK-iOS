@@ -88,7 +88,7 @@ final class BotsiPaywallMappingStorage: Sendable {
     }
 
     @discardableResult
-    fileprivate func setPersistentPaywallMeta(_ meta: PaywallMeta, for productId: String) -> Bool {
+    fileprivate func setPersistentPaywallMetadata(_ meta: PaywallMeta, for productId: String) -> Bool {
         var dict = Self.cachedPaywalls
         let oldMeta = dict.updateValue(meta, forKey: productId)
         guard oldMeta != meta else { return false }
@@ -99,7 +99,7 @@ final class BotsiPaywallMappingStorage: Sendable {
     }
 
     @discardableResult
-    fileprivate func setPaywallMeta(_ meta: PaywallMeta, for productId: String) -> Bool {
+    fileprivate func setPaywallMetadata(_ meta: PaywallMeta, for productId: String) -> Bool {
         var dict = Self.paywalls
         let oldMeta = dict.updateValue(meta, forKey: productId)
         guard oldMeta != meta else { return false }
@@ -109,7 +109,7 @@ final class BotsiPaywallMappingStorage: Sendable {
         return true
     }
 
-    fileprivate func removePaywallMeta(for productId: String) -> Bool {
+    fileprivate func removePaywallMetadata(for productId: String) -> Bool {
         var dict = Self.paywalls
         guard let removed = dict.removeValue(forKey: productId) else { return false }
         
@@ -124,8 +124,8 @@ final class BotsiPaywallMappingStorage: Sendable {
     
     nonisolated func setPaywallMeta(_ meta: PaywallMeta, for productId: String) async {
         Task {
-            await setPaywallMeta(meta, for: productId)
-            await setPersistentPaywallMeta(meta, for: productId)
+            await setPaywallMetadata(meta, for: productId)
+            await setPersistentPaywallMetadata(meta, for: productId)
         }
     }
 
@@ -133,13 +133,13 @@ final class BotsiPaywallMappingStorage: Sendable {
         guard !productIds.isEmpty else { return }
         
         for productId in productIds {
-            await setPaywallMeta(meta, for: productId)
+            await setPaywallMetadata(meta, for: productId)
         }
     }
     
     nonisolated func removePaywallMapping(for productId: String) async {
         Task {
-            guard await removePaywallMeta(for: productId) else { return }
+            guard await removePaywallMetadata(for: productId) else { return }
         }
     }
     
