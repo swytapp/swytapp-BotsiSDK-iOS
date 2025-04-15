@@ -10,27 +10,54 @@ The Botsi SDK enables seamless in-app purchases and paywall management in iOS ap
 - [Purchase Operations](#purchase-operations)
 - [Paywall Management](#paywall-management)
 
-## Initialization
+## Installation
 
-### `activate(with:)`
+To integrate the BotsiSDK into your project using Swift Package Manager (SPM), follow these steps:
+
+1. **Open Your Project in Xcode**  
+   Launch your iOS project in Xcode.
+
+2. **Add the Package Dependency**  
+   From the menu, navigate to **File** > **Swift Packages** > **Add Package Dependency...**.
+
+3. **Enter the Repository URL**  
+   When prompted, enter the repository URL below:
+
+https://github.com/swytapp/swytapp-BotsiSDK-iOS.git
+
+4. **Specify the Version**  
+Under the version rule options, select **Version** and specify the SDK version:
+
+Latest version is: 1.0.1
+
+5. **Finalize Installation**  
+Xcode will download and integrate the SDK into your project. Once added, you can start using the SDK immediately.
+
+6. **Import the SDK in Your Code**  
+In your source files, add the following import statement:
+
 ```swift
-static func activate(with config: BotsiConfiguration) async throws
+import Botsi
 ```
 
-Activates and initializes the Botsi SDK with your configuration.
+## Initialization
 
-**Parameters:**
-- `config`: A `BotsiConfiguration` object containing your SDK API key and observer settings.
+### `activate(_ key:)`
+```swift
+static func activate(_ key: String) async throws
+```
+
+Activates and initializes the Botsi SDK with your public key.
 
 **Example:**
 ```swift
 do {
-    try await Botsi.activate(with: BotsiConfiguration(
-        sdkApiKey: "your_api_key",
-    ))
+    try await Botsi.activate("your_api_key")
     // SDK is now initialized and ready for use
+} catch let error as BotsiError {
+    print("Failed to initialize Botsi SDK: \(error.localizedDescription)")
 } catch {
-    print("Failed to initialize Botsi SDK: \(error)")
+    print("Unknown error")
 }
 ```
 
@@ -75,7 +102,7 @@ do {
     let profile = try await Botsi.getProfile()
     print("User profile ID: \(profile.profileId)")
     // Access other profile properties
-} catch {
+} catch let error as BotsiError {
     print("Failed to get user profile: \(error)")
 }
 ```
@@ -97,7 +124,7 @@ Retrieves the list of product IDs available for the application.
 do {
     let productIDs = try await Botsi.fetchProductIDs()
     print("Available product IDs: \(productIDs)")
-} catch {
+} catch let error as BotsiError {
     print("Failed to fetch product IDs: \(error)")
 }
 ```
@@ -124,10 +151,10 @@ Initiates a purchase for the specified product ID.
 **Example:**
 ```swift
 do {
-    let updatedProfile = try await Botsi.makePurchase("premium_subscription")
+    let updatedProfile = try await Botsi.makePurchase("product_id")
     // Handle successful purchase
     print("Purchase successful! Updated profile: \(updatedProfile.profileId)")
-} catch {
+} catch let error as BotsiError {
     print("Purchase failed: \(error)")
 }
 ```
@@ -151,7 +178,7 @@ do {
     let restoredProfile = try await Botsi.restorePurchases()
     print("Purchases restored successfully!")
     // Check restored entitlements
-} catch {
+} catch let error as BotsiError {
     print("Failed to restore purchases: \(error)")
 }
 ```
@@ -173,14 +200,16 @@ Retrieves a paywall configuration for the specified placement ID.
 
 **Throws:**
 - `BotsiError.userProfileNotFound`: If no user profile exists.
+- `BotsiError.sdkActivationKeyNotValid`: If user entered wrong public key.
+- `BotsiError.customError`: With details if there are issues with fetching profile.
 
 **Example:**
 ```swift
 do {
-    let paywall = try await Botsi.getPaywall(from: "main_screen_premium")
+    let paywall = try await Botsi.getPaywall(from: "paywall_name")
     // Configure your UI with the paywall information
     print("Paywall retrieved: \(paywall)")
-} catch {
+} catch let error as BotsiError {
     print("Failed to get paywall: \(error)")
 }
 ```
@@ -201,7 +230,7 @@ Retrieves detailed product information for all products in a paywall.
 **Example:**
 ```swift
 do {
-    let paywall = try await Botsi.getPaywall(from: "main_screen_premium")
+    let paywall = try await Botsi.getPaywall(from: "paywall_name")
     let products = try await Botsi.getPaywallProducts(from: paywall)
     
     // Display products to the user
@@ -210,8 +239,25 @@ do {
         print("Price: \(product.price)")
         // Configure purchase buttons with product information
     }
-} catch {
+} catch let error as BotsiError {
     print("Failed to get paywall products: \(error)")
+}
+```
+
+### `logPaywallShown()`
+```swift
+    static func logPaywallShown(for paywall: BotsiPaywall) async throws
+```
+
+Sends an event to collect analytics. Should be called together with getPaywall(from:)
+
+**Example:**
+```swift
+do {
+    let paywall = try await Botsi.getPaywall(from: "paywall_name")
+    try await Botsi.logPaywallShown(for: paywall)
+} catch let error as BotsiError {
+    print("Failed to get paywall or send event: \(error)")
 }
 ```
 
@@ -224,6 +270,7 @@ The SDK uses `BotsiError` for error reporting. Common errors include:
 - `BotsiError.restoreFailed`: Restore purchases operation failed
 - `BotsiError.customError`: Custom errors with detailed information
 - `BotsiError.paywallFetchingFailed`: Failed to fetch paywall information
+- `BotsiError.sdkActivationKeyNotValid`: Incorrect public key provided
     
 
 Properly handle these errors in your application to provide appropriate feedback to users.
