@@ -45,9 +45,7 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
             let responseDto: BotsiRestorePurchaseResponseDto = try wrapper.decode()
 
             return mapper.toDomain(from: responseDto)
-
         } catch {
-            BotsiLog.error("Restore request failed with error: \(error.localizedDescription)")
             throw BotsiError.restoreFailed
         }
     }

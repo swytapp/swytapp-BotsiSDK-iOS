@@ -34,3 +34,9 @@ struct CreateProfileDtoResponse: Codable {
     let ok: Bool
     let data: BotsiProfile
 }
+
+struct CreateProfileErrorDtoResponse: Codable {
+    let ok: Bool
+    let message: String
+    let status: Int
+}

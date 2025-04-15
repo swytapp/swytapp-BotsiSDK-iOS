@@ -15,6 +15,7 @@ protocol BotsiErrorConformable {
 // MARK: - Botsi enum
 public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case sdkNotActivated
+    case sdkActivationKeyNotValid
     
     case userCreationFailed
     case userProfileNotFound
@@ -42,6 +43,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
 
     public var localizedDescription: String {
         switch self {
+        case .sdkActivationKeyNotValid:
+            return "Incorrect activation key."
         case .userCreationFailed:
             return "User creation failed."
         case .userProfileNotFound:

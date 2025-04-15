@@ -33,11 +33,21 @@ final class GetUserProfileRepository: BotsiGetProfileRepository {
             })
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
-            let responseDto: CreateProfileDtoResponse = try wrapper.decode()
-            return mapper.toDomain(from: responseDto)
-
-        } catch {
+            do {
+                let responseDto: CreateProfileDtoResponse = try wrapper.decode()
+                return mapper.toDomain(from: responseDto)
+            } catch {
+                let errorDto: CreateProfileErrorDtoResponse = try wrapper.decode()
+                if errorDto.status == 403 {
+                    throw BotsiError.sdkActivationKeyNotValid
+                } else {
+                    throw BotsiError.customError(errorDto.message, "Status code: \(errorDto.status)")
+                }
+            }
+        } catch let error as BotsiError {
             BotsiLog.error("Failed to fetch user profile: \(error.localizedDescription)")
+            throw error
+        } catch {
             throw BotsiError.userGetProfileFailed
         }
     }
