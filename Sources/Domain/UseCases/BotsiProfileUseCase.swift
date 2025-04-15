@@ -19,7 +19,6 @@ struct CreateUserProfileUseCase {
     }
 }
 
-// MARK: - CreateProfile request
 struct CreateProfileRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     

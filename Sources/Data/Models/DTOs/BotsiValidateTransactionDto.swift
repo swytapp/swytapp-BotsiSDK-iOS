@@ -13,17 +13,17 @@ struct BotsiValidateTransactionRequestDto: Encodable {
     let transactionId: String
     let originalTransactionId: String
     let sourceProductId: String
-    let originalPrice: Decimal
+    let originalPrice: Decimal?
     let discountPrice: String
-    let priceLocale: String
-    let storeCountry: String
+    let priceLocale: String?
+    let storeCountry: String?
     let offer: BotsiValidateTransactionOfferDto?
     let promotionalOfferId: String
     let environment: String
     let profileId: String
     let productId: String
     let placementId: String?
-    let paywallId: String?
+    let paywallId: Int?
     let abTestId: Int?
     let isSubscription: Bool
     let source: String

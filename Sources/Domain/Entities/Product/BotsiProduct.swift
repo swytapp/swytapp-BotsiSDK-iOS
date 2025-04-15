@@ -14,26 +14,20 @@ public protocol BotsiProduct: Sendable, CustomStringConvertible {
     @available(iOS 15.0, macOS 12.0, *)
     var sk2Product: Product? { get }
     
-    // MARK: - Identifiers
     var paywallId: Int { get }
     var abTestId: Int? { get }
     var productId: String { get }
     var placementId: String? { get }
     
-    // MARK: - Display Information
     var title: String { get }
     var descriptionText: String { get }
     
-    // MARK: - Pricing
     var price: Decimal { get }
     var currencyCode: String? { get }
     var localizedPrice: String? { get }
     
-    // MARK: - Introductory Offers
     var isEligibleForIntroOffer: Bool { get }
     var introductoryPrice: String? { get }
-    
-    // MARK: - Subscription Details
     
     var subscriptionGroupIdentifier: String? { get }
     var localizedSubscriptionPeriod: String? { get }
@@ -162,7 +156,6 @@ extension BotsiSK2Product {
         if let introOffer = skProduct.subscription?.introductoryOffer {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
-            // let currencyId = skProduct.priceFormatStyle.currencyCode
             return formatter.string(from: NSDecimalNumber(decimal: introOffer.price))
         } else {
             return nil

@@ -27,8 +27,8 @@ public struct BotsiLogEventContext: Sendable {
 // MARK: - Core event model
 public struct BotsiLogEvent: Sendable {
     public let profileId: String
-    public let paywallId: String?
-    public let abTestId: String?
+    public let paywallId: Int?
+    public let abTestId: Int?
     public let placementId: String?
     public let type: BotsiLogEventType
     public let name: String
@@ -36,15 +36,16 @@ public struct BotsiLogEvent: Sendable {
     public let message: String?
     public let context: BotsiLogEventContext?
     
-    public init(profileId: String,
-                paywallId: String? = nil,
-                abTestId: String? = nil,
-                type: BotsiLogEventType,
-                name: String,
-                timestamp: TimeInterval = Date().timeIntervalSince1970,
-                message: String? = nil,
-                context: BotsiLogEventContext? = nil,
-                placementId: String? = nil
+    public init(
+        profileId: String,
+        paywallId: Int? = nil,
+        abTestId: Int? = nil,
+        type: BotsiLogEventType,
+        name: String,
+        timestamp: TimeInterval = Date().timeIntervalSince1970,
+        message: String? = nil,
+        context: BotsiLogEventContext? = nil,
+        placementId: String? = nil
     ) {
         self.profileId = profileId
         self.paywallId = paywallId

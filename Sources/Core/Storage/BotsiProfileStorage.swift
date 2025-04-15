@@ -9,8 +9,6 @@ import Foundation
 
 public actor BotsiProfileStorage: Sendable {
     private let storageManager: BotsiStorageManager = BotsiStorageManager()
-
-    // MARK: - Properties Stored in UserDefaults
     
     private var profileId: String
     private var profile: BotsiProfile?
@@ -18,12 +16,10 @@ public actor BotsiProfileStorage: Sendable {
     private var externalAnalyticsDisabled: Bool = false
     private var syncedTransactions: Bool = false
 
-    // MARK: - Initialization
-    
     init() async {
         do {
             guard let storedProfile = try await storageManager.retrieve(BotsiProfile.self, forKey: UserDefaultKeys.User.userProfile) else {
-                throw BotsiError.customError("Storage manager", "Unable to retrieve user profile")
+                throw BotsiError.customError("Profile Storage Error.", "Unable to retrieve user profile")
             }
             self.profile = storedProfile
             self.profileId = storedProfile.profileId
@@ -35,7 +31,6 @@ public actor BotsiProfileStorage: Sendable {
         
     }
     
-    // MARK: - Public Accessors
     func currentProfileId() -> String {
         return profileId
     }
@@ -77,8 +72,6 @@ public actor BotsiProfileStorage: Sendable {
             : nil
     }
     
-    // MARK: - Mutators
-    
     func setProfile(_ newProfile: BotsiProfile) async {
         do {
             try await storageManager.save(newProfile, forKey: UserDefaultKeys.User.userProfile)
@@ -110,16 +103,11 @@ public actor BotsiProfileStorage: Sendable {
         BotsiLog.debug("Profile cleared.")
     }
     
-    // MARK: - Private Helpers
-    
     private static func generateProfileId() -> String {
         let newId = UUID().uuidString.lowercased()
-        BotsiLog.debug("create profileId = \(newId)")
         return newId
     }
 }
-
-// TODO: - Other Storage settings
 
 enum BackendIntroductoryOfferEligibilityStorage {
     static func clear() {

@@ -19,7 +19,6 @@ struct BotsiValidateTransactionUseCase {
     }
 }
 
-// MARK: - CreateProfile request
 struct ValidateTransactionRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     

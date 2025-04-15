@@ -28,25 +28,21 @@ struct BotsiValidateTransactionMapper: DomainMapper {
                 category: transaction.offer?.offerType.description)
             offer = offerDto
         }
-        var paywallId: String? = nil
-        if let id = transaction.paywallId {
-            paywallId = "\(id)"
-        }
         return BotsiValidateTransactionRequestDto(
             transactionId: transaction.transactionId,
             originalTransactionId: transaction.originalTransactionId,
             sourceProductId: transaction.sourceProductId,
-            originalPrice: transaction.originalPrice ?? -1,
+            originalPrice: transaction.originalPrice,
             discountPrice: transaction.discountPrice,
-            priceLocale: transaction.priceLocale ?? "null",
-            storeCountry: transaction.storeCountry ?? "null",
+            priceLocale: transaction.priceLocale,
+            storeCountry: transaction.storeCountry,
             offer: offer,
             promotionalOfferId: transaction.promotionalOfferId,
             environment: transaction.environment,
             profileId: parameters.profileId,
             productId: transaction.productId,
             placementId: transaction.placementId,
-            paywallId: paywallId,
+            paywallId: transaction.paywallId,
             abTestId: transaction.abTestId,
             isSubscription: transaction.isSubscription,
             source: parameters.source

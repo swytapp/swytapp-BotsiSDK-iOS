@@ -116,7 +116,10 @@ public actor StoreKit2Handler {
                 do {
                     let productId = transaction.productID
                     guard let product = try await Product.products(for: [productId]).first else {
-                        throw BotsiError.customError("StoreKit2Handler", "Unable to fetch product with id: \(productId)")
+                        throw BotsiError.customError(
+                            "StoreKit2Handler",
+                            "Unable to fetch product with id: \(productId)"
+                        )
                     }
                     let (current, cached) = await paywallStorage.getPaywallMeta(for: productId)
                     let botsiTransaction = await mapper.completeTransaction(
@@ -148,8 +151,6 @@ public actor StoreKit2Handler {
                         let validationError = error as NSError
                         if validationError.isRetryableError() {
                             BotsiLog.error("StoreKit 2 Retrayable error: \(validationError.localizedDescription)")
-                            
-                            // Don't finish the transaction so it will be retried next time (to not lose transactions)
                             processedTransactionIds.remove(transaction.id)
                             continue
                         } else {
@@ -167,7 +168,7 @@ public actor StoreKit2Handler {
         }
     }
     
-    // post notification to UI update
+    /// `post notification to UI update`
     @available(iOS 15.0, *)
     private func notifySubscriptionRenewal(product: Product, profile: BotsiProfile) async {}
     
@@ -195,10 +196,22 @@ public actor StoreKit2Handler {
         }
         let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
         let helper = ReceiptRefreshHelper()
-        let receiptData = try await helper.refreshReceipt()
-        let profileFetched = try await repository.restore(receipt: receiptData)
+        var receipt: Data
+        
+        do {
+            let receiptData = try await helper.refreshReceipt()
+            receipt = receiptData
+        } catch {
+            guard let receiptURL = Bundle.main.appStoreReceiptURL else {
+                throw BotsiError.customError("SK2. Restore.", "Unable to fetch receipt data from the app. The request could be throttled.")
+            }
+            let receiptData = try Data(contentsOf: receiptURL)
+            receipt = receiptData
+        }
+        
+        let profileFetched = try await repository.restore(receipt: receipt)
         await storage.setProfile(profileFetched)
-        BotsiLog.info("StoreKit 2 Restore. Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "none")")
+        BotsiLog.info("StoreKit 2 Restore. Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "[]")")
         return profileFetched
     }
 

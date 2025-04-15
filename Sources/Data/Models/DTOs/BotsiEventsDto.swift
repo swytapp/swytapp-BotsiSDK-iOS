@@ -10,26 +10,9 @@ import Foundation
 // MARK: - Request model
 struct BotsiEventsRequestDto: Encodable {
     let profileId: String
-    let paywallId: String
-    let abTestId: String?
+    let paywallId: Int?
+    let abTestId: Int?
     let eventType: String
-    /*let timestamp: String
-    let productDuration: String
-    let productId: [String] // ??
-    let country: String
-    let store: String
-    let offerType: String
-    let offerCategory: String
-    let offerId: String
-    let transactionId: String
-    let originalTransactionId: String
-    let revenueUsd: Decimal
-    let proceedsUsd: Decimal
-    let revenueLocal: Decimal
-    let proceedsLocal: Decimal
-    let purchaseCurrency: String
-    let cancellationReason: String
-    let subscriptionExpiresAt: String*/
 }
 
 // MARK: - Response model

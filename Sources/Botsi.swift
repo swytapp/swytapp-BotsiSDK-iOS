@@ -10,8 +10,6 @@ import Foundation
 @BotsiActor
 public final class Botsi: Sendable {
     let sdkApiKey: String
-    
-    private let enableObserver: Bool // TODO:
         
     fileprivate let profileStorage: BotsiProfileStorage
     fileprivate let cachedTransactionsStore: BotsiSyncedTransactionStore
@@ -24,7 +22,6 @@ public final class Botsi: Sendable {
     
     init(from configuration: BotsiConfiguration) async {
         self.sdkApiKey = configuration.sdkApiKey
-        self.enableObserver = configuration.enableObserver
         
         self.botsiClient = BotsiHttpClient(with: configuration, key: configuration.sdkApiKey)
         self.profileStorage = await BotsiProfileStorage()
@@ -91,8 +88,7 @@ public extension Botsi {
     ///   ```swift
     ///   do {
     ///       try await Botsi.activate(with: BotsiConfiguration(
-    ///           sdkApiKey: "your_api_key",
-    ///           enableObserver: true
+    ///           sdkApiKey: "your_api_key"
     ///       ))
     ///       // SDK is now initialized and ready for use
     ///   } catch {
@@ -196,7 +192,7 @@ public extension Botsi {
     @discardableResult
     private func fetchProductIDs() async throws -> [String] {
         let fetchProductIDsRepository = FetchProductIDsRepository(httpClient: botsiClient)
-        return try await fetchProductIDsRepository.fetchProductIds(from: sdkApiKey)
+        return try await fetchProductIDsRepository.fetchProductIds()
     }
 
     /// Initiates a purchase for the specified product ID.
@@ -292,7 +288,6 @@ public extension Botsi {
                 return userProfile
             }
         } catch {
-            print("Failed to restore: \(error.localizedDescription)")
             throw BotsiError.restoreFailed
         }
     }
@@ -371,7 +366,7 @@ public extension Botsi {
                 BotsiSK2PaywallProduct(
                     skProduct: $0,
                     paywallId: paywall.id,
-                    placementId: paywall.placementId ?? "",
+                    placementId: paywall.placementId,
                     abTestId: paywall.abTestId
                 )
             }
@@ -384,7 +379,7 @@ public extension Botsi {
                 BotsiSK1PaywallProduct(
                     skProduct: $0.skProduct,
                     paywallId: paywall.id,
-                    placementId: paywall.placementId ?? "",
+                    placementId: paywall.placementId,
                     abTestId: paywall.abTestId
                 )
             }
@@ -399,7 +394,7 @@ public extension Botsi {
         let useCase = BotsiSendEventUseCase(repository: eventsRepository)
         try await useCase.execute(
             profileId: event.profileId,
-            paywallId: event.paywallId ?? "",
+            paywallId: event.paywallId,
             abTestId: event.abTestId,
             eventType: event.type.rawValue
         )
@@ -417,11 +412,10 @@ public extension Botsi {
             sendEventFunction: sendPaywallTrackEvent
         )
 
-        let abTestIdIsPresent = paywall.abTestId != nil
         let userActionEvent = BotsiLogEvent(
             profileId: profileId,
-            paywallId: "\(paywall.id)",
-            abTestId: abTestIdIsPresent ? "\(paywall.abTestId ?? 0)" : nil,
+            paywallId: paywall.id,
+            abTestId: paywall.abTestId,
             type: .userPaywallShown,
             name: "userPaywallPresentedLog",
             message: "Paywall presented.",

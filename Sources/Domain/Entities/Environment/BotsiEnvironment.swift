@@ -13,9 +13,9 @@ final class BotsiEnvironment: Sendable {
     let storeCountry: String
     let botsiSdkVersion: String
     let advertisingId: String
-    let androidId: String // TODO: change to ios-related
+    let androidId: String
     let appBuild: String
-    let androidAppSetId: String // TODO: change to ios-related
+    let androidAppSetId: String
     let appVersion: String
     let device: String
     let deviceId: String
@@ -41,7 +41,6 @@ final class BotsiEnvironment: Sendable {
     }
 }
 
-// MARK: - Storefront provider
 struct BotsiStorefront {
     let id: String
     let countryCode: String
@@ -108,7 +107,6 @@ extension Botsi {
     public nonisolated static let sdkVersion = "1.0"
 }
 
-// MARK: - Device
 extension BotsiEnvironment {
     enum Device {
         #if targetEnvironment(simulator)
@@ -157,8 +155,6 @@ extension BotsiEnvironment {
         }
     }
 }
-
-// MARK: - System info
 
 extension BotsiEnvironment {
     enum Application {

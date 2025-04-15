@@ -19,7 +19,6 @@ struct BotsiFetchProductIDsUseCase {
     }
 }
 
-// MARK: - CreateProfile request
 struct FetchProductIDsRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     
@@ -31,11 +30,7 @@ struct FetchProductIDsRequest: BotsiHTTPRequest {
     
     var body: Data? = nil
     
-    private let storeName: String
-    
-    init(storeName: String) {
-        self.storeName = storeName
-    }
+    init() {}
     
     func convertToURLRequest(configuration: HTTPCodableConfiguration, additional: (any HTTPRequestAdditional)?) throws -> URLRequest {
 
@@ -44,7 +39,7 @@ struct FetchProductIDsRequest: BotsiHTTPRequest {
         }
         
         var urlComponents = URLComponents(string: url.absoluteString)
-        urlComponents?.path += "\(storeName)/products/products-ids/app_store"
+        urlComponents?.path += "products/products-ids/app_store"
         
         guard let finalUrl = urlComponents?.url else {
             throw BotsiError.networkError("Unable to build final url request")

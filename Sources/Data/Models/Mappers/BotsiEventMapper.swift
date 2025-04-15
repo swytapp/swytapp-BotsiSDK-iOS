@@ -9,7 +9,7 @@ import Foundation
 
 struct BotsiEventMapper: DomainMapper {
 
-    typealias Parameters = (profileId: String, paywallId: String, abTestId: String?, eventType: String)
+    typealias Parameters = (profileId: String, paywallId: Int?, abTestId: Int?, eventType: String)
     
     typealias DTOResponseModel = BotsiEventsResponseDto
     

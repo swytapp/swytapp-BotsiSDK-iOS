@@ -8,8 +8,7 @@
 import Foundation
 
 protocol BotsiRestorePurchaseRepository {
-    // func restore(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile // with transaction
-    func restore(receipt: Data) async throws -> BotsiProfile // with receipt
+    func restore(receipt: Data) async throws -> BotsiProfile
 }
 
 final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {

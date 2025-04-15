@@ -27,7 +27,7 @@ extension BotsiProfile {
         
         /// `Returns true if this access level is valid for a lifetime, meaning there is no expiration date.`
         public let isLifetime: Bool
-        public let isRefund: Bool
+        public let isRefund: Bool?
         
         /// `Returns true if this auto-renewable subscription is scheduled for renewal.`
         public let willRenew: Bool
@@ -52,7 +52,7 @@ extension BotsiProfile {
         
         /// `The type of an active introductory offer. If this value is not nil, it indicates that the offer was utilized during the current subscription period.`
         public let activeIntroductoryOfferType: String?
-        public let activePromotionalOfferType: String
+        public let activePromotionalOfferType: String?
         public let activePromotionalOfferId: String?
         
         /// `The timestamp indicating when the auto-renewable subscription was canceled. The subscription may still be active; this simply means that auto-renewal has been disabled. It will be set to nil if the user reactivates the subscription.`

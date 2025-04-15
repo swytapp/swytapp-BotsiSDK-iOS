@@ -33,9 +33,7 @@ final class ReceiptRefreshHelper: NSObject {
         
         switch result {
         case .success(let data):
-            let receiptDecoded = String(data: data, encoding: .utf8)
-            BotsiLog.debug("Receipt (Refresher): \(receiptDecoded ?? "")")
-            BotsiLog.info("Bundle receipt refreshed.")
+            BotsiLog.info("App bundle receipt refreshed.")
             continuation.resume(returning: data)
         case .failure(let error):
             continuation.resume(throwing: error)
@@ -61,6 +59,7 @@ extension ReceiptRefreshHelper: SKRequestDelegate {
     }
     
     func request(_ request: SKRequest, didFailWithError error: Error) {
+        BotsiLog.error("Receipt refresh error: \(error.localizedDescription)")
         self.request?.cancel()
         finishContinuation(result: .failure(error))
     }

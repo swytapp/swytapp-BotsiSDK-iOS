@@ -19,7 +19,6 @@ struct BotsiGetPaywallUseCase {
     }
 }
 
-// MARK: - CreateProfile request
 struct GetPaywallRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     

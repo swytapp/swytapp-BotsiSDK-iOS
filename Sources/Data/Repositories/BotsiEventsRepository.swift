@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiEventsRepository {
-    func sendEvent(profileId: String, paywallId: String, abTestId: String?, eventType: String) async throws
+    func sendEvent(profileId: String, paywallId: Int?, abTestId: Int?, eventType: String) async throws
 }
 
 final class EventsRepository: BotsiEventsRepository {
@@ -20,7 +20,7 @@ final class EventsRepository: BotsiEventsRepository {
         self.mapper = mapper
     }
 
-    func sendEvent(profileId: String, paywallId: String, abTestId: String? = nil, eventType: String) async throws {
+    func sendEvent(profileId: String, paywallId: Int? = nil, abTestId: Int? = nil, eventType: String) async throws {
         do {
             var request = SendEventRequest()
             request.headers = [

@@ -33,8 +33,7 @@ class BotsiPurchasesViewModel: ObservableObject {
     
     init() {
         let botsiConfiguration = BotsiConfiguration.build(
-            with: "api_key",
-            enableObserver: true
+            with: "api_key"
         )
         botsiConfiguration.set(profileIdentifier: "profile_id")
         self.botsiConfiguration = botsiConfiguration

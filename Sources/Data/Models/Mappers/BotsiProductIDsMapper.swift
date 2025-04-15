@@ -8,5 +8,5 @@
 // MARK: - Response model
 struct ProductIDsDtoResponse: Codable {
     let ok: Bool
-    let data: [String] // array of identifiers
+    let data: [String]
 }

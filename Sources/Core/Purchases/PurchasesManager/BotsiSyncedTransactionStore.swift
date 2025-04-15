@@ -29,7 +29,7 @@ public actor BotsiSyncedTransactionStore {
             cachedTransactionOriginalIdentifier = transactionId
         } catch {
             cachedTransactionOriginalIdentifier = nil
-            BotsiLog.error("Failed to encode last synced transaction")
+            BotsiLog.error("Failed to encode last synced transaction.")
         }
     }
     

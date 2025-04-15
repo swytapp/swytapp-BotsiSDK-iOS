@@ -33,8 +33,6 @@ public actor StoreKit1Handler {
     private var pendingProducts: [String: BotsiProduct] = [:]
     private var processingTransactions = Set<String>()
     
-    // MARK: - Initialization
-    
     public init(
         client: BotsiHttpClient,
         storage: BotsiProfileStorage,
@@ -135,8 +133,6 @@ public actor StoreKit1Handler {
         return try await restoreTransactions()
     }
     
-    // MARK: - Internal Actor Methods (Called by Delegate)
-    
     internal func onDidReceiveProductsResponse(_ response: SKProductsResponse) {
         if let completion = fetchProductCompletion {
             
@@ -200,7 +196,6 @@ public actor StoreKit1Handler {
         }
     }
     
-    // MARK: - Transaction Helpers
     private func handlePurchased(_ transaction: SKPaymentTransaction) {
         logTransactionDetails(transaction)
         guard let transactionId = transaction.transactionIdentifier, !processingTransactions.contains(transactionId) else {

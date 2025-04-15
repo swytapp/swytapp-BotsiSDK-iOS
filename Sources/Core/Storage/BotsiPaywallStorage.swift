@@ -23,18 +23,12 @@ final class BotsiPaywallMappingStorage: Sendable {
     actor InternalActor {
         package static let shared = InternalActor()
     }
-    
-    // ----------------------------------
-    // MARK: - Constants
-    // ----------------------------------
+
     enum Constants {
         static let paywalls = "current_botsi_paywalls"
         static let cachedPaywalls = "cached_botsi_paywalls"
     }
 
-    // ----------------------------------
-    // MARK: - Properties
-    // ----------------------------------
     private static let storage = UserDefaults.standard
     
     private static var paywalls: [String: PaywallMeta] {
@@ -43,7 +37,6 @@ final class BotsiPaywallMappingStorage: Sendable {
             do {
                 return try JSONDecoder().decode([String: PaywallMeta].self, from: data)
             } catch {
-                BotsiLog.error("Failed to decode paywalls: \(error)")
                 return [:]
             }
         }
@@ -63,7 +56,6 @@ final class BotsiPaywallMappingStorage: Sendable {
             do {
                 return try JSONDecoder().decode([String: PaywallMeta].self, from: data)
             } catch {
-                BotsiLog.error("Failed to decode cached paywalls: \(error)")
                 return [:]
             }
         }
@@ -94,7 +86,6 @@ final class BotsiPaywallMappingStorage: Sendable {
         guard oldMeta != meta else { return false }
         
         Self.cachedPaywalls = dict
-        BotsiLog.debug("Caching paywall meta \(meta) for product \(productId)")
         return true
     }
 
@@ -105,7 +96,6 @@ final class BotsiPaywallMappingStorage: Sendable {
         guard oldMeta != meta else { return false }
         
         Self.paywalls = dict
-        BotsiLog.debug("Saving paywall meta \(meta) for purchased product \(productId)")
         return true
     }
 
@@ -114,7 +104,6 @@ final class BotsiPaywallMappingStorage: Sendable {
         guard let removed = dict.removeValue(forKey: productId) else { return false }
         
         Self.paywalls = dict
-        BotsiLog.debug("Removing paywall meta \(removed) for product \(productId)")
         return true
     }
     

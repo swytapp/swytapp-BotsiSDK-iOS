@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiFetchProductIDsRepository {
-    func fetchProductIds(from storeName: String) async throws -> [String]
+    func fetchProductIds() async throws -> [String]
 }
 
 final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
@@ -18,9 +18,9 @@ final class FetchProductIDsRepository: BotsiFetchProductIDsRepository {
         self.httpClient = httpClient
     }
 
-    func fetchProductIds(from storeName: String) async throws ->  [String] {
+    func fetchProductIds() async throws ->  [String] {
         do {
-            var request = FetchProductIDsRequest(storeName: storeName)
+            var request = FetchProductIDsRequest()
             request.headers = [
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
