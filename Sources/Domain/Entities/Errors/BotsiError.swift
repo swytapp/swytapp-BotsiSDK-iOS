@@ -14,41 +14,45 @@ protocol BotsiErrorConformable {
 
 // MARK: - Botsi enum
 public enum BotsiError: Error, Sendable, BotsiErrorConformable {
-    /// `user errors`
+    case sdkNotActivated
+    case sdkActivationKeyNotValid
+    
     case userCreationFailed
     case userProfileNotFound
     case userGetProfileFailed
     
     case fetchingProductIdsFailed
+    case paywallFetchingFailed
     
     case invalidProductIdentifier(String)
     case purchaseFailed(String)
-    case paymentNotAllowed
-    case userCancelled
+    
     case unknownError(Error)
     case networkError(String)
-    case receiptValidationFailed(String)
-    case sdkNotActivated
     
     case transactionFailed
     case restoreFailed
-    
-    case paywallFetchingFailed
+    case transactionDeferred
+    case paymentNotAllowed
+    case userCancelled
+    case receiptValidationFailed(String)
     
     case eventsError
     
-    /// `wildcard`
     case customError(String, String)
 
-    /// `error localized description`
     public var localizedDescription: String {
         switch self {
+        case .sdkActivationKeyNotValid:
+            return "Incorrect activation key."
         case .userCreationFailed:
             return "User creation failed."
         case .userProfileNotFound:
             return "User profile not found."
         case .transactionFailed:
             return "Transaction failed."
+        case .transactionDeferred:
+            return "Transaction is deferred."
         case .invalidProductIdentifier(let identifier):
             return "Invalid product identifier: \(identifier)"
         case .purchaseFailed(let reason):

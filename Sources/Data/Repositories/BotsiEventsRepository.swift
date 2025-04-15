@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiEventsRepository {
-    func sendEvent(profileId: String, placementId: String, eventType: String) async throws
+    func sendEvent(profileId: String, paywallId: Int?, abTestId: Int?, eventType: String) async throws
 }
 
 final class EventsRepository: BotsiEventsRepository {
@@ -20,29 +20,25 @@ final class EventsRepository: BotsiEventsRepository {
         self.mapper = mapper
     }
 
-    func sendEvent(profileId: String, placementId: String, eventType: String) async throws {
+    func sendEvent(profileId: String, paywallId: Int? = nil, abTestId: Int? = nil, eventType: String) async throws {
         do {
             var request = SendEventRequest()
             request.headers = [
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
-            let parameters = (profileId, placementId, eventType)
+            let parameters = (profileId, paywallId, abTestId, eventType)
             let body = try mapper.toDTO(from: parameters).toData()
             request.body = body
             
-            print("url: \(request.relativePath) ")
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
             
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
-            let responseDto: BotsiEventsResponseDto = try wrapper.decode()
-            
-            BotsiLog.info("EventsRepository raw response: \(responseDto.ok)")
+            let _: BotsiEventsResponseDto = try wrapper.decode()
         } catch {
-            BotsiLog.error("EventsRepository failed with error: \(error)")
             throw BotsiError.eventsError
         }
     }

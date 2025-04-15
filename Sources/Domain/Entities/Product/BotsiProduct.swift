@@ -14,23 +14,20 @@ public protocol BotsiProduct: Sendable, CustomStringConvertible {
     @available(iOS 15.0, macOS 12.0, *)
     var sk2Product: Product? { get }
     
-    // MARK: - Identifiers
+    var paywallId: Int { get }
+    var abTestId: Int? { get }
     var productId: String { get }
+    var placementId: String? { get }
     
-    // MARK: - Display Information
     var title: String { get }
     var descriptionText: String { get }
     
-    // MARK: - Pricing
     var price: Decimal { get }
     var currencyCode: String? { get }
     var localizedPrice: String? { get }
     
-    // MARK: - Introductory Offers
     var isEligibleForIntroOffer: Bool { get }
     var introductoryPrice: String? { get }
-    
-    // MARK: - Subscription Details
     
     var subscriptionGroupIdentifier: String? { get }
     var localizedSubscriptionPeriod: String? { get }
@@ -159,7 +156,6 @@ extension BotsiSK2Product {
         if let introOffer = skProduct.subscription?.introductoryOffer {
             let formatter = NumberFormatter()
             formatter.numberStyle = .currency
-            // let currencyId = skProduct.priceFormatStyle.currencyCode
             return formatter.string(from: NSDecimalNumber(decimal: introOffer.price))
         } else {
             return nil
@@ -198,9 +194,15 @@ extension BotsiSK2Product {
 // MARK: - SK Products
 struct BotsiSK1PaywallProduct: BotsiSK1Product {
     var skProduct: SKProduct
+    var paywallId: Int
+    var placementId: String?
+    var abTestId: Int?
 }
 
 @available(iOS 15.0, *)
 struct BotsiSK2PaywallProduct: BotsiSK2Product {
     var skProduct: Product
+    var paywallId: Int
+    var placementId: String?
+    var abTestId: Int?
 }

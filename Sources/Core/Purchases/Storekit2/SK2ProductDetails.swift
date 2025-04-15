@@ -11,7 +11,6 @@ import StoreKit
 public struct SK2ProductDetails: Sendable {
     public let product: Product
     
-    // Common Fields
     public let price: Decimal
     public let localizedPrice: String
     public let currencyCode: String?

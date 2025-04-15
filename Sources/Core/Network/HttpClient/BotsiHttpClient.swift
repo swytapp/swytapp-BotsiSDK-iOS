@@ -26,8 +26,6 @@ public struct BotsiHttpClient: Sendable {
     }
 }
 
-// MARK: - HTTP Session logic
-
 @globalActor
 actor BotsiHTTPSessionActor {
     static let shared = BotsiHTTPSessionActor()

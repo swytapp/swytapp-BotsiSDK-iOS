@@ -14,13 +14,11 @@ struct BotsiSendEventUseCase {
         self.repository = repository
     }
 
-    func execute(profileId: String, placementId: String, eventType: String) async throws {
-        return try await repository.sendEvent(profileId: profileId, placementId: placementId, eventType: eventType)
+    func execute(profileId: String, paywallId: Int? = nil, abTestId: Int? = nil, eventType: String) async throws {
+        return try await repository.sendEvent(profileId: profileId, paywallId: paywallId, abTestId: abTestId, eventType: eventType)
     }
 }
 
-
-// MARK: - events request
 struct SendEventRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     

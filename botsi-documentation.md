@@ -27,7 +27,6 @@ Activates and initializes the Botsi SDK with your configuration.
 do {
     try await Botsi.activate(with: BotsiConfiguration(
         sdkApiKey: "your_api_key",
-        enableObserver: true
     ))
     // SDK is now initialized and ready for use
 } catch {

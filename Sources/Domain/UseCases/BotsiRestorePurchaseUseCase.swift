@@ -13,17 +13,12 @@ struct BotsiRestorePurchaseUseCase {
     init(repository: BotsiRestorePurchaseRepository) {
         self.repository = repository
     }
-
-    /*func execute(transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
-        return try await repository.restore(transaction: transaction)
-    }*/
     
     func execute(profileId: String, receipt: Data) async throws -> BotsiProfile {
         return try await repository.restore(receipt: receipt)
     }
 }
 
-// MARK: - Sync transaction request (restore)
 struct RestorePurchaseRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     

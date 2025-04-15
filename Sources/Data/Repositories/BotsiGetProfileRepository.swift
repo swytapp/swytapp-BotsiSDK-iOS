@@ -28,20 +28,26 @@ final class GetUserProfileRepository: BotsiGetProfileRepository {
                 "Content-type": "application/json"
             ]
             
-            print("url: \(request.relativePath) ")
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
-            let responseDto: CreateProfileDtoResponse = try wrapper.decode()
-            
-            // TODO: Store response into Profile Storage
-            print("Response json: \(responseDto)")
-            return mapper.toDomain(from: responseDto)
-
+            do {
+                let responseDto: CreateProfileDtoResponse = try wrapper.decode()
+                return mapper.toDomain(from: responseDto)
+            } catch {
+                let errorDto: CreateProfileErrorDtoResponse = try wrapper.decode()
+                if errorDto.status == 403 {
+                    throw BotsiError.sdkActivationKeyNotValid
+                } else {
+                    throw BotsiError.customError(errorDto.message, "Status code: \(errorDto.status)")
+                }
+            }
+        } catch let error as BotsiError {
+            BotsiLog.error("Failed to fetch user profile: \(error.localizedDescription)")
+            throw error
         } catch {
-            print("Request failed with error: \(error)")
             throw BotsiError.userGetProfileFailed
         }
     }

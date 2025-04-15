@@ -9,7 +9,7 @@ import Foundation
 
 struct BotsiEventMapper: DomainMapper {
 
-    typealias Parameters = (profileId: String, placementId: String, eventType: String)
+    typealias Parameters = (profileId: String, paywallId: Int?, abTestId: Int?, eventType: String)
     
     typealias DTOResponseModel = BotsiEventsResponseDto
     
@@ -20,7 +20,12 @@ struct BotsiEventMapper: DomainMapper {
     func toDTO(from parameters: Parameters) -> [BotsiEventsRequestDto] {
         var events: [BotsiEventsRequestDto] = []
         
-        let event = BotsiEventsRequestDto(profileId: parameters.profileId, placementId: parameters.placementId, eventType: parameters.eventType)
+        let event = BotsiEventsRequestDto(
+            profileId: parameters.profileId,
+            paywallId: parameters.paywallId,
+            abTestId: parameters.abTestId,
+            eventType: parameters.eventType
+        )
         events.append(event)
         return events
     }

@@ -14,12 +14,11 @@ struct BotsiValidateTransactionUseCase {
         self.repository = repository
     }
 
-    func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
-        return try await repository.validateTransaction(transaction: transaction)
+    func validateTransaction(_ transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile {
+        return try await repository.validateTransaction(transaction: transaction, source: source)
     }
 }
 
-// MARK: - CreateProfile request
 struct ValidateTransactionRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     

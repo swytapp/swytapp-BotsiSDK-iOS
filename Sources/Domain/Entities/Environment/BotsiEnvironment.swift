@@ -13,9 +13,9 @@ final class BotsiEnvironment: Sendable {
     let storeCountry: String
     let botsiSdkVersion: String
     let advertisingId: String
-    let androidId: String // TODO: change to ios-related
+    let androidId: String
     let appBuild: String
-    let androidAppSetId: String // TODO: change to ios-related
+    let androidAppSetId: String
     let appVersion: String
     let device: String
     let deviceId: String
@@ -29,9 +29,9 @@ final class BotsiEnvironment: Sendable {
         self.botsiSdkVersion = Botsi.sdkVersion
         self.advertisingId = UUID().uuidString
         self.androidId = UUID().uuidString
-        self.appBuild = Application.build ?? "build undefined"
+        self.appBuild = Application.build ?? "undefined"
         self.androidAppSetId = UUID().uuidString
-        self.appVersion = Application.version ?? "version undefined"
+        self.appVersion = Application.version ?? "undefined"
         self.device = Device.name
         self.deviceId = await Device.getIdentifierForVendor()
         self.locale = SystemLocaleProvider().getUserLocale().languageCode
@@ -41,15 +41,11 @@ final class BotsiEnvironment: Sendable {
     }
 }
 
-// MARK: - Storefront provider
-
-/// `Base storefront data`
 struct BotsiStorefront {
     let id: String
     let countryCode: String
 }
 
-/// `Define storefront provider`
 protocol StorefrontProvider {
     func fetchStorefront() async throws -> BotsiStorefront
 }
@@ -60,7 +56,6 @@ final class StoreKitSimulatorMockProvider: StorefrontProvider {
     }
 }
 
-/// `StoreKit 1 Provider Implementation`
 final class StoreKit1Provider: StorefrontProvider {
     func fetchStorefront() async throws -> BotsiStorefront {
         guard let storefront = SKPaymentQueue.default().storefront else {
@@ -70,17 +65,17 @@ final class StoreKit1Provider: StorefrontProvider {
     }
 }
 
-/// `StoreKit 2 Provider Implementation`
 @available(iOS 15.0, macOS 12.0, *)
 final class StoreKit2Provider: StorefrontProvider {
     func fetchStorefront() async throws -> BotsiStorefront {
         let storefront = await Storefront.current
-        print("STOREFRONT: \(String(describing: storefront))")
+        if let storefront {
+            BotsiLog.info("Storefront \(storefront.countryCode)")
+        }
         return BotsiStorefront(id: storefront?.id ?? "unknown", countryCode: storefront?.countryCode ?? "default")
     }
 }
 
-/// `Determing StoreKit availability`
 final class StorefrontManager {
     
     private let provider: StorefrontProvider
@@ -97,13 +92,11 @@ final class StorefrontManager {
         }
     }
     
-    /// `Fetch storefront data using the correct provider`
     func getStorefront() async throws -> BotsiStorefront {
         return try await provider.fetchStorefront()
     }
 }
 
-/// `Storefront provider Errors`
 enum StorefrontError: Error {
     case storefrontUnavailable
     case unknownError
@@ -111,10 +104,9 @@ enum StorefrontError: Error {
 
 
 extension Botsi {
-    public nonisolated static let sdkVersion = "1.0.0"
+    public nonisolated static let sdkVersion = "1.0"
 }
 
-// MARK: - Device
 extension BotsiEnvironment {
     enum Device {
         #if targetEnvironment(simulator)
@@ -163,8 +155,6 @@ extension BotsiEnvironment {
         }
     }
 }
-
-// MARK: - System info
 
 extension BotsiEnvironment {
     enum Application {

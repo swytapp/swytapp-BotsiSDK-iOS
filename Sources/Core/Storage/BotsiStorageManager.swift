@@ -8,7 +8,6 @@
 import Foundation
 import CryptoKit
 
-/// `Enum for secure storage errors`
 enum BotsiStorageError: Error {
     case encodingFailed
     case decodingFailed
@@ -16,7 +15,6 @@ enum BotsiStorageError: Error {
     case integrityCheckFailed
 }
 
-/// `Secure storage manager using an actor for concurrency safety`
 public actor BotsiStorageManager {
     
     static let shared = BotsiStorageManager()
@@ -27,13 +25,11 @@ public actor BotsiStorageManager {
         self.defaults = defaults
     }
     
-    /// `Compute hash of the data using SHA256`
     private func computeHash(_ data: Data) -> String {
         let hash = SHA256.hash(data: data)
         return hash.compactMap { String(format: "%02x", $0) }.joined()
     }
     
-    /// `Save object along with its hash`
     func save<T: Codable>(_ object: T, forKey key: String) throws {
         do {
             let data = try JSONEncoder().encode(object)
@@ -47,7 +43,6 @@ public actor BotsiStorageManager {
         }
     }
     
-    /// `Retrieve and verify object integrity safely`
     func retrieve<T: Codable>(_ type: T.Type, forKey key: String) throws -> T? {
         guard let data = defaults.data(forKey: key),
               let storedHash = defaults.string(forKey: key + "_hash") else {
@@ -56,7 +51,6 @@ public actor BotsiStorageManager {
         
         let computedHash = computeHash(data)
         
-        /// `Integrity Check`
         if computedHash != storedHash {
             throw BotsiStorageError.integrityCheckFailed
         }
@@ -68,7 +62,6 @@ public actor BotsiStorageManager {
         }
     }
     
-    /// `Delete object and its hash safely`
     func delete(forKey key: String) {
         defaults.removeObject(forKey: key)
         defaults.removeObject(forKey: key + "_hash")

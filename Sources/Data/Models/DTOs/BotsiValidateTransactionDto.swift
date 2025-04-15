@@ -13,26 +13,27 @@ struct BotsiValidateTransactionRequestDto: Encodable {
     let transactionId: String
     let originalTransactionId: String
     let sourceProductId: String
-    let originalPrice: Decimal
+    let originalPrice: Decimal?
     let discountPrice: String
-    let priceLocale: String
-    let storeCountry: String
-    let offer: BotsiValidateTransactionOfferDto
+    let priceLocale: String?
+    let storeCountry: String?
+    let offer: BotsiValidateTransactionOfferDto?
     let promotionalOfferId: String
     let environment: String
     let profileId: String
     let productId: String
-    let placementId: String
-    let paywallId: String
+    let placementId: String?
+    let paywallId: Int?
+    let abTestId: Int?
     let isSubscription: Bool
-    
+    let source: String
 }
 
 struct BotsiValidateTransactionOfferDto: Encodable {
-    let periodUnit: String
-    let numberOfUnits: Int
-    let type: String
-    let category: String
+    let periodUnit: String?
+    let numberOfUnits: Int?
+    let type: String?
+    let category: String?
 }
 
 // MARK: - Response model

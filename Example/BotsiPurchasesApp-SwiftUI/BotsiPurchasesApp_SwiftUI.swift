@@ -8,7 +8,7 @@
 import SwiftUI
 import Botsi
 
-@available(iOS 18, *)
+@available(iOS 16, *)
 @main
 struct BotsiPurchasesApp_SwiftUI: App {
     private let viewModel: BotsiPurchasesViewModel
@@ -29,32 +29,43 @@ struct BotsiPurchasesApp_SwiftUI: App {
 
 @available(iOS 18, *)
 class BotsiPurchasesViewModel: ObservableObject {
-    private let botsiConfiguration: BotsiConfiguration
-    
-    init() {
-        let botsiConfiguration = BotsiConfiguration.build(
-            with: "api_key",
-            enableObserver: true
-        )
-        botsiConfiguration.set(profileIdentifier: "profile_id")
-        self.botsiConfiguration = botsiConfiguration
-    }
     
     @MainActor
     func activate() async {
-        do {
-            try await Botsi.activate(with: botsiConfiguration)
-        } catch {
-            print("Botsi Activation Failed: \(error)")
-        }
-    }
+        
+        // Botsi available methods
     
-    @MainActor
-    func createProfile() async {
         do {
-            try await Botsi.createProfile()
+            // activate SDK with public key
+            try await Botsi.activate("pk_O50YzT5Hv........")
+            
+            // fetch profile
+            let profile = try await Botsi.getProfile()
+            
+            // fetch configured product identifiers
+            let productIdFetched = try await Botsi.fetchProductIDs()
+           
+            // fetch paywall with name
+            let paywall = try await Botsi.getPaywall(from: "paywall_name")
+            
+            // fetch products from obtained paywall
+            let products = try await Botsi.getPaywallProducts(from: paywall)
+            let uiModels = products.compactMap { "\($0.title) \($0.price)..." }
+            
+            // call this method with getPaywall(from:) to enable analytics for your account
+            try await Botsi.logPaywallShown(for: paywall)
+            
+            // purchase product and fetch updated profile
+            let product = products.first
+            let profileAfterPurchase = try await Botsi.makePurchase(product)
+            
+            // restore purchases and fetch updated profile
+            let profileAfterRestore = try await Botsi.restorePurchases()
+            
+        } catch let error as BotsiError {
+            print("Botsi Activation Failed: \(error.localizedDescription)")
         } catch {
-            print("Failed to create profile: \(error)")
+            print("Unknown error")
         }
     }
 }
@@ -65,16 +76,9 @@ struct BotsiMainView: View {
     
     var body: some View {
         VStack(alignment: .center) {
-            Text("Botsi Main View")
+            Text("Botsi Paywall Main View")
                 .backgroundStyle(.black)
                 .font(.headline)
-            Button {
-                Task {
-                    await viewModel.createProfile()
-                }
-            } label: {
-                Text("Create profile")
-            }
         }
     }
 }

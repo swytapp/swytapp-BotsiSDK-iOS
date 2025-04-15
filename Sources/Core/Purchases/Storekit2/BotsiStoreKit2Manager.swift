@@ -12,15 +12,15 @@ public actor StoreKit2Handler {
     private let client: BotsiHttpClient
     private let storage: BotsiProfileStorage
     private let mapper: BotsiStoreKit2TransactionMapper = .init()
+    private let paywallStorage: BotsiPaywallMappingStorage
     
     public init(client: BotsiHttpClient, storage: BotsiProfileStorage) {
         self.client = client
         self.storage = storage
+        self.paywallStorage = BotsiPaywallMappingStorage()
         Task {
             if #available(iOS 15.0, *) {
                 await self.startObservingTransactionUpdates()
-            } else {
-                // Fallback on earlier versions
             }
         }
     }
@@ -32,7 +32,9 @@ public actor StoreKit2Handler {
             throw NSError(
                 domain: "StoreKit2Handler",
                 code: -2,
-                userInfo: [NSLocalizedDescriptionKey: "No matching StoreKit2 Product found."]
+                userInfo: [
+                    NSLocalizedDescriptionKey: "No matching StoreKit2 Product found."
+                ]
             )
         }
         let sortedProducts = sortProducts(products, by: productIDs)
@@ -49,52 +51,51 @@ public actor StoreKit2Handler {
     }
     
     @available(iOS 15.0, *)
-    public func purchaseSK2(_ product: Product) async throws -> BotsiProfile {
-        let result = try await product.purchase()
+    public func purchaseSK2(_ product: BotsiProduct) async throws -> BotsiProfile {
+        guard let skProduct = product.sk2Product else {
+            throw BotsiError.customError("SK2PurchaseError", "Unable to unwrap SK2 Product")
+        }
+        let result = try await skProduct.purchase()
         
         switch result {
         case .success(let verification):
             switch verification {
             case .unverified(_,_):
-                print("TRANSACTION_UNVERIFIED")
+                BotsiLog.info("StoreKit 2. Transaction unverified.")
                 throw BotsiError.transactionFailed
             case .verified(let transaction):
-                let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
-                print("TRANSACTION_DATA: \(botsiTransaction)")
-                let profile = try await validateTransaction(botsiTransaction)
+                let botsiTransaction = await mapper.completeTransaction(
+                    with: transaction,
+                    product: skProduct,
+                    paywallId: product.paywallId,
+                    abTestId: product.abTestId,
+                    placementId: product.placementId
+                )
+                let profile = try await validateTransaction(
+                    botsiTransaction,
+                    source: .purchasing
+                )
+                let paywallMeta = PaywallMeta(
+                    paywallId: product.paywallId,
+                    placementId: product.placementId,
+                    abTestId: product.abTestId
+                )
+                await paywallStorage.setPaywallMeta(
+                    paywallMeta,
+                    for: skProduct.id
+                )
                 await transaction.finish()
                 return profile
             }
         case .userCancelled:
-            print("User canceled the purchase.")
+            BotsiLog.info("StoreKit 2. User cancelled the purchase.")
             throw BotsiError.transactionFailed
         case .pending:
-            print("Purchase pending.")
-            let botsiTransaction = try await waitForTransactionUpdate(product)
-            let profile = try await validateTransaction(botsiTransaction)
-            print("processing transaction")
-            return profile
+            throw BotsiError.transactionDeferred
         @unknown default:
-            print("Unknown result from StoreKit2.")
+            BotsiLog.error("StoreKit 2. Unknown result.")
             throw BotsiError.transactionFailed
         }
-    }
-    
-    @available(iOS 15.0, *)
-    private func waitForTransactionUpdate(_ product: Product) async throws -> BotsiPaymentTransaction {
-        for await transaction in Transaction.updates {
-            switch transaction {
-            case .verified(let verifiedTransaction):
-                let botsiTransaction = await mapper.completeTransaction(with: verifiedTransaction, product: product)
-                await verifiedTransaction.finish()
-                return botsiTransaction
-            case .unverified(let unverifiedTransaction, _):
-                print("Unverified transaction found. Ignoring.")
-                await unverifiedTransaction.finish()
-                throw BotsiError.customError("Storekit2", "Unverified transaction")
-            }
-        }
-        throw BotsiError.customError("Storekit2", "No updates for a transaction found")
     }
     
     @available(iOS 15.0, *)
@@ -105,7 +106,7 @@ public actor StoreKit2Handler {
             switch result {
             case .verified(let transaction):
                 guard !processedTransactionIds.contains(transaction.id) else {
-                    print("Skipping already processed transaction: \(transaction.id)")
+                    BotsiLog.debug("Skipping already processed transaction: \(transaction.id)")
                     continue
                 }
                 
@@ -113,104 +114,79 @@ public actor StoreKit2Handler {
                 
                 let isRenewal = transaction.isRenewal
                 do {
-                    let products = try await Product.products(for: [transaction.productID])
-                    if let product = products.first {
-                        let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
-                        
-                        if let _ = await storage.getProfile() {
-                            do {
-                                let updatedProfile = try await validateTransaction(botsiTransaction)
-                                await storage.setProfile(updatedProfile)
-                                
-                                print("Transaction processed automatically: \(transaction.id)")
-                                
-                                // For renewals update the user's UI or send a notification ??
-                                if isRenewal {
-                                    await notifySubscriptionRenewal(product: product, profile: updatedProfile)
-                                }
-                                
-                            } catch let validationError as NSError {
-                                if validationError.isRetryableError() {
-                                    print("Retryable error encountered: \(validationError.localizedDescription)")
-                                    
-                                    // Don't finish the transaction so it will be retried next time (to not lose transactions)
-                                    processedTransactionIds.remove(transaction.id)
-                                    continue
-                                } else {
-                                    print("Non-retryable validation error: \(validationError.localizedDescription)")
-                                }
-                            }
-                        } else {
-                            print("No profile available for transaction validation")
-                        }
-                    } else {
-                        print("Could not fetch product for transaction: \(transaction.id)")
+                    let productId = transaction.productID
+                    guard let product = try await Product.products(for: [productId]).first else {
+                        throw BotsiError.customError(
+                            "StoreKit2Handler",
+                            "Unable to fetch product with id: \(productId)"
+                        )
                     }
+                    let (current, cached) = await paywallStorage.getPaywallMeta(for: productId)
+                    let botsiTransaction = await mapper.completeTransaction(
+                        with: transaction,
+                        product: product,
+                        paywallId: current?.paywallId ?? cached?.paywallId ?? nil,
+                        abTestId: nil,
+                        placementId: current?.placementId ?? cached?.placementId
+                    )
+              
+                    let updatedProfile = try await validateTransaction(
+                        botsiTransaction,
+                        source: .observing
+                    )
+                    await storage.setProfile(updatedProfile)
                     
-                    // finish after successful processing
+                    BotsiLog.info("StoreKit 2. Transaction \(transaction.id) processed.")
+                    
+                    if isRenewal {
+                        BotsiLog.info("StoreKit 2. Transaction \(transaction.id) renewal.")
+                        await notifySubscriptionRenewal(product: product, profile: updatedProfile)
+                    }
+                        
                     await transaction.finish()
                 } catch {
-                    print("Error processing transaction update: \(error.localizedDescription)")
+                    if let botsiError = error as? BotsiError {
+                        BotsiLog.error("StoreKit 2 Error: \(botsiError.localizedDescription)")
+                    } else {
+                        let validationError = error as NSError
+                        if validationError.isRetryableError() {
+                            BotsiLog.error("StoreKit 2 Retrayable error: \(validationError.localizedDescription)")
+                            processedTransactionIds.remove(transaction.id)
+                            continue
+                        } else {
+                            BotsiLog.error("StoreKi 2 Validation error: \(validationError.localizedDescription)")
+                        }
+                    }
+            
                     await transaction.finish()
                 }
                 
             case .unverified(let transaction, let verificationError):
-                print("Unverified transaction found. Error: \(verificationError.localizedDescription)")
-                
-                do {
-                    if shouldProceedDespiteVerificationError(verificationError) {
-                        let products = try await Product.products(for: [transaction.productID])
-                        if let product = products.first {
-                            let botsiTransaction = await mapper.completeTransaction(with: transaction, product: product)
-                            let updatedProfile = try await validateTransaction(botsiTransaction)
-                            await storage.setProfile(updatedProfile)
-                        }
-                    }
-                } catch {
-                    print("Error handling unverified transaction: \(error.localizedDescription)")
-                }
-            
+                BotsiLog.debug("StoreKit 2. Unverified transaction found. Error: \(verificationError.localizedDescription)")
                 await transaction.finish()
             }
         }
     }
     
+    /// `post notification to UI update`
     @available(iOS 15.0, *)
-    private func notifySubscriptionRenewal(product: Product, profile: BotsiProfile) async {
-        // Post notification for UI updates
-        print("Subscription renewed: \(product.displayName)")
-    }
-    
-    @available(iOS 15.0, *)
-    private func shouldProceedDespiteVerificationError(_ error: StoreKit.VerificationResult<StoreKit.Transaction>.VerificationError) -> Bool {
-        // proceed with the transaction despite verification issues, e.g. test environment
-        switch error {
-        case .invalidSignature:
-            return false
-        case .invalidCertificateChain:
-            #if DEBUG
-            return true
-            #else
-            return false
-            #endif
-        default:
-            #if DEBUG
-            return true
-            #else
-            return false
-            #endif
-        }
-    }
+    private func notifySubscriptionRenewal(product: Product, profile: BotsiProfile) async {}
     
     @discardableResult
-    private func validateTransaction(_ transaction: BotsiPaymentTransaction) async throws -> BotsiProfile {
+    private func validateTransaction(_ transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile {
         guard let storedProfile = await storage.getProfile() else {
-            throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
+            throw BotsiError.customError("SK2.ValidateTransaction", "Unable to retrieve profile id")
         }
-        let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
-        let profileFetched = try await repository.validateTransaction(transaction: transaction)
+        let repository = ValidateTransactionRepository(
+            httpClient: client,
+            profileId: storedProfile.profileId
+        )
+        let profileFetched = try await repository.validateTransaction(
+            transaction: transaction,
+            source: source
+        )
         await storage.setProfile(profileFetched)
-        print("Profile received: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
+        BotsiLog.info("StoreKit 2 Validate. Profile \(profileFetched.profileId) with access levels received: \(profileFetched.accessLevels.first?.key ?? "none")")
         return profileFetched
     }
     
@@ -220,19 +196,23 @@ public actor StoreKit2Handler {
         }
         let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
         let helper = ReceiptRefreshHelper()
-        let receiptData = try await helper.refreshReceipt()
-        let profileFetched = try await repository.restore(receipt: receiptData)
-        await storage.setProfile(profileFetched)
-        BotsiLog.info("Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
-        return profileFetched
-    }
-    
-    private func fetchTransactions() async throws {
-        if #available(iOS 15.0, *) {
-            _ = await Transaction.currentEntitlements.compactMap { $0.debugDescription }.reduce([], +).count
-        } else {
-            // Fallback on earlier versions
+        var receipt: Data
+        
+        do {
+            let receiptData = try await helper.refreshReceipt()
+            receipt = receiptData
+        } catch {
+            guard let receiptURL = Bundle.main.appStoreReceiptURL else {
+                throw BotsiError.customError("SK2. Restore.", "Unable to fetch receipt data from the app. The request could be throttled.")
+            }
+            let receiptData = try Data(contentsOf: receiptURL)
+            receipt = receiptData
         }
+        
+        let profileFetched = try await repository.restore(receipt: receipt)
+        await storage.setProfile(profileFetched)
+        BotsiLog.info("StoreKit 2 Restore. Profile received after restoring transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "[]")")
+        return profileFetched
     }
 
     @available(iOS 15.0, *)
@@ -244,14 +224,6 @@ public actor StoreKit2Handler {
         let helper = ReceiptRefreshHelper()
         let receiptData = try await helper.refreshReceipt()
         return receiptData
-    }
-}
-
-@available(iOS 15.0, *)
-private extension Transaction {
-    var isRenewal: Bool {
-        // Check if this transaction has a different originalID
-        return originalID != id
     }
 }
 
@@ -273,4 +245,10 @@ private extension NSError {
         
         return false
     }
+}
+
+enum StoreKitTransactionSource: String {
+    case purchasing
+    case observing
+    case restore
 }
