@@ -21,4 +21,6 @@ public struct BotsiSourceProduct: Sendable, Codable {
     public let botsiProductId: Int
     public let isConsumable: Bool
     public let sourcePoductId: String
+    public let promotionalOfferId: String?
+    public let winBackOfferId: String?
 }
