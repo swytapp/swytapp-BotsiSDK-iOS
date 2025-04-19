@@ -1,0 +1,161 @@
+//
+//  Botsi+Products.swift
+//  Botsi
+//
+//  Created by Vladyslav on 19.04.2025.
+//
+
+import StoreKit
+
+@available(iOS 15.0, macOS 12.0, *)
+extension Botsi {
+    func getBotsiProducts(
+        paywall: BotsiPaywall,
+        handler: StoreKit2Handler
+    ) async throws -> [BotsiProduct] {
+        
+        let identifiers = paywall.sourceProducts.compactMap { "\($0.sourcePoductId)" }
+        
+        let products: [ProductTuple] = try await handler.retrieveProductAsync(with: identifiers)
+            .compactMap { sk2Product in
+                let sourceProduct = paywall.sourceProducts.first(where: { $0.sourcePoductId == sk2Product.id })!
+                let (offer, subscriptionGroupId): (BotsiOffer?, String?) =
+                    if let subscriptionGroupId = sk2Product.subscription?.subscriptionGroupID,
+                       winBackOfferExist(with: sourceProduct.winBackOfferId, from: sk2Product) {
+                        (nil, subscriptionGroupId)
+                    } else {
+                        (subscriptionOfferAvailable(sourceProduct, sk2Product), nil)
+                    }
+                return (sk2Product, sourceProduct, offer, subscriptionGroupId)
+            }
+
+        let eligibleWinBackOfferIds = try await eligibleWinBackOfferIds(for: Set(products.compactMap { $0.subscriptionGroupId }))
+
+        var newProducts = [(product: Product, reference: BotsiSourceProduct, offer: BotsiOffer?)]()
+        newProducts.reserveCapacity(products.count)
+        for product in products {
+            await newProducts.append(determineOfferFor(product, with: eligibleWinBackOfferIds))
+        }
+
+        return newProducts.map {
+            BotsiSK2PaywallProduct(
+                skProduct: $0.product,
+                paywallId: paywall.id,
+                placementId: paywall.placementId,
+                abTestId: paywall.abTestId,
+                subscriptionOffer: $0.offer
+            )
+        }
+    }
+
+    private typealias ProductTuple = (
+        product: Product,
+        reference: BotsiSourceProduct,
+        offer: BotsiOffer?,
+        subscriptionGroupId: String?
+    )
+
+    private func subscriptionOfferAvailable(
+        _ reference: BotsiSourceProduct,
+        _ sk2Product: Product
+    ) -> BotsiOffer? {
+        if let promotionalOffer = promotionalOffer(with: reference.promotionalOfferId, from: sk2Product) {
+            return promotionalOffer
+        } else if sk2Product.introductoryOfferNotApplicable {
+            return nil
+        } else {
+            return nil
+        }
+    }
+
+    private func determineOfferFor(
+        _ tuple: ProductTuple,
+        with eligibleWinBackOfferIds: [String: [String]]
+    ) async -> (product: Product, reference: BotsiSourceProduct, offer: BotsiOffer?) {
+
+        if let subscriptionGroupId = tuple.subscriptionGroupId,
+           let winBackOfferId = tuple.reference.winBackOfferId
+        {
+            if eligibleWinBackOfferIds[subscriptionGroupId]?.contains(winBackOfferId) ?? false,
+               let winBackOffer = winBackOffer(with: winBackOfferId, from: tuple.product)
+            {
+                return (tuple.product, tuple.reference, winBackOffer)
+            }
+
+            if let offerAvailable = subscriptionOfferAvailable(tuple.reference, tuple.product) {
+                return (tuple.product, tuple.reference, offerAvailable)
+            }
+        }
+
+        guard let subscription = tuple.product.subscription,
+              let introductoryOffer = tuple.product.subscriptionOffer(by: .introductory)
+        else {
+            return (tuple.product, tuple.reference, nil)
+        }
+        let eligible = await subscription.isEligibleForIntroOffer
+
+        return (tuple.product, tuple.reference, eligible ? introductoryOffer : nil)
+    }
+
+    private func winBackOffer(with offerId: String?, from sk2Product: Product) -> BotsiOffer? {
+        guard let offerId else { return nil }
+        guard let offer = sk2Product.subscriptionOffer(by: .winBack(offerId)) else {
+            BotsiLog.warn("no win back offer found with id:\(offerId) in productId:\(sk2Product.id)")
+            return nil
+        }
+        return offer
+    }
+
+    private func promotionalOffer(with offerId: String?, from sk2Product: Product) -> BotsiOffer? {
+        guard let offerId else { return nil }
+        guard let offer = sk2Product.subscriptionOffer(by: .promotional(offerId)) else {
+            BotsiLog.warn("no promotional offer found with id:\(offerId) in productId:\(sk2Product.id)")
+            return nil
+        }
+        return offer
+    }
+
+    private func eligibleWinBackOfferIds(for subscriptionGroupIdentifiers: Set<String>) async throws -> [String: [String]] {
+        var result = [String: [String]]()
+        result.reserveCapacity(subscriptionGroupIdentifiers.count)
+        for subscriptionGroupIdentifier in subscriptionGroupIdentifiers {
+            result[subscriptionGroupIdentifier] = try await eligibleWinBackOfferIds(for: subscriptionGroupIdentifier)
+        }
+        return result
+    }
+
+    private func eligibleWinBackOfferIds(for subscriptionGroupIdentifier: String) async throws -> [String] {
+        #if compiler(<6.0)
+            return []
+        #else
+            guard #available(iOS 18.0, macOS 15.0, *) else { return [] }
+            let statuses: [Product.SubscriptionInfo.Status]
+            
+            do {
+                statuses = try await Product.SubscriptionInfo.status(for: subscriptionGroupIdentifier)
+            } catch {
+                BotsiLog.error("Status retrieving error: \(error.localizedDescription)")
+                throw BotsiError.customError("winback", "error")
+            }
+
+            let status = statuses.first {
+                guard case let .verified(transaction) = $0.transaction else { return false }
+                guard transaction.ownershipType == .purchased else { return false }
+                return true
+            }
+
+            guard case let .verified(renewalInfo) = status?.renewalInfo else { return [] }
+            return renewalInfo.eligibleWinBackOfferIDs
+        #endif
+    }
+    
+    
+    private func winBackOfferExist(with offerId: String?, from product: Product) -> Bool {
+        guard let offerId else { return false }
+        guard product.unfWinBackOffer(byId: offerId) != nil else {
+            BotsiLog.info("No win back offer exists with identifier: \(offerId) for product: \(product.id)")
+            return false
+        }
+        return true
+    }
+}

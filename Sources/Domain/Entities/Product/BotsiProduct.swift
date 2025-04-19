@@ -31,6 +31,8 @@ public protocol BotsiProduct: Sendable, CustomStringConvertible {
     
     var subscriptionGroupIdentifier: String? { get }
     var localizedSubscriptionPeriod: String? { get }
+    
+    var subscriptionOffer: BotsiOffer? { get }
 }
 
 public extension BotsiProduct {
@@ -197,6 +199,8 @@ struct BotsiSK1PaywallProduct: BotsiSK1Product {
     var paywallId: Int
     var placementId: String?
     var abTestId: Int?
+    
+    var subscriptionOffer: BotsiOffer?
 }
 
 @available(iOS 15.0, *)
@@ -205,4 +209,89 @@ struct BotsiSK2PaywallProduct: BotsiSK2Product {
     var paywallId: Int
     var placementId: String?
     var abTestId: Int?
+    
+    var subscriptionOffer: BotsiOffer?
+}
+
+@available(iOS 15.0, *)
+extension Product {
+    func unfWinBackOffer(byId identifier: String) -> Product.SubscriptionOffer? {
+        #if compiler(<6.0)
+        return nil
+        #else
+        
+        guard #available(iOS 18.0, macOS 15.0, *) else {
+            return nil
+        }
+
+        return subscription?.winBackOffers.first { $0.id == identifier }
+        #endif
+    }
+    
+    var introductoryOfferNotApplicable: Bool {
+        subscription?.introductoryOffer == nil
+    }
+    
+    private var unfIntroductoryOffer: Product.SubscriptionOffer? {
+        subscription?.introductoryOffer
+    }
+
+    private func unfPromotionalOffer(byId identifier: String) -> Product.SubscriptionOffer? {
+        subscription?.promotionalOffers.first(where: { $0.id == identifier })
+    }
+    
+    @inlinable
+    var unfPeriodLocale: Locale {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return subscriptionPeriodFormatStyle.locale
+        }
+        return .autoupdatingCurrent
+    }
+    
+    @inlinable
+    var unfCurrencyCode: String? {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return priceFormatStyle.currencyCode
+        }
+
+        guard let decoded = try? JSONSerialization.jsonObject(with: jsonRepresentation),
+              let dict = decoded as? [String: Any],
+              let attributes = dict["attributes"] as? [String: Any],
+              let offers = attributes["offers"] as? [[String: Any]],
+              let code = offers.first?["currencyCode"] as? String
+        else {
+            return nil
+        }
+
+        return code
+    }
+    
+    func subscriptionOffer(by offerIdentifier: BotsiOffer.Identifier) -> BotsiOffer? {
+        let offer: Product.SubscriptionOffer? =
+            switch offerIdentifier {
+            case .introductory:
+                unfIntroductoryOffer
+            case .promotional(let id):
+                unfPromotionalOffer(byId: id)
+            case .winBack(let id):
+                unfWinBackOffer(byId: id)
+            }
+        guard let offer else { return nil }
+
+        let period = offer.period
+        let periodLocale = unfPeriodLocale
+        let subscriptionPeriod = BotsiSubscriptionPeriod(unit: period.unit.toPeriodUnit, numberOfUnits: period.value)
+        
+        return BotsiOffer(
+            price: offer.price,
+            currencyCode: unfCurrencyCode,
+            localizedPrice: offer.displayPrice,
+            offerIdentifier: offerIdentifier,
+            subscriptionPeriod: subscriptionPeriod,
+            numberOfPeriods: offer.periodCount,
+            paymentMode: offer.paymentMode.asPaymentMode,
+            localizedSubscriptionPeriod: periodLocale.localized(period: subscriptionPeriod),
+            localizedNumberOfPeriods: periodLocale.localized(period: subscriptionPeriod, numberOfPeriods: offer.periodCount)
+        )
+    }
 }

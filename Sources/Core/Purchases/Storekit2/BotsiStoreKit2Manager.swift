@@ -55,8 +55,50 @@ public actor StoreKit2Handler {
         guard let skProduct = product.sk2Product else {
             throw BotsiError.customError("SK2PurchaseError", "Unable to unwrap SK2 Product")
         }
-        let result = try await skProduct.purchase()
         
+        let options: Set<Product.PurchaseOption>
+        
+        switch product.subscriptionOffer {
+        case .none:
+            options = []
+        case let .some(offer):
+            switch offer.offerIdentifier {
+            case .introductory:
+                options = []
+
+            case let .winBack(offerId):
+                #if compiler(<6.0)
+                throw BotsiError.customError("WinBackOffer purchase not available", "not supported")
+                #else
+                if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
+                   let winBackOffer = skProduct.unfWinBackOffer(byId: offerId)
+                {
+                    options = [.winBackOffer(winBackOffer)]
+                } else {
+                    throw BotsiError.customError("Error for SK2 winback offer", "not found")
+                }
+                #endif
+
+            case let .promotional(offerId):
+                let repository = SignPromotionalOfferRepository(httpClient: client)
+                let useCase = SignPromotionalOfferUseCase(repository: repository)
+                // let profileId = await profileStorage.getProfile()?.profileId
+                let signedOffer = try await useCase.getSignedPromotionalOffer(for: "profileId") //
+                BotsiLog.verbose("\(signedOffer)")
+
+                options = [
+                    .promotionalOffer(
+                        offerID: offerId,
+                        keyID: signedOffer.keyId,
+                        nonce: UUID(uuidString: signedOffer.nonce) ?? UUID(),
+                        signature: signedOffer.signature,
+                        timestamp: signedOffer.timestamp
+                    ),
+                ]
+            }
+        }
+        
+        let result = try await skProduct.purchase(options: options)
         switch result {
         case .success(let verification):
             switch verification {
