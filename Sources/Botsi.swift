@@ -48,6 +48,23 @@ public final class Botsi: Sendable {
         }
         
         await verifyUser()
+        // await testAPI()
+    }
+    
+    private func testAPI() async {
+        do {
+            let repository = SignPromotionalOfferRepository(httpClient: botsiClient)
+            let useCase = SignPromotionalOfferUseCase(repository: repository)
+            guard let profileId = await profileStorage.getProfile()?.profileId else {
+                throw BotsiError.customError("no profile id", "error")
+            }
+            let signedOffer = try await useCase.getSignedPromotionalOffer() // pass profile id
+            BotsiLog.verbose("\(signedOffer)")
+        } catch let error as BotsiError {
+            print(error.localizedDescription)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
     
     private func verifyUser() async {
@@ -362,14 +379,7 @@ public extension Botsi {
             guard let handler = storeKit2Handler else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 2 handler")
             }
-            let products = try await handler.retrieveProductAsync(with: identifiers).compactMap {
-                BotsiSK2PaywallProduct(
-                    skProduct: $0,
-                    paywallId: paywall.id,
-                    placementId: paywall.placementId,
-                    abTestId: paywall.abTestId
-                )
-            }
+            let products: [BotsiProduct] = try await getBotsiProducts(paywall: paywall, handler: handler)
             return products
         } else {
             guard let handler = storeKit1Handler else {

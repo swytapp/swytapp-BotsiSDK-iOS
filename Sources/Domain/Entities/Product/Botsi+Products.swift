@@ -28,8 +28,11 @@ extension Botsi {
                     }
                 return (sk2Product, sourceProduct, offer, subscriptionGroupId)
             }
-
+        // product -> subscription -> promotionalOffers
         let eligibleWinBackOfferIds = try await eligibleWinBackOfferIds(for: Set(products.compactMap { $0.subscriptionGroupId }))
+        if !eligibleWinBackOfferIds.isEmpty {
+            BotsiLog.verbose("Eligible for winback offers.")
+        }
 
         var newProducts = [(product: Product, reference: BotsiSourceProduct, offer: BotsiOffer?)]()
         newProducts.reserveCapacity(products.count)
@@ -59,6 +62,7 @@ extension Botsi {
         _ reference: BotsiSourceProduct,
         _ sk2Product: Product
     ) -> BotsiOffer? {
+        BotsiLog.verbose("reference: \(reference.botsiProductId) \(reference.promotionalOfferId) and product \(sk2Product.id)")
         if let promotionalOffer = promotionalOffer(with: reference.promotionalOfferId, from: sk2Product) {
             return promotionalOffer
         } else if sk2Product.introductoryOfferNotApplicable {
@@ -81,10 +85,11 @@ extension Botsi {
             {
                 return (tuple.product, tuple.reference, winBackOffer)
             }
-
-            if let offerAvailable = subscriptionOfferAvailable(tuple.reference, tuple.product) {
-                return (tuple.product, tuple.reference, offerAvailable)
-            }
+        }
+        
+        if let offerAvailable = subscriptionOfferAvailable(tuple.reference, tuple.product) {
+            BotsiLog.verbose("Promotional offer: \(offerAvailable.description)")
+            return (tuple.product, tuple.reference, offerAvailable)
         }
 
         guard let subscription = tuple.product.subscription,

@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiSignOfferRepository {
-    func getSignedPromotionalOffer(for profileId: String) async throws -> BotsiSignSubscriptionOfferResponseData
+    func getSignedPromotionalOffer() async throws -> BotsiSignSubscriptionOfferResponseData
 }
 
 final class SignPromotionalOfferRepository: BotsiSignOfferRepository {
@@ -20,11 +20,9 @@ final class SignPromotionalOfferRepository: BotsiSignOfferRepository {
         self.mapper = mapper
     }
 
-    func getSignedPromotionalOffer(for profileId: String) async throws -> BotsiSignSubscriptionOfferResponseData {
+    func getSignedPromotionalOffer() async throws -> BotsiSignSubscriptionOfferResponseData {
         do {
-            var request = SignPromotionalOfferRequest(queryParameters: [
-                "profileId": profileId
-            ])
+            var request = SignPromotionalOfferRequest(queryParameters: [:]) // pass profile id if needed
             request.headers = [
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
