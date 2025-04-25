@@ -65,7 +65,6 @@ public actor StoreKit2Handler {
             switch offer.offerIdentifier {
             case .introductory:
                 options = []
-
             case let .winBack(offerId):
                 #if compiler(<6.0)
                 throw BotsiError.customError("WinBackOffer purchase not available", "not supported")
@@ -82,18 +81,27 @@ public actor StoreKit2Handler {
             case let .promotional(offerId):
                 let repository = SignPromotionalOfferRepository(httpClient: client)
                 let useCase = SignPromotionalOfferUseCase(repository: repository)
-                let signedOffer = try await useCase.getSignedPromotionalOffer()
-                let signString = String(data: signedOffer.signature, encoding: .utf8)
-                BotsiLog.verbose("Signed offer data: \(signedOffer), signature \(signString ?? "none") for \(offerId)")
-                options = [
-                    .promotionalOffer(
-                        offerID: offerId,
-                        keyID: signedOffer.keyId,
-                        nonce: UUID(uuidString: signedOffer.nonce)!,
-                        signature: signedOffer.signature,
-                        timestamp: signedOffer.timestamp
-                    ),
-                ]
+                do {
+                    let signedOffer = try await useCase.getSignedPromotionalOffer()
+                    BotsiLog.verbose("Signed offer data: \(signedOffer) for \(offerId)")
+                    
+                    options = [
+                        .promotionalOffer(
+                            offerID: offerId,
+                            keyID: signedOffer.keyId,
+                            nonce: UUID(uuidString: signedOffer.nonce)!,
+                            signature: signedOffer.signature,
+                            timestamp: signedOffer.timestamp
+                        ),
+                        .appAccountToken(UUID(uuidString: "55F346FB-1BC0-43F8-B1A9-FFB5C0AF7CB2")!)
+                    ]
+                } catch {
+                    if let error = error as? BotsiError {
+                        BotsiLog.error("Failed sign promotional offer \(offerId). Proceeding with the purchase without promo offer... \(error.localizedDescription)")
+                    }
+                    options = []
+                }
+                
             }
         }
         

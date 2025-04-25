@@ -22,7 +22,7 @@ final class SignPromotionalOfferRepository: BotsiSignOfferRepository {
 
     func getSignedPromotionalOffer() async throws -> BotsiSignSubscriptionOfferResponseData {
         do {
-            var request = SignPromotionalOfferRequest(queryParameters: [:]) // pass profile id if needed
+            var request = SignPromotionalOfferRequest(queryParameters: [:])
             request.headers = [
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
@@ -40,8 +40,11 @@ final class SignPromotionalOfferRepository: BotsiSignOfferRepository {
             let signOfferMeta = mapper.toDomain(from: responseDto)
             
             return signOfferMeta
+            
+        } catch let error as BotsiError {
+            throw BotsiError.customError("Sign Promotional Offer Error", "API request failed. Botsi error: \(error.localizedDescription)")
         } catch {
-            throw BotsiError.eventsError
+            throw BotsiError.customError("Sign promo offfer error", "api \(error.localizedDescription)")
         }
     }
 }

@@ -18,4 +18,5 @@ struct BotsiSignSubscriptionOfferResponseData: Decodable {
     let nonce: String
     let timestamp: Int
     let signature: Data
+    let signature1: Data
 }

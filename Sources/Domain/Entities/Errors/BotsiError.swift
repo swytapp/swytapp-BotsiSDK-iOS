@@ -68,7 +68,7 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
         case .receiptValidationFailed(let message):
             return "Receipt validation failed: \(message)"
         case .customError(let title, let message):
-            return "\(title): \(message)"
+            return "Custom error: \(title) \(message)"
         case .sdkNotActivated:
             return "Unable to activate SDK"
         case .restoreFailed:
