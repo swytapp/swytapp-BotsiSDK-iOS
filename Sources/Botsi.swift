@@ -18,6 +18,8 @@ public final class Botsi: Sendable {
     private let storeKit1Handler: StoreKit1Handler?
     private let storeKit2Handler: StoreKit2Handler?
     
+    private let enableStoreKit2: Bool = true
+    
     let botsiClient: BotsiHttpClient
     
     init(from configuration: BotsiConfiguration) async {
@@ -29,7 +31,7 @@ public final class Botsi: Sendable {
         let cachedTransactionsStore = await BotsiSyncedTransactionStore()
         self.cachedTransactionsStore = cachedTransactionsStore
         
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, *), enableStoreKit2 {
             self.storeKit2Handler = StoreKit2Handler(
                 client: botsiClient,
                 storage: profileStorage
@@ -53,13 +55,14 @@ public final class Botsi: Sendable {
     
     private func testAPI() async {
         do {
-            let repository = SignPromotionalOfferRepository(httpClient: botsiClient)
-            let useCase = SignPromotionalOfferUseCase(repository: repository)
-            guard let profileId = await profileStorage.getProfile()?.profileId else {
-                throw BotsiError.customError("no profile id", "error")
-            }
-            let signedOffer = try await useCase.getSignedPromotionalOffer() // pass profile id
-            BotsiLog.verbose("\(signedOffer)")
+            let repository = OfferEligibilityRepository(httpClient: botsiClient)
+            let useCase = OfferEligibilityUseCase(repository: repository)
+            let user = await profileStorage.getProfile()
+            let eligibleOffers = try await useCase.getEligibleOffers(
+                profileId: user?.profileId ?? "",
+                productIds: []
+            )
+            BotsiLog.verbose("\(eligibleOffers)")
         } catch let error as BotsiError {
             print(error.localizedDescription)
         } catch {
@@ -242,7 +245,7 @@ public extension Botsi {
     
     func makePurchase(from product: BotsiProduct) async throws -> BotsiProfile {
         do {
-            if #available(iOS 15.0, *) {
+            if #available(iOS 15.0, *), enableStoreKit2 {
                 guard let handler = storeKit2Handler else {
                     throw BotsiError.customError("SK2PurchaseError", "unable to unwrap Storekit 2 handler")
                 }
@@ -291,7 +294,7 @@ public extension Botsi {
     @discardableResult
     private func restorePurchases() async throws -> BotsiProfile {
         do {
-            if #available(iOS 15.0, *) {
+            if #available(iOS 15.0, *), enableStoreKit2 {
                 guard let handler = storeKit2Handler else {
                     throw BotsiError.customError("restoreError", "unable to unwrap storekit 2 handler")
                 }
@@ -373,26 +376,23 @@ public extension Botsi {
     }
     
     private func retrieveProductDetails(from paywall: BotsiPaywall) async throws -> [BotsiProduct] {
-        let identifiers = paywall.sourceProducts.map { $0.sourcePoductId }
-        
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, *), enableStoreKit2 {
             guard let handler = storeKit2Handler else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 2 handler")
             }
             let products: [BotsiProduct] = try await getBotsiProducts(paywall: paywall, handler: handler)
             return products
         } else {
-            guard let handler = storeKit1Handler else {
+            guard let handler = storeKit1Handler,
+                    let profile = await profileStorage.getProfile()
+            else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 1 handler")
             }
-            let products = try await handler.retrieveSK1Products(from: identifiers).compactMap {
-                BotsiSK1PaywallProduct(
-                    skProduct: $0.skProduct,
-                    paywallId: paywall.id,
-                    placementId: paywall.placementId,
-                    abTestId: paywall.abTestId
-                )
-            }
+            let products: [BotsiProduct] = try await getBotsiProductsForSK1(
+                profileId: profile.profileId,
+                paywall: paywall,
+                handler: handler
+            )
             return products
         }
     }

@@ -85,8 +85,7 @@ extension BotsiOffer {
 
         var identifier: String? {
             switch self {
-            case .introductory:
-                nil
+            case .introductory: nil
             case let .promotional(value),
                  let .winBack(value):
                 value

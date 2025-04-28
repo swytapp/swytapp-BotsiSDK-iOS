@@ -101,7 +101,7 @@ final class BotsiPaywallMappingStorage: Sendable {
 
     fileprivate func removePaywallMetadata(for productId: String) -> Bool {
         var dict = Self.paywalls
-        guard let removed = dict.removeValue(forKey: productId) else { return false }
+        guard let _ = dict.removeValue(forKey: productId) else { return false }
         
         Self.paywalls = dict
         return true

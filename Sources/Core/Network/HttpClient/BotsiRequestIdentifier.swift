@@ -23,6 +23,7 @@ public struct BotsiRequestIdentifier: Sendable {
     static let validateTransaction: String = "purchases/apple-store/validate"
     static let restorePurchases: String = "purchases/apple-store/restore"
     static let signPromotionalOffer: String = "offers/promo-sign/app_store"
+    static let offerEligibility: String = "offers/intro-eligibility/app_store"
 }
 
 public struct BotsiHTTPRequestPath: Sendable {
