@@ -212,12 +212,13 @@ extension Botsi {
             )
         }
         let sourceProductIds: [String] = products.compactMap {
-            guard !$0.determinedOffer else { return nil }
+            //guard !$0.determinedOffer else { return nil }
             return $0.product.productIdentifier
         }
         
         if !sourceProductIds.isEmpty {
             do {
+                
                 let repository = OfferEligibilityRepository(httpClient: botsiClient)
                 let useCase = OfferEligibilityUseCase(repository: repository)
                 let eligibleOffers = try await useCase.getEligibleOffers(

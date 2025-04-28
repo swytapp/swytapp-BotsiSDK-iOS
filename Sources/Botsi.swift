@@ -18,7 +18,7 @@ public final class Botsi: Sendable {
     private let storeKit1Handler: StoreKit1Handler?
     private let storeKit2Handler: StoreKit2Handler?
     
-    private let enableStoreKit2: Bool = true
+    private let enableStoreKit2: Bool = false
     
     let botsiClient: BotsiHttpClient
     
