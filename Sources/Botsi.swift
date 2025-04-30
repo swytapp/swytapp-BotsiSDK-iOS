@@ -135,7 +135,64 @@ public extension Botsi {
     ) async throws -> T {
         try await lifecycle.withInitializedSDK(operation: operation)
     }
-   
+    
+    /// Descriptions for `identify`
+    
+    nonisolated static func identify(_ userId: String) async throws {
+        try await lifecycle.withInitializedSDK { botsi in
+            let identified = try await botsi.identifyUser(with: userId)
+            BotsiLog.debug("Identified: \(identified)")
+        }
+    }
+    
+    private func identifyUser(with customerUserId: String) async throws -> Bool {
+        guard let profile = await profileStorage.getProfile() else {
+            let uuid = await profileStorage.getNewProfileUUID() // ??
+            if let profile = try? await createUserProfile(with: uuid) {
+                await profileStorage.setProfile(profile)
+                do {
+                    try await restorePurchases() // TODO: refactor
+                    return true
+                } catch {
+                    BotsiLog.error("Identify. Unable to restore purchases.")
+                    return false
+                }
+            }
+            return false
+        }
+        
+        guard profile.customerUserId != customerUserId else { return false }
+        
+        let uuid = await profileStorage.getNewProfileUUID()
+        if let profile = try? await createUserProfile(with: uuid, userCustomerId: customerUserId) {
+            await profileStorage.setProfile(profile)
+            return true
+        }
+        return false
+    }
+    
+    /// Description for `logout`
+    
+    nonisolated static func logout() async throws {
+        try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.clearProfile()
+        }
+    }
+    
+    private func clearProfile() async throws {
+        await profileStorage.clearProfile()
+        let uuid = await profileStorage.getNewProfileUUID()
+        do {
+            let newProfile = try await createUserProfile(with: uuid)
+            await profileStorage.setProfile(newProfile)
+        } catch let error as BotsiError {
+            BotsiLog.warn("Logout error: \(error.localizedDescription)")
+            throw error
+        } catch {
+            throw BotsiError.customError("Logout error", "\(error.localizedDescription)")
+        }
+    }
+    
     /// Checks if the Botsi SDK has been properly initialized.
     ///
     /// Use this property to verify that the SDK has been successfully initialized
@@ -170,6 +227,8 @@ public extension Botsi {
     ///   }
     ///   ```
     typealias ProfileIdentifier = String
+    typealias UserCustomerIdentifier = String
+    
     nonisolated static func getProfile() async throws -> BotsiProfile {
         return try await lifecycle.withInitializedSDK { botsi in
             try await botsi.getUserProfile()
@@ -177,9 +236,9 @@ public extension Botsi {
     }
     
     @discardableResult
-    private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile {
+    private func createUserProfile(with id: ProfileIdentifier, userCustomerId: UserCustomerIdentifier? = nil) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
-        return try await createProfile.createUserProfile(identifier: id)
+        return try await createProfile.createUserProfile(identifier: id, customerId: userCustomerId)
     }
     
     @discardableResult
