@@ -14,8 +14,8 @@ struct CreateUserProfileUseCase {
         self.repository = repository
     }
 
-    func execute(identifier: String) async throws -> BotsiProfile {
-        return try await repository.createUserProfile(identifier: identifier)
+    func execute(identifier: String, customerUserIdentifier: String? = nil) async throws -> BotsiProfile {
+        return try await repository.createUserProfile(identifier: identifier, customerId: customerUserIdentifier)
     }
 }
 
