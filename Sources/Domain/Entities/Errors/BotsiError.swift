@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import StoreKit
 
 // MARK: - Botsi error protocol
 protocol BotsiErrorConformable {
@@ -110,3 +111,5 @@ public struct BotsiErrorBuilder {
         return .customError(errorTitle, errorMessage)
     }
 }
+
+typealias SK1Error = SKError

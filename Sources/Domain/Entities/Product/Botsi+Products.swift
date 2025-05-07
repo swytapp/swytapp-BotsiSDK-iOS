@@ -61,7 +61,6 @@ extension Botsi {
         _ reference: BotsiSourceProduct,
         _ sk2Product: Product
     ) -> BotsiOffer? {
-        BotsiLog.verbose("reference: \(reference.botsiProductId) \(reference.promotionalOfferId ?? "null") and product \(sk2Product.id)")
         if let promotionalOffer = promotionalOffer(with: reference.promotionalOfferId, from: sk2Product) {
             return promotionalOffer
         } else if sk2Product.introductoryOfferNotApplicable {
@@ -218,7 +217,6 @@ extension Botsi {
         
         if !sourceProductIds.isEmpty {
             do {
-                
                 let repository = OfferEligibilityRepository(httpClient: botsiClient)
                 let useCase = OfferEligibilityUseCase(repository: repository)
                 let eligibleOffers = try await useCase.getEligibleOffers(

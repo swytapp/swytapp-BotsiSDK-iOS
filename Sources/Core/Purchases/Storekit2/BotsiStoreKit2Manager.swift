@@ -28,6 +28,7 @@ public actor StoreKit2Handler {
     @available(iOS 15.0, *)
     public func retrieveProductAsync(with productIDs: [String]) async throws -> [Product] {
         let products = try await Product.products(for: productIDs)
+        BotsiLog.debug("SK2. Products retrieved: \(products.count)")
         guard let _ = products.first else {
             throw NSError(
                 domain: "StoreKit2Handler",
@@ -82,26 +83,27 @@ public actor StoreKit2Handler {
                 let repository = SignPromotionalOfferRepository(httpClient: client)
                 let useCase = SignPromotionalOfferUseCase(repository: repository)
                 do {
-                    let signedOffer = try await useCase.getSignedPromotionalOffer()
-                    BotsiLog.verbose("Signed offer data: \(signedOffer) for \(offerId)")
+                    let signedOffer = try await useCase.getSignedPromotionalOffer(productId: product.productId, offerId: offerId)
                     
                     options = [
                         .promotionalOffer(
                             offerID: offerId,
                             keyID: signedOffer.keyId,
-                            nonce: UUID(uuidString: signedOffer.nonce)!,
+                            nonce: signedOffer.nonce,
                             signature: signedOffer.signature,
-                            timestamp: signedOffer.timestamp
-                        ),
-                        .appAccountToken(UUID(uuidString: "55F346FB-1BC0-43F8-B1A9-FFB5C0AF7CB2")!)
+                            timestamp: Int(signedOffer.timestamp)!
+                        )
                     ]
+                } catch let error as SKError {
+                    BotsiLog.warn("Failed to sign promotional offer \(offerId). Proceeding with the purchase without promo offer... SKError: \(error.errorCode) \(error.localizedDescription)")
+                    options = []
+                } catch let error as BotsiError {
+                    BotsiLog.warn("Failed to sign promotional offer \(offerId). Proceeding with the purchase without promo offer... \(error.localizedDescription)")
+                    options = []
                 } catch {
-                    if let error = error as? BotsiError {
-                        BotsiLog.error("Failed sign promotional offer \(offerId). Proceeding with the purchase without promo offer... \(error.localizedDescription)")
-                    }
+                    BotsiLog.warn("Failed to sign promotional offer \(offerId). Proceeding with the purchase without promo offer... \(error.localizedDescription)")
                     options = []
                 }
-                
             }
         }
         

@@ -49,6 +49,15 @@ public actor StoreKit1Handler {
     public func startObservingTransactions() {
         delegate.handler = self
         SKPaymentQueue.default().add(delegate)
+        
+        processPendingTransactions()
+    }
+    
+    private func processPendingTransactions() {
+        let pending = SKPaymentQueue.default().transactions
+        if !pending.isEmpty {
+            delegate.paymentQueue(SKPaymentQueue.default(), updatedTransactions: pending)
+        }
     }
     
     deinit {
@@ -105,16 +114,17 @@ public actor StoreKit1Handler {
                        let repository = SignPromotionalOfferRepository(httpClient: client)
                        let useCase = SignPromotionalOfferUseCase(repository: repository)
                        
-                       let signedOffer = try await useCase.getSignedPromotionalOffer()
-                       
+                       let signedOffer = try await useCase.getSignedPromotionalOffer(
+                            productId: sk1product.productIdentifier,
+                            offerId: offerId
+                       )
                        payment = {
                            let payment = SKMutablePayment(product: sk1product)
                            payment.applicationUsername = ""
                            payment.paymentDiscount = SKPaymentDiscount(
-                            offerId: offerId,
-                            meta: signedOffer
+                                offerId: offerId,
+                                meta: signedOffer
                            )
-                           
                            return payment
                        }()
                    }
@@ -459,9 +469,9 @@ extension SKPaymentDiscount {
         self.init(
             identifier: offerId,
             keyIdentifier: meta.keyId,
-            nonce: UUID(uuidString: meta.nonce) ?? UUID(),
+            nonce: meta.nonce,
             signature: meta.signature.base64EncodedString(),
-            timestamp: meta.timestamp as NSNumber
+            timestamp: Int(meta.timestamp)! as NSNumber
         )
     }
 }

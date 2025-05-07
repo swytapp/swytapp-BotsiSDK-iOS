@@ -15,8 +15,7 @@ struct BotsiSignSubscriptionOfferResponseDto: Decodable {
 
 struct BotsiSignSubscriptionOfferResponseData: Decodable {
     let keyId: String
-    let nonce: String
-    let timestamp: Int
+    let nonce: UUID
+    let timestamp: String
     let signature: Data
-    let signature1: Data
 }

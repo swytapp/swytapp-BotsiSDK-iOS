@@ -18,7 +18,7 @@ public final class Botsi: Sendable {
     private let storeKit1Handler: StoreKit1Handler?
     private let storeKit2Handler: StoreKit2Handler?
     
-    private let enableStoreKit2: Bool = false
+    private let enableStoreKit2: Bool = true
     
     let botsiClient: BotsiHttpClient
     
@@ -50,24 +50,6 @@ public final class Botsi: Sendable {
         }
         
         await verifyUser()
-        // await testAPI()
-    }
-    
-    private func testAPI() async {
-        do {
-            let repository = OfferEligibilityRepository(httpClient: botsiClient)
-            let useCase = OfferEligibilityUseCase(repository: repository)
-            let user = await profileStorage.getProfile()
-            let eligibleOffers = try await useCase.getEligibleOffers(
-                profileId: user?.profileId ?? "",
-                productIds: []
-            )
-            BotsiLog.verbose("\(eligibleOffers)")
-        } catch let error as BotsiError {
-            print(error.localizedDescription)
-        } catch {
-            print(error.localizedDescription)
-        }
     }
     
     private func verifyUser() async {
@@ -136,42 +118,49 @@ public extension Botsi {
         try await lifecycle.withInitializedSDK(operation: operation)
     }
     
-    /// Descriptions for `identify`
+    /// /// Links the SDK session to a specific user in your own system.
+    ///
+    /// If you didn’t provide a user ID when initializing the SDK, you can call `.identify()` at any point—most often right after the user signs up or logs in, moving from an anonymous session to an authenticated one.
+    ///
+    /// - Parameter userId: The unique identifier for the user in your system.
     
     nonisolated static func identify(_ userId: String) async throws {
         try await lifecycle.withInitializedSDK { botsi in
-            let identified = try await botsi.identifyUser(with: userId)
-            BotsiLog.debug("Identified: \(identified)")
+            try await botsi.identifyUser(with: userId)
         }
     }
     
-    private func identifyUser(with customerUserId: String) async throws -> Bool {
+    private func identifyUser(with customerUserId: String) async throws {
         guard let profile = await profileStorage.getProfile() else {
-            let uuid = await profileStorage.getNewProfileUUID() // ??
+            let uuid = await profileStorage.getNewProfileUUID()
             if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
                 do {
                     try await restorePurchases() // TODO: refactor
-                    return true
+                    return
                 } catch {
                     BotsiLog.error("Identify. Unable to restore purchases.")
-                    return false
+                    return
                 }
             }
-            return false
+            return
         }
         
-        guard profile.customerUserId != customerUserId else { return false }
+        guard profile.customerUserId != customerUserId else { return }
         
         let uuid = await profileStorage.getNewProfileUUID()
         if let profile = try? await createUserProfile(with: uuid, userCustomerId: customerUserId) {
             await profileStorage.setProfile(profile)
-            return true
+            return
         }
-        return false
+        return
     }
     
-    /// Description for `logout`
+    /// Ends the current user session and reverts the SDK to an anonymous state.
+    ///
+    /// Calling `.logout()` removes any stored user identifier and clears session-specific data, so subsequent calls behave as if no user is signed in. Use this when the user signs out or you need to reset personalization.
+    ///
+    /// - Note: After logging out, you can call `.identify()` again to link a new or returning user.
     
     nonisolated static func logout() async throws {
         try await lifecycle.withInitializedSDK { botsi in
@@ -317,6 +306,12 @@ public extension Botsi {
                 let profile = try await handler.purchaseSK1(product)
                 return profile
             }
+        } catch let error as BotsiError {
+            BotsiLog.error("Failed to purchase: \(error.localizedDescription)")
+            throw error
+        } catch let error as SK1Error {
+            BotsiLog.error("SKError failed to purchase: \(error.errorCode) \(error.errorUserInfo) \(error.localizedDescription)")
+            throw BotsiError.transactionFailed
         } catch {
             BotsiLog.error("Failed to purchase: \(error.localizedDescription)")
             throw BotsiError.transactionFailed

@@ -14,8 +14,14 @@ struct SignPromotionalOfferUseCase {
         self.repository = repository
     }
 
-    func getSignedPromotionalOffer() async throws -> BotsiSignSubscriptionOfferResponseData {
-        return try await repository.getSignedPromotionalOffer()
+    func getSignedPromotionalOffer(
+        productId: String,
+        offerId: String
+    ) async throws -> BotsiSignSubscriptionOfferResponseData {
+        return try await repository.getSignedPromotionalOffer(
+            productId: productId,
+            offerId: offerId
+        )
     }
 }
 
