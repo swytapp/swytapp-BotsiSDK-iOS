@@ -40,6 +40,18 @@ In your source files, add the following import statement:
 import Botsi
 ```
 
+CocoaPods
+
+To integrate the BotsiSDK into your project using CocoaPods, follow these steps:
+
+1. **Add the SDK to your Podfile and add the following line:**
+pod 'BotsiSDK', '~> 1.0.1'
+
+2. **Install the PodRun the following command to install the SDK:**
+pod install
+
+3. **Open the generated .xcworkspace file in Xcode instead of the .xcodeproj.**
+
 ## Initialization
 
 ### `activate(_ key:)`
@@ -78,6 +90,51 @@ if initialized {
     // SDK is ready to use
 } else {
     // SDK needs to be initialized
+}
+```
+
+### `identify(_ userId: String)`
+```swift
+static func identify(_ userId: String) async throws
+```
+
+Links the SDK session to a specific user in your own system.
+If you didn’t provide a user ID when initializing the SDK, you can call `.identify()` at any point—most often right after the user signs up or logs in, moving from an anonymous session to an authenticated one.
+
+Parameter userId: The unique identifier for the user in your system.
+
+**Example:**
+```swift
+do {
+    let currentUserId = "user_12345"
+    try await Botsi.identify(currentUserId)
+    // The SDK session is now linked to the authenticated user
+} catch let error as BotsiError {
+    print("Failed to identify user: \(error.localizedDescription)")
+} catch {
+    print("Unexpected error during user identification: \(error)")
+}
+```
+
+### `logout()`
+```swift
+static func logout() async throws
+```
+
+Ends the current user session and reverts the SDK to an anonymous state.
+
+Calling `.logout()` removes any stored user identifier and clears session-specific data, so subsequent calls behave as if no user is signed in. Use this when the user signs out or you need to reset personalization.
+ - Note: After logging out, you can call `.identify()` again to link a new or returning user.
+ 
+**Example:**
+```swift
+do {
+    try await Botsi.logout()
+    // The SDK session is reverted to an anonymous state
+} catch let error as BotsiError {
+    print("Failed to logout user: \(error.localizedDescription)")
+} catch {
+    print("Unexpected error during user logout: \(error)")
 }
 ```
 

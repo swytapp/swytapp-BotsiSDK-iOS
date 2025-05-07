@@ -28,6 +28,7 @@ public actor StoreKit2Handler {
     @available(iOS 15.0, *)
     public func retrieveProductAsync(with productIDs: [String]) async throws -> [Product] {
         let products = try await Product.products(for: productIDs)
+        BotsiLog.debug("SK2. Products retrieved: \(products.count)")
         guard let _ = products.first else {
             throw NSError(
                 domain: "StoreKit2Handler",
@@ -55,15 +56,66 @@ public actor StoreKit2Handler {
         guard let skProduct = product.sk2Product else {
             throw BotsiError.customError("SK2PurchaseError", "Unable to unwrap SK2 Product")
         }
-        let result = try await skProduct.purchase()
         
+        let options: Set<Product.PurchaseOption>
+        
+        switch product.subscriptionOffer {
+        case .none:
+            options = []
+        case let .some(offer):
+            switch offer.offerIdentifier {
+            case .introductory:
+                options = []
+            case let .winBack(offerId):
+                #if compiler(<6.0)
+                throw BotsiError.customError("WinBackOffer purchase not available", "not supported")
+                #else
+                if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *),
+                   let winBackOffer = skProduct.unfWinBackOffer(byId: offerId)
+                {
+                    options = [.winBackOffer(winBackOffer)]
+                } else {
+                    throw BotsiError.customError("Error for SK2 winback offer", "not found")
+                }
+                #endif
+
+            case let .promotional(offerId):
+                let repository = SignPromotionalOfferRepository(httpClient: client)
+                let useCase = SignPromotionalOfferUseCase(repository: repository)
+                do {
+                    let signedOffer = try await useCase.getSignedPromotionalOffer(productId: product.productId, offerId: offerId)
+                    
+                    options = [
+                        .promotionalOffer(
+                            offerID: offerId,
+                            keyID: signedOffer.keyId,
+                            nonce: signedOffer.nonce,
+                            signature: signedOffer.signature,
+                            timestamp: Int(signedOffer.timestamp)!
+                        )
+                    ]
+                } catch let error as SKError {
+                    BotsiLog.warn("Failed to sign promotional offer \(offerId). Proceeding with the purchase without promo offer... SKError: \(error.errorCode) \(error.localizedDescription)")
+                    options = []
+                } catch let error as BotsiError {
+                    BotsiLog.warn("Failed to sign promotional offer \(offerId). Proceeding with the purchase without promo offer... \(error.localizedDescription)")
+                    options = []
+                } catch {
+                    BotsiLog.warn("Failed to sign promotional offer \(offerId). Proceeding with the purchase without promo offer... \(error.localizedDescription)")
+                    options = []
+                }
+            }
+        }
+        
+        let result = try await skProduct.purchase(options: options)
         switch result {
         case .success(let verification):
             switch verification {
-            case .unverified(_,_):
-                BotsiLog.info("StoreKit 2. Transaction unverified.")
+            case .unverified(_, let err):
+                BotsiLog.info("StoreKit 2. Transaction unverified. \(err.localizedDescription)")
                 throw BotsiError.transactionFailed
             case .verified(let transaction):
+                BotsiLog.info("Transaction is OK. \(transaction.id)")
                 let botsiTransaction = await mapper.completeTransaction(
                     with: transaction,
                     product: skProduct,
@@ -91,6 +143,7 @@ public actor StoreKit2Handler {
             BotsiLog.info("StoreKit 2. User cancelled the purchase.")
             throw BotsiError.transactionFailed
         case .pending:
+            BotsiLog.info("StoreKit 2. Purchase deferred. Ignoring.")
             throw BotsiError.transactionDeferred
         @unknown default:
             BotsiLog.error("StoreKit 2. Unknown result.")

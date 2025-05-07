@@ -1,39 +1,45 @@
 //
-//  BotsiProfileUseCase.swift
+//  BotsiSignPromotionalOfferUseCase.swift
 //  Botsi
 //
-//  Created by Vladyslav on 23.02.2025.
+//  Created by Vladyslav on 19.04.2025.
 //
 
 import Foundation
 
-struct CreateUserProfileUseCase {
-    private let repository: BotsiProfileRepository
+struct SignPromotionalOfferUseCase {
+    private let repository: SignPromotionalOfferRepository
 
-    init(repository: BotsiProfileRepository) {
+    init(repository: SignPromotionalOfferRepository) {
         self.repository = repository
     }
 
-    func execute(identifier: String, customerUserIdentifier: String? = nil) async throws -> BotsiProfile {
-        return try await repository.createUserProfile(identifier: identifier, customerId: customerUserIdentifier)
+    func getSignedPromotionalOffer(
+        productId: String,
+        offerId: String
+    ) async throws -> BotsiSignSubscriptionOfferResponseData {
+        return try await repository.getSignedPromotionalOffer(
+            productId: productId,
+            offerId: offerId
+        )
     }
 }
 
-struct CreateProfileRequest: BotsiHTTPRequest {
+struct SignPromotionalOfferRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     
-    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.createProfile)
+    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.signPromotionalOffer)
     
-    var method: BotsiHTTPMethod = .post
+    var method: BotsiHTTPMethod = .get
     
     var headers: [String: String] = [:]
     
     var body: Data? = nil
     
-    private let uuid: String
+    private let queryParameters: [String: String]
     
-    init(uuid: String) {
-        self.uuid = uuid
+    init(queryParameters: [String: String]) {
+        self.queryParameters = queryParameters
     }
     
     func convertToURLRequest(configuration: HTTPCodableConfiguration, additional: (any HTTPRequestAdditional)?) throws -> URLRequest {
@@ -43,17 +49,17 @@ struct CreateProfileRequest: BotsiHTTPRequest {
         }
         
         var urlComponents = URLComponents(string: url.absoluteString)
-        urlComponents?.path += "/\(uuid)"
+        urlComponents?.queryItems = queryParameters.map { URLQueryItem(name: $0.key, value: $0.value) }
         
         guard let finalUrl = urlComponents?.url else {
             throw BotsiError.networkError("Unable to build final url request")
         }
         
         var request = URLRequest(url: finalUrl)
-        
         request.httpMethod = method.rawValue
         request.allHTTPHeaderFields = headers
         request.httpBody = body
+        
         return request
     }
 }

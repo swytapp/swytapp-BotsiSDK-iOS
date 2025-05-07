@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import StoreKit
 
 // MARK: - Botsi error protocol
 protocol BotsiErrorConformable {
@@ -38,6 +39,7 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case receiptValidationFailed(String)
     
     case eventsError
+    case asaTokenError
     
     case customError(String, String)
 
@@ -68,7 +70,7 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
         case .receiptValidationFailed(let message):
             return "Receipt validation failed: \(message)"
         case .customError(let title, let message):
-            return "\(title): \(message)"
+            return "Custom error: \(title) \(message)"
         case .sdkNotActivated:
             return "Unable to activate SDK"
         case .restoreFailed:
@@ -81,6 +83,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "Request for fetching user's paywall with placement id failed"
         case .eventsError:
             return "Sending event analytics failed"
+        case .asaTokenError:
+            return "ASA token update error"
         }
     }
 }
@@ -110,3 +114,5 @@ public struct BotsiErrorBuilder {
         return .customError(errorTitle, errorMessage)
     }
 }
+
+typealias SK1Error = SKError

@@ -14,6 +14,7 @@ struct CreateProfileRequestDto: Encodable {
 }
 
 struct CreateProfileMetaDto: Encodable {
+    let customerUserId: String?
     let storeCountry: String
     let botsiSdkVersion: String
     let advertisingId: String

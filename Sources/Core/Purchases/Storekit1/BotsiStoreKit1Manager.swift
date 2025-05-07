@@ -10,15 +10,14 @@ import StoreKit
 // MARK: - StoreKit 1
 
 public actor StoreKit1Handler {
-    private var fetchProductCompletion: ((Result<SKProduct, Error>) -> Void)?
-    private var fetchProductsCompletion: ((Result<[SKProduct], Error>) -> Void)?
-    
     private var purchaseContinuation: CheckedContinuation<BotsiProfile, Error>?
     private var restoreContinuation: CheckedContinuation<BotsiProfile, Error>?
 
     private var lastRestoredProfile: BotsiProfile?
 
     private var currentSKProduct: SKProduct?
+    private var productContinuations: [SKProductsRequest: CheckedContinuation<SKProduct, Error>] = [:]
+    private var productsContinuations: [SKProductsRequest: CheckedContinuation<[SKProduct], Error>] = [:]
     
     /// `internal delegate to handle StoreKit callbacks`
     private let delegate = StoreKit1HandlerDelegate()
@@ -50,6 +49,15 @@ public actor StoreKit1Handler {
     public func startObservingTransactions() {
         delegate.handler = self
         SKPaymentQueue.default().add(delegate)
+        
+        processPendingTransactions()
+    }
+    
+    private func processPendingTransactions() {
+        let pending = SKPaymentQueue.default().transactions
+        if !pending.isEmpty {
+            delegate.paymentQueue(SKPaymentQueue.default(), updatedTransactions: pending)
+        }
     }
     
     deinit {
@@ -61,52 +69,20 @@ public actor StoreKit1Handler {
     
     public func retrieveSK1Product(with productID: String) async throws -> SKProduct {
         try await withCheckedThrowingContinuation { continuation in
-            self.retrieveProductCallbackVersion(with: productID) { result in
-                switch result {
-                case .success(let skProduct):
-                    continuation.resume(returning: skProduct)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-    }
-    
-    public func retrieveSK1Products(from productIds: [String]) async throws -> [SK1ProductDetails] {
-        try await withCheckedThrowingContinuation { continuation in
-            self.retrieveProductCallbackVersion(with: Set(productIds)) { result in
-                switch result {
-                case .success(let skProducts):
-                    let sorted = self.sortProducts(skProducts, by: productIds)
-                    let productDetails = sorted.map { $0.toSK1ProductDetails() }
-                    continuation.resume(returning: productDetails)
-                case .failure(let error):
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
-    }
-    
-    private func retrieveProductCallbackVersion(
-            with productID: String,
-            completion: @escaping (Result<SKProduct, Error>) -> Void
-        ) {
-            self.fetchProductCompletion = completion
-
             let request = SKProductsRequest(productIdentifiers: [productID])
             request.delegate = self.delegate
+            productContinuations[request] = continuation
             request.start()
+        }
     }
     
-    private func retrieveProductCallbackVersion(
-        with productIds: Set<String>,
-            completion: @escaping (Result<[SKProduct], Error>) -> Void
-        ) {
-            self.fetchProductsCompletion = completion
-
-            let request = SKProductsRequest(productIdentifiers: productIds)
+    public func retrieveSK1Products(from ids: [String]) async throws -> [SKProduct] {
+        try await withCheckedThrowingContinuation { continuation in
+            let request = SKProductsRequest(productIdentifiers: Set(ids))
             request.delegate = self.delegate
+            productsContinuations[request] = continuation
             request.start()
+        }
     }
     
     public func purchaseSK1(_ product: BotsiProduct) async throws -> BotsiProfile {
@@ -121,11 +97,42 @@ public actor StoreKit1Handler {
         
        return try await withCheckedThrowingContinuation { continuation in
            self.purchaseContinuation = continuation
-
-           let payment = SKPayment(product: sk1product)
-           self.pendingProducts[payment.productIdentifier] = product
            
-           SKPaymentQueue.default().add(payment)
+           Task {
+               let payment: SKPayment
+               
+               switch product.subscriptionOffer {
+               case .none:
+                   payment = SKPayment(product: sk1product)
+               case let .some(offer):
+                   switch offer.offerIdentifier {
+                   case .introductory:
+                       payment = SKPayment(product: sk1product)
+                   case .winBack:
+                       throw BotsiError.customError("SK1. Winback offer error", "Storekit 1 does not support win back offers")
+                   case let .promotional(offerId):
+                       let repository = SignPromotionalOfferRepository(httpClient: client)
+                       let useCase = SignPromotionalOfferUseCase(repository: repository)
+                       
+                       let signedOffer = try await useCase.getSignedPromotionalOffer(
+                            productId: sk1product.productIdentifier,
+                            offerId: offerId
+                       )
+                       payment = {
+                           let payment = SKMutablePayment(product: sk1product)
+                           payment.applicationUsername = ""
+                           payment.paymentDiscount = SKPaymentDiscount(
+                                offerId: offerId,
+                                meta: signedOffer
+                           )
+                           return payment
+                       }()
+                   }
+               }
+               self.pendingProducts[payment.productIdentifier] = product
+               
+               SKPaymentQueue.default().add(payment)
+           }
        }
     }
     
@@ -133,27 +140,25 @@ public actor StoreKit1Handler {
         return try await restoreTransactions()
     }
     
-    internal func onDidReceiveProductsResponse(_ response: SKProductsResponse) {
-        if let completion = fetchProductCompletion {
-            
-            fetchProductCompletion = nil
-            
-            guard let product = response.products.first else {
-                let error = NSError(
+    internal func onDidReceiveProductsResponse(
+        _ response: SKProductsResponse,
+        from request: SKProductsRequest
+    ) {
+        if let cont = productContinuations.removeValue(forKey: request) {
+            if let p = response.products.first {
+                cont.resume(returning: p)
+            } else {
+                cont.resume(throwing: NSError(
                     domain: "StoreKit1Handler",
                     code: -2,
-                    userInfo: [NSLocalizedDescriptionKey: "No matching SKProduct found."]
-                )
-                completion(.failure(error))
-                return
+                    userInfo: [NSLocalizedDescriptionKey: "No matching product"]
+                ))
             }
-            completion(.success(product))
-        } else if let completion = fetchProductsCompletion {
-            fetchProductsCompletion = nil
-            
-            let products = response.products
-            completion(.success(products))
-        } else {
+            return
+        }
+
+        if let conts = productsContinuations.removeValue(forKey: request) {
+            conts.resume(returning: response.products)
             return
         }
     }
@@ -166,14 +171,17 @@ public actor StoreKit1Handler {
         return identifiers.compactMap { productMap[$0] }
     }
     
-    internal func onDidFailRequest(_ error: Error) {
-        if let completion = fetchProductCompletion {
-            fetchProductCompletion = nil
-            completion(.failure(error))
-        } else if let completion = fetchProductsCompletion {
-            fetchProductsCompletion = nil
-            completion(.failure(error))
-        } else { return }
+    internal func onDidFailRequest(
+        _ error: Error,
+        from request: SKRequest
+    ) {
+        if let req = request as? SKProductsRequest {
+              if let cont = productContinuations.removeValue(forKey: req) {
+                cont.resume(throwing: error)
+              } else if let conts = productsContinuations.removeValue(forKey: req) {
+                conts.resume(throwing: error)
+              }
+            }
     }
     
     internal func onUpdatedTransactions(_ transactions: [SKPaymentTransaction]) {
@@ -355,8 +363,7 @@ public actor StoreKit1Handler {
     private func handleFailed(_ transaction: SKPaymentTransaction, source: UpdateTransactionSource) {
         if let error = transaction.error {
             BotsiLog.debug("SK1. handleFailed. Transaction failed with error: \(error.localizedDescription)")
-            
-            purchaseContinuation?.resume(throwing: error)
+            purchaseContinuation?.resume(throwing: BotsiError.customError("SK1. Purchase continuation error", error.localizedDescription))
             purchaseContinuation = nil
         }
         
@@ -369,6 +376,7 @@ public actor StoreKit1Handler {
         source: StoreKitTransactionSource
     ) async throws -> BotsiProfile {
         guard let storedProfile = await storage.getProfile() else {
+            
             throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
         }
         let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
@@ -376,6 +384,7 @@ public actor StoreKit1Handler {
             transaction: transaction,
             source: source
         )
+        await storage.setProfile(profileFetched)
         BotsiLog.info("Profile received after validating transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
         return profileFetched
     }
@@ -420,15 +429,14 @@ private class StoreKit1HandlerDelegate: NSObject, SKProductsRequestDelegate, SKP
     public func productsRequest(_ request: SKProductsRequest, didReceive response: SKProductsResponse) {
         guard let handler = handler else { return }
         Task {
-            await handler.onDidReceiveProductsResponse(response)
+            await handler.onDidReceiveProductsResponse(response, from: request)
         }
     }
     
     public func request(_ request: SKRequest, didFailWithError error: Error) {
         guard let handler = handler else { return }
         Task {
-            await handler.onDidFailRequest(error)
-        }
+            await handler.onDidFailRequest(error, from: request) }
     }
     
     // MARK: - SKPaymentTransactionObserver
@@ -454,3 +462,20 @@ extension StoreKit1Handler {
         case failed
     }
 }
+
+extension SKPaymentDiscount {
+    typealias SignedOffer = BotsiSignSubscriptionOfferResponseData
+    convenience init(offerId: String, meta: SignedOffer) {
+        self.init(
+            identifier: offerId,
+            keyIdentifier: meta.keyId,
+            nonce: meta.nonce,
+            signature: meta.signature.base64EncodedString(),
+            timestamp: Int(meta.timestamp)! as NSNumber
+        )
+    }
+}
+
+extension SKProductsResponse: @unchecked Sendable {}
+extension SKRequest: @unchecked @retroactive Sendable {}
+extension SKProduct: @unchecked Sendable {}

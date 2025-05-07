@@ -8,7 +8,7 @@
 import Foundation
 
 struct CreateProfileMapper: DomainMapper {
-    typealias Parameters = BotsiEnvironment
+    typealias Parameters = (environment: BotsiEnvironment, customerUserId: String?)
     
     typealias DTOResponseModel = CreateProfileDtoResponse
     
@@ -16,9 +16,11 @@ struct CreateProfileMapper: DomainMapper {
     
     typealias DomainModel = BotsiProfile
     
-    func toDTO(from env: BotsiEnvironment) -> CreateProfileRequestDto {
+    func toDTO(from params: Parameters) -> CreateProfileRequestDto {
+        let env = params.environment
         return CreateProfileRequestDto(
             meta: CreateProfileMetaDto(
+                customerUserId: params.customerUserId,
                 storeCountry: env.storeCountry,
                 botsiSdkVersion: env.botsiSdkVersion,
                 advertisingId: env.advertisingId,

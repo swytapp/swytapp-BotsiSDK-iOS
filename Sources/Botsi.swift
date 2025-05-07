@@ -11,12 +11,14 @@ import Foundation
 public final class Botsi: Sendable {
     let sdkApiKey: String
         
-    fileprivate let profileStorage: BotsiProfileStorage
+    let profileStorage: BotsiProfileStorage
     fileprivate let cachedTransactionsStore: BotsiSyncedTransactionStore
     static let lifecycle = BotsiLifecycle()
     
     private let storeKit1Handler: StoreKit1Handler?
     private let storeKit2Handler: StoreKit2Handler?
+    
+    private let enableStoreKit2: Bool = true
     
     let botsiClient: BotsiHttpClient
     
@@ -29,7 +31,7 @@ public final class Botsi: Sendable {
         let cachedTransactionsStore = await BotsiSyncedTransactionStore()
         self.cachedTransactionsStore = cachedTransactionsStore
         
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, *), enableStoreKit2 {
             self.storeKit2Handler = StoreKit2Handler(
                 client: botsiClient,
                 storage: profileStorage
@@ -55,9 +57,9 @@ public final class Botsi: Sendable {
             let uuid = await profileStorage.getNewProfileUUID()
             if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
-                
+                await updateASAToken(profile.profileId)
                 do {
-                    try await restorePurchases() // TODO: refactor
+                    try await restorePurchases()
                 } catch {
                     BotsiLog.error("Unable to restore purchases.")
                 }
@@ -115,7 +117,71 @@ public extension Botsi {
     ) async throws -> T {
         try await lifecycle.withInitializedSDK(operation: operation)
     }
-   
+    
+    /// /// Links the SDK session to a specific user in your own system.
+    ///
+    /// If you didn’t provide a user ID when initializing the SDK, you can call `.identify()` at any point—most often right after the user signs up or logs in, moving from an anonymous session to an authenticated one.
+    ///
+    /// - Parameter userId: The unique identifier for the user in your system.
+    
+    nonisolated static func identify(_ userId: String) async throws {
+        try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.identifyUser(with: userId)
+        }
+    }
+    
+    private func identifyUser(with customerUserId: String) async throws {
+        guard let profile = await profileStorage.getProfile() else {
+            let uuid = await profileStorage.getNewProfileUUID()
+            if let profile = try? await createUserProfile(with: uuid) {
+                await profileStorage.setProfile(profile)
+                do {
+                    try await restorePurchases() // TODO: refactor
+                    return
+                } catch {
+                    BotsiLog.error("Identify. Unable to restore purchases.")
+                    return
+                }
+            }
+            return
+        }
+        
+        guard profile.customerUserId != customerUserId else { return }
+        
+        let uuid = await profileStorage.getNewProfileUUID()
+        if let profile = try? await createUserProfile(with: uuid, userCustomerId: customerUserId) {
+            await profileStorage.setProfile(profile)
+            return
+        }
+        return
+    }
+    
+    /// Ends the current user session and reverts the SDK to an anonymous state.
+    ///
+    /// Calling `.logout()` removes any stored user identifier and clears session-specific data, so subsequent calls behave as if no user is signed in. Use this when the user signs out or you need to reset personalization.
+    ///
+    /// - Note: After logging out, you can call `.identify()` again to link a new or returning user.
+    
+    nonisolated static func logout() async throws {
+        try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.clearProfile()
+        }
+    }
+    
+    private func clearProfile() async throws {
+        await profileStorage.clearProfile()
+        let uuid = await profileStorage.getNewProfileUUID()
+        do {
+            let newProfile = try await createUserProfile(with: uuid)
+            await profileStorage.setProfile(newProfile)
+        } catch let error as BotsiError {
+            BotsiLog.warn("Logout error: \(error.localizedDescription)")
+            throw error
+        } catch {
+            throw BotsiError.customError("Logout error", "\(error.localizedDescription)")
+        }
+    }
+    
     /// Checks if the Botsi SDK has been properly initialized.
     ///
     /// Use this property to verify that the SDK has been successfully initialized
@@ -150,6 +216,8 @@ public extension Botsi {
     ///   }
     ///   ```
     typealias ProfileIdentifier = String
+    typealias UserCustomerIdentifier = String
+    
     nonisolated static func getProfile() async throws -> BotsiProfile {
         return try await lifecycle.withInitializedSDK { botsi in
             try await botsi.getUserProfile()
@@ -157,9 +225,9 @@ public extension Botsi {
     }
     
     @discardableResult
-    private func createUserProfile(with id: ProfileIdentifier) async throws -> BotsiProfile {
+    private func createUserProfile(with id: ProfileIdentifier, userCustomerId: UserCustomerIdentifier? = nil) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
-        return try await createProfile.createUserProfile(identifier: id)
+        return try await createProfile.createUserProfile(identifier: id, customerId: userCustomerId)
     }
     
     @discardableResult
@@ -225,7 +293,7 @@ public extension Botsi {
     
     func makePurchase(from product: BotsiProduct) async throws -> BotsiProfile {
         do {
-            if #available(iOS 15.0, *) {
+            if #available(iOS 15.0, *), enableStoreKit2 {
                 guard let handler = storeKit2Handler else {
                     throw BotsiError.customError("SK2PurchaseError", "unable to unwrap Storekit 2 handler")
                 }
@@ -238,6 +306,12 @@ public extension Botsi {
                 let profile = try await handler.purchaseSK1(product)
                 return profile
             }
+        } catch let error as BotsiError {
+            BotsiLog.error("Failed to purchase: \(error.localizedDescription)")
+            throw error
+        } catch let error as SK1Error {
+            BotsiLog.error("SKError failed to purchase: \(error.errorCode) \(error.errorUserInfo) \(error.localizedDescription)")
+            throw BotsiError.transactionFailed
         } catch {
             BotsiLog.error("Failed to purchase: \(error.localizedDescription)")
             throw BotsiError.transactionFailed
@@ -274,7 +348,7 @@ public extension Botsi {
     @discardableResult
     private func restorePurchases() async throws -> BotsiProfile {
         do {
-            if #available(iOS 15.0, *) {
+            if #available(iOS 15.0, *), enableStoreKit2 {
                 guard let handler = storeKit2Handler else {
                     throw BotsiError.customError("restoreError", "unable to unwrap storekit 2 handler")
                 }
@@ -356,33 +430,23 @@ public extension Botsi {
     }
     
     private func retrieveProductDetails(from paywall: BotsiPaywall) async throws -> [BotsiProduct] {
-        let identifiers = paywall.sourceProducts.map { $0.sourcePoductId }
-        
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, *), enableStoreKit2 {
             guard let handler = storeKit2Handler else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 2 handler")
             }
-            let products = try await handler.retrieveProductAsync(with: identifiers).compactMap {
-                BotsiSK2PaywallProduct(
-                    skProduct: $0,
-                    paywallId: paywall.id,
-                    placementId: paywall.placementId,
-                    abTestId: paywall.abTestId
-                )
-            }
+            let products: [BotsiProduct] = try await getBotsiProducts(paywall: paywall, handler: handler)
             return products
         } else {
-            guard let handler = storeKit1Handler else {
+            guard let handler = storeKit1Handler,
+                    let profile = await profileStorage.getProfile()
+            else {
                 throw BotsiError.customError("retrieveProductDetailsError", "unable to unwrap storekit 1 handler")
             }
-            let products = try await handler.retrieveSK1Products(from: identifiers).compactMap {
-                BotsiSK1PaywallProduct(
-                    skProduct: $0.skProduct,
-                    paywallId: paywall.id,
-                    placementId: paywall.placementId,
-                    abTestId: paywall.abTestId
-                )
-            }
+            let products: [BotsiProduct] = try await getBotsiProductsForSK1(
+                profileId: profile.profileId,
+                paywall: paywall,
+                handler: handler
+            )
             return products
         }
     }
