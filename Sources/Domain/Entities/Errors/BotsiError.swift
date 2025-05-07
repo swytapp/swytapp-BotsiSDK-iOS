@@ -39,6 +39,7 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
     case receiptValidationFailed(String)
     
     case eventsError
+    case asaTokenError
     
     case customError(String, String)
 
@@ -82,6 +83,8 @@ public enum BotsiError: Error, Sendable, BotsiErrorConformable {
             return "Request for fetching user's paywall with placement id failed"
         case .eventsError:
             return "Sending event analytics failed"
+        case .asaTokenError:
+            return "ASA token update error"
         }
     }
 }

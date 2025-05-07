@@ -12,6 +12,7 @@ public actor BotsiProfileStorage: Sendable {
     
     private var profileId: String
     private var profile: BotsiProfile?
+    private var asaTokenUpdated: Bool = false
     
     private var externalAnalyticsDisabled: Bool = false
     private var syncedTransactions: Bool = false
@@ -107,6 +108,23 @@ public actor BotsiProfileStorage: Sendable {
         let newId = UUID().uuidString.lowercased()
         return newId
     }
+    
+    func setASATokenUpdated(_ value: Bool) async {
+        BotsiLog.debug("ASA token updated: \(value)")
+        try? await storageManager.save(value, forKey: UserDefaultKeys.User.asaToken)
+    }
+    
+    func isASATokenUpdated() async -> Bool {
+        do {
+            guard let asaTokenUpdated = try await storageManager.retrieve(Bool.self, forKey: UserDefaultKeys.User.asaToken) else {
+                BotsiLog.warn("ASA token not found.")
+                return false
+            }
+            return asaTokenUpdated
+        } catch {
+            return false
+        }
+    }
 }
 
 enum BackendIntroductoryOfferEligibilityStorage {
@@ -118,5 +136,37 @@ enum BackendIntroductoryOfferEligibilityStorage {
 enum PaywallsStorage {
     static func clear() {
         BotsiLog.debug("Cleared PaywallsStorage.")
+    }
+}
+
+import AdServices
+
+public extension Botsi {
+    func updateASAToken(_ profileId: String) async {
+        if #available(iOS 14.3, *) {
+        let repository = ASATokenRepository(httpClient: botsiClient)
+        let useCase = BotsiASATokenUseCase(repository: repository)
+            do {
+                guard await !profileStorage.isASATokenUpdated() else { return }
+                let token = try getASAToken()
+                let updatedProfile = try await useCase.execute(profileId: profileId, token: token)
+                await profileStorage.setProfile(updatedProfile)
+                await profileStorage.setASATokenUpdated(true)
+            } catch let error as BotsiError {
+                BotsiLog.warn("ASA token update failed with botsi error: \(error.localizedDescription)")
+            } catch {
+                BotsiLog.warn("ASA token update failed with error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    @available(iOS 14.3, *)
+    func getASAToken() throws -> String {
+        do {
+            let attributionToken = try AAAttribution.attributionToken()
+            return attributionToken
+        } catch {
+            throw error
+        }
     }
 }

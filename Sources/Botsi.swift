@@ -11,7 +11,7 @@ import Foundation
 public final class Botsi: Sendable {
     let sdkApiKey: String
         
-    fileprivate let profileStorage: BotsiProfileStorage
+    let profileStorage: BotsiProfileStorage
     fileprivate let cachedTransactionsStore: BotsiSyncedTransactionStore
     static let lifecycle = BotsiLifecycle()
     
@@ -57,9 +57,9 @@ public final class Botsi: Sendable {
             let uuid = await profileStorage.getNewProfileUUID()
             if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
-                
+                await updateASAToken(profile.profileId)
                 do {
-                    try await restorePurchases() // TODO: refactor
+                    try await restorePurchases()
                 } catch {
                     BotsiLog.error("Unable to restore purchases.")
                 }

@@ -40,6 +40,18 @@ In your source files, add the following import statement:
 import Botsi
 ```
 
+CocoaPods
+
+To integrate the BotsiSDK into your project using CocoaPods, follow these steps:
+
+1. **Add the SDK to your Podfile and add the following line:**
+pod 'BotsiSDK', '~> 1.0.1'
+
+2. **Install the PodRun the following command to install the SDK:**
+pod install
+
+3. **Open the generated .xcworkspace file in Xcode instead of the .xcodeproj.**
+
 ## Initialization
 
 ### `activate(_ key:)`
