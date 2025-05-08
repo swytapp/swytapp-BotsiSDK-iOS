@@ -67,3 +67,5 @@ public actor BotsiStorageManager {
         defaults.removeObject(forKey: key + "_hash")
     }
 }
+
+extension UserDefaults: @unchecked @retroactive Sendable {}

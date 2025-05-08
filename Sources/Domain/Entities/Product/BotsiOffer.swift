@@ -14,7 +14,7 @@ public struct BotsiOffer: Sendable, Hashable {
     /// The category of this discount offer.
     public var offerType: OfferType { offerIdentifier.asOfferType }
 
-    package let offerIdentifier: Identifier
+    public let offerIdentifier: Identifier
 
     /// The duration unit for which the discount applies.
     public let subscriptionPeriod: BotsiSubscriptionPeriod
@@ -78,7 +78,7 @@ extension BotsiOffer: CustomStringConvertible {
 }
 
 extension BotsiOffer {
-   package enum Identifier: Sendable, Hashable {
+    public enum Identifier: Sendable, Hashable {
         case introductory
         case promotional(String)
         case winBack(String)

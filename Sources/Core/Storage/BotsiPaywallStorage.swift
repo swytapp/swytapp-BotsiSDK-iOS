@@ -19,9 +19,12 @@ struct PaywallMeta: Codable, Equatable {
 
 @BotsiPaywallMappingStorage.InternalActor
 final class BotsiPaywallMappingStorage: Sendable {
+    
+    nonisolated init() { }
+    
     @globalActor
     actor InternalActor {
-        package static let shared = InternalActor()
+        public static let shared = InternalActor()
     }
 
     enum Constants {

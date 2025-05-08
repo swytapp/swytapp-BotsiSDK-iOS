@@ -453,7 +453,7 @@ public extension Botsi {
     
     // MARK: - Events
     /// `Analytics`
-    private func sendPaywallTrackEvent(event: BotsiLogEvent) async throws {
+    nonisolated private func sendPaywallTrackEvent(event: BotsiLogEvent) async throws {
         let eventsRepository = EventsRepository(httpClient: botsiClient)
         let useCase = BotsiSendEventUseCase(repository: eventsRepository)
         try await useCase.execute(
@@ -473,7 +473,9 @@ public extension Botsi {
         )
         let loggerWithContext = BotsiEventLoggerFactory.createLoggerWithContext(
             initialContext: customContext,
-            sendEventFunction: sendPaywallTrackEvent
+            sendEventFunction: { @Sendable [unowned self] event in
+                try await self.sendPaywallTrackEvent(event: event)
+            }
         )
 
         let userActionEvent = BotsiLogEvent(
