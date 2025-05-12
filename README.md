@@ -26,7 +26,7 @@ A powerful Swift SDK for:
 
 Add to your Podfile:
 
-`pod 'Botsi', '~> 1.0.3'`
+`pod 'Botsi', '~> 1.0.4'`
 
 Then run:
 
@@ -40,7 +40,7 @@ Enter:
 
 `https://github.com/BotsiTeam/BotsiSDK-iOS.git`
 
-Select Up to Next Major version 1.0.3
+Select Up to Next Major version 1.0.4
 
 **🛠 Quick Start**
 
@@ -71,7 +71,7 @@ Task {
 
 **📑 Documentation**
 
-Detailed API reference, guides, and examples are in the [botsi-documentation.md](https://github.com/BotsiTeam/BotsiSDK-iOS/blob/1.0.3/botsi-documentation.md)
+Detailed API reference, guides, and examples are in the [botsi-documentation.md](https://github.com/BotsiTeam/BotsiSDK-iOS/blob/1.0.4/botsi-documentation.md)
 
 
 **🤝 Contributing**
