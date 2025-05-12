@@ -14,7 +14,7 @@ public struct BotsiHttpClient: Sendable {
     let session: BotsiHTTPSession
     
     struct URLConstants {
-        static let backendHost: URL = URL(string: "https://swytapp-test.com.ua")!
+        static let backendHost: URL = URL(string: "https://app.botsi.com")!
     }
     
     init(with configuration: BotsiConfiguration, key: String) {
