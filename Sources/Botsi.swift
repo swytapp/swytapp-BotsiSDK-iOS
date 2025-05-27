@@ -50,6 +50,12 @@ public final class Botsi: Sendable {
         }
         
         await verifyUser()
+        
+        Task.detached {
+            let ip = try await IPAddressManager.getIPAddress()
+            let userId = await self.profileStorage.currentProfileId()
+            try await self.updateUserProfile(with: userId, ipAddress: ip)
+        }
     }
     
     private func verifyUser() async {
@@ -228,6 +234,13 @@ public extension Botsi {
     private func createUserProfile(with id: ProfileIdentifier, userCustomerId: UserCustomerIdentifier? = nil) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
         return try await createProfile.createUserProfile(identifier: id, customerId: userCustomerId)
+    }
+    
+    @discardableResult
+    private func updateUserProfile(with id: ProfileIdentifier, ipAddress: String) async throws -> BotsiProfile {
+        let updateUserRepository = UpdateUserProfileRepository(httpClient: botsiClient)
+        let useCase = BotsiUpdateProfileUseCase(repository: updateUserRepository)
+        return try await useCase.execute(identifier: id, ip: ipAddress)
     }
     
     @discardableResult
@@ -460,7 +473,8 @@ public extension Botsi {
             profileId: event.profileId,
             paywallId: event.paywallId,
             abTestId: event.abTestId,
-            eventType: event.type.rawValue
+            eventType: event.type.rawValue,
+            placementId: event.placementId
         )
     }
     
@@ -485,7 +499,7 @@ public extension Botsi {
             type: .userPaywallShown,
             name: "userPaywallPresentedLog",
             message: "Paywall presented.",
-            placementId: "\(paywall.id)"
+            placementId: paywall.placementId
         )
         await loggerWithContext.logEvent(userActionEvent)
     }

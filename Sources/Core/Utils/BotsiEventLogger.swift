@@ -29,7 +29,7 @@ public struct BotsiLogEvent: Sendable {
     public let profileId: String
     public let paywallId: Int?
     public let abTestId: Int?
-    public let placementId: String?
+    public let placementId: String
     public let type: BotsiLogEventType
     public let name: String
     public let timestamp: TimeInterval
@@ -45,7 +45,7 @@ public struct BotsiLogEvent: Sendable {
         timestamp: TimeInterval = Date().timeIntervalSince1970,
         message: String? = nil,
         context: BotsiLogEventContext? = nil,
-        placementId: String? = nil
+        placementId: String
     ) {
         self.profileId = profileId
         self.paywallId = paywallId

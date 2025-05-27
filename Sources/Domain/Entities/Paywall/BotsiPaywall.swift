@@ -8,7 +8,7 @@
 import Foundation
 
 public struct BotsiPaywall: Sendable, Codable {
-    public var placementId: String?
+    public var placementId: String
     public let id: Int
     public let name: String
     public let remoteConfigs: String?

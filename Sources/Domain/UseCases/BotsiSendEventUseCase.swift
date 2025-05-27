@@ -14,8 +14,14 @@ struct BotsiSendEventUseCase {
         self.repository = repository
     }
 
-    func execute(profileId: String, paywallId: Int? = nil, abTestId: Int? = nil, eventType: String) async throws {
-        return try await repository.sendEvent(profileId: profileId, paywallId: paywallId, abTestId: abTestId, eventType: eventType)
+    func execute(
+        profileId: String,
+        paywallId: Int? = nil,
+        abTestId: Int? = nil,
+        eventType: String,
+        placementId: String
+    ) async throws {
+        return try await repository.sendEvent(profileId: profileId, paywallId: paywallId, abTestId: abTestId, eventType: eventType, placementId: placementId)
     }
 }
 

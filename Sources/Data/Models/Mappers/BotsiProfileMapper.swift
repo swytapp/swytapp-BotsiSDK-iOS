@@ -42,3 +42,22 @@ struct CreateProfileMapper: DomainMapper {
         return dto.data
     }
 }
+
+struct UpdateProfileMapper: DomainMapper {
+    typealias Parameters = String
+    
+    typealias DTOResponseModel = UpdateProfileDtoResponse
+    
+    typealias DTORequestModel = BotsiUpdateProfileRequestDto
+    
+    typealias DomainModel = BotsiProfile
+    
+    func toDTO(from params: Parameters) -> BotsiUpdateProfileRequestDto {
+        return BotsiUpdateProfileRequestDto(ip: params)
+        
+    }
+    
+    func toDomain(from dto: UpdateProfileDtoResponse) -> BotsiProfile {
+        return dto.data
+    }
+}

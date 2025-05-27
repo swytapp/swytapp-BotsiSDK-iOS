@@ -13,6 +13,7 @@ struct BotsiEventsRequestDto: Encodable {
     let paywallId: Int?
     let abTestId: Int?
     let eventType: String
+    let placementId: String
 }
 
 // MARK: - Response model
