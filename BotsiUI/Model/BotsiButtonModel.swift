@@ -1,0 +1,58 @@
+//
+//  BotsiButtonModel.swift
+//  Botsi
+//
+//  Created by Kostiantyn Antoniuk on 18.06.2025.
+//
+
+import Foundation
+
+@available(iOS 15.0, *)
+public struct BotsiButtonModel: Codable, Sendable {
+    
+    public let action: String
+    public let actionLabel: String?
+    public let text: ButtonText?
+    public let secondaryText: ButtonText?
+    public let style: BotsiButtonStyle
+    public let margin: BotsiEdge?
+    public let verticalOffset: String?
+    public let contentLayout: ContentLayout?
+
+    private enum CodingKeys: String, CodingKey {
+        case style, text, action, margin
+        case actionLabel = "action_label"
+        case secondaryText = "secondary_text"
+        case verticalOffset = "vertical_offset"
+        case contentLayout = "content_layout"
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.action = try container.decode(String.self, forKey: .action)
+        self.actionLabel = try container.decodeIfPresent(String.self, forKey: .actionLabel)
+        self.style = try container.decode(BotsiButtonStyle.self, forKey: .style)
+        self.text = try container.decodeIfPresent(ButtonText.self, forKey: .text)
+        self.secondaryText = try container.decodeIfPresent(ButtonText.self, forKey: .secondaryText)
+        self.margin = try container.decodeIfPresent(BotsiEdge.self, forKey: .margin)
+        self.contentLayout = try container.decodeIfPresent(ContentLayout.self, forKey: .contentLayout)
+        
+        if let string = try? container.decodeIfPresent(String.self, forKey: .verticalOffset) {
+            self.verticalOffset = string
+        } else if let int = try? container.decodeIfPresent(Int.self, forKey: .verticalOffset) {
+            self.verticalOffset = String(int)
+        } else if let double = try? container.decodeIfPresent(Double.self, forKey: .verticalOffset) {
+            self.verticalOffset = String(double)
+        } else {
+            self.verticalOffset = nil
+        }
+    }
+
+    public struct ButtonText: Codable, Sendable {
+        public let text: String
+        public let font: BotsiLayoutModel.DefaultFont
+        public let size: String
+        public let color: String
+        public let opacity: Int
+    }
+}
