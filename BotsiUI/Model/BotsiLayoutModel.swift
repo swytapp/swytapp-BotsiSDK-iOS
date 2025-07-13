@@ -11,9 +11,9 @@ import SwiftUI
 public struct BotsiLayoutModel: Decodable, Sendable {
     
     public let template: TemplateContainer?
-    public let darkMode: Bool
-    public let purchaseFlow: String
-    public let fillColor: BotsiFillColor
+    public let darkMode: Bool?
+    public let purchaseFlow: String?
+    public let fillColor: BotsiFillColor?
     public let defaultFont: DefaultFont
     public let contentLayout: ContentLayout
     public let topButtons: [TopButton]
@@ -159,6 +159,10 @@ public struct BotsiEdge: Codable, Sendable {
     public let top: CGFloat
     public let right: CGFloat
     public let bottom: CGFloat
+    
+    public static var defaultEdge: BotsiEdge {
+        .init(left: 0, top: 0, right: 0, bottom: 0)
+    }
 
     public init(left: CGFloat, top: CGFloat, right: CGFloat, bottom: CGFloat) {
         self.left = left
@@ -222,6 +226,28 @@ public enum BotsiAlign: String, Codable, Sendable {
     case left = "left"
     case center = "center"
     case right = "right"
+    
+    public var horizontalAlignment: HorizontalAlignment {
+        switch self {
+        case .left:
+            return .leading
+        case .center:
+            return .center
+        case .right:
+            return .trailing
+        }
+    }
+    
+    public var alignment: Alignment {
+        switch self {
+        case .left:
+            return .leading
+        case .center:
+            return .center
+        case .right:
+            return .trailing
+        }
+    }
 }
 
 public enum BotsiButtonType: String, Codable, Sendable {

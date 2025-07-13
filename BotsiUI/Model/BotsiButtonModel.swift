@@ -17,7 +17,7 @@ public struct BotsiButtonModel: Codable, Sendable {
     public let style: BotsiButtonStyle
     public let margin: BotsiEdge?
     public let verticalOffset: String?
-    public let contentLayout: ContentLayout?
+    public let contentLayout: BotsiContentLayout?
 
     private enum CodingKeys: String, CodingKey {
         case style, text, action, margin
@@ -35,7 +35,7 @@ public struct BotsiButtonModel: Codable, Sendable {
         self.text = try container.decodeIfPresent(ButtonText.self, forKey: .text)
         self.secondaryText = try container.decodeIfPresent(ButtonText.self, forKey: .secondaryText)
         self.margin = try container.decodeIfPresent(BotsiEdge.self, forKey: .margin)
-        self.contentLayout = try container.decodeIfPresent(ContentLayout.self, forKey: .contentLayout)
+        self.contentLayout = try container.decodeIfPresent(BotsiContentLayout.self, forKey: .contentLayout)
         
         if let string = try? container.decodeIfPresent(String.self, forKey: .verticalOffset) {
             self.verticalOffset = string

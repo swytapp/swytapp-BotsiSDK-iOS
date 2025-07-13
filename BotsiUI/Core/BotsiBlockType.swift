@@ -12,16 +12,18 @@ public enum BotsiBlockType: String, Decodable, Sendable {
     case list          = "list"
     case listItem      = "list_nested"
     case footer        = "footer"
-    case products      = "products"
-    case productItem   = "product_item"
     case button        = "button"
     case image         = "image"
     case card          = "card"
     case links         = "links"
     case carousel      = "carousel"
     case timer         = "timer"
-    case toggleControl = "toggle_control"
     case localization  = "localization"
+    case products      = "products"
+    case productItem   = "product_item"
+    case toggleControl = "toggle_control"
+    case toggleOn      = "toggle_on"
+    case toggleOff     = "toggle_off"
     case unknown
     
     public init(from decoder: Decoder) throws {

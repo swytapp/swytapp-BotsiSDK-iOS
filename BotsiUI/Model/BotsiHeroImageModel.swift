@@ -20,6 +20,7 @@ public struct BotsiHeroImageModel: Decodable, Sendable {
     public struct Tint: Decodable, Sendable {
         public let opacity: Int
         public let fillColor: String
+        
         private enum CodingKeys: String, CodingKey {
             case opacity
             case fillColor = "fill_color"

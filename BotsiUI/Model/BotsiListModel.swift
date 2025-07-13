@@ -28,8 +28,6 @@ public struct BotsiListModel: Codable, Sendable {
     
     public let titleTextStyle: BotsiTextStyleModel?
     public let captionTextStyle: BotsiTextStyleModel?
-
-//    public var nested: [BotsiListNestedModel]? = nil
     
     private enum CodingKeys: String, CodingKey {
         case padding, width, height

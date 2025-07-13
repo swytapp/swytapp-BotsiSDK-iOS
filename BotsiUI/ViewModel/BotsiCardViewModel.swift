@@ -46,6 +46,6 @@ final class BotsiCardViewModel: ObservableObject {
     }
 
     var padding: BotsiEdge {
-        return model.contentLayout.padding
+        return model.contentLayout.padding ?? BotsiEdge.defaultEdge
     }
 }

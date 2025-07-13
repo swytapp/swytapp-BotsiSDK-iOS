@@ -19,12 +19,16 @@ public enum BotsiBlockContent: Decodable, Sendable {
     case text(BotsiTextModel)
     case image(BotsiImageModel)
     case card(BotsiCardModel)
-    case products(BotsiProductsModel)
-    case productItem(BotsiProductItemModel)
     case footer(BotsiFooterModel)
     case button(BotsiButtonModel)
     case localization(BotsiLocalizationModel)
+    
+    case products(BotsiProductsModel)
+    case productItem(BotsiProductItemModel)
     case toggleControl(BotsiToggleControlModel)
+    case toggleOn(BotsiToggleOnModel)
+    case toggleOff(BotsiToggleOffModel)
+    
     case unknown(EmptyContent?)
 
     public struct EmptyContent: Codable, Sendable {}
@@ -64,12 +68,6 @@ public enum BotsiBlockContent: Decodable, Sendable {
         case .card:
             let c = try container.decode(BotsiCardModel.self, forKey: .content)
             self = .card(c)
-        case .products:
-            let c = try container.decode(BotsiProductsModel.self, forKey: .content)
-            self = .products(c)
-        case .productItem:
-            let c = try container.decode(BotsiProductItemModel.self, forKey: .content)
-            self = .productItem(c)
         case .footer:
             let c = try container.decode(BotsiFooterModel.self, forKey: .content)
             self = .footer(c)
@@ -79,6 +77,22 @@ public enum BotsiBlockContent: Decodable, Sendable {
         case .localization:
             let c = try container.decode(BotsiLocalizationModel.self, forKey: .content)
             self = .localization(c)
+        case .products:
+            let c = try container.decode(BotsiProductsModel.self, forKey: .content)
+            self = .products(c)
+        case .productItem:
+            let c = try container.decode(BotsiProductItemModel.self, forKey: .content)
+            self = .productItem(c)
+        case .toggleControl:
+            let c = try container.decode(BotsiToggleControlModel.self, forKey: .content)
+            self = .toggleControl(c)
+        case .toggleOn:
+            let c = try container.decode(BotsiToggleOnModel.self, forKey: .content)
+            self = .toggleOn(c)
+        case .toggleOff:
+            let c = try container.decode(BotsiToggleOffModel.self, forKey: .content)
+            self = .toggleOff(c)
+            
         default:
             self = .unknown(nil)
         }

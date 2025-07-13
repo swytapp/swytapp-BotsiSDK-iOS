@@ -14,6 +14,7 @@ public struct BotsiTextStyleModel: Codable, Sendable {
     public let opacity: Int?
 }
 
+@available(iOS 15.0, *)
 public struct BotsiFontModel: Codable, Sendable {
     public let id: String?
     public let name: String?
@@ -21,6 +22,7 @@ public struct BotsiFontModel: Codable, Sendable {
     public let types: [BotsiFontTypeModel]?
 }
 
+@available(iOS 15.0, *)
 public struct BotsiFontTypeModel: Codable, Sendable {
     public let name: String?
     public let id: String?

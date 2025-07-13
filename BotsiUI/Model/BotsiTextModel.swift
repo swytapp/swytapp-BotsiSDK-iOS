@@ -13,7 +13,7 @@ public struct BotsiTextModel: Decodable, Sendable {
     
     public let text: TextBlock
     public let maxLines: String?
-    public let onOverflow: String
+    public let onOverflow: BotsiTextOverflow
     public let margin: BotsiEdge?
     public let verticalOffset: String?
     
@@ -22,14 +22,13 @@ public struct BotsiTextModel: Decodable, Sendable {
         public let textFallback: String?
         public let font: BotsiLayoutModel.DefaultFont
         public let size: StringOrInt
-        public let align: String
+        public let align: BotsiAlign
         public let color: String
         public let opacity: Int
 
         private enum CodingKeys: String, CodingKey {
-            case text, size, align, color, opacity
+            case text, size, align, color, opacity, font
             case textFallback = "text_fallback"
-            case font
         }
     }
 
@@ -40,6 +39,12 @@ public struct BotsiTextModel: Decodable, Sendable {
         case onOverflow = "on_overflow"
         case verticalOffset = "vertical_offset"
     }
+}
+
+@available(iOS 15.0, *)
+public enum BotsiTextOverflow: String, Decodable, Sendable {
+    case truncate
+    case scale
 }
 
 @available(iOS 15.0, *)
@@ -56,22 +61,6 @@ extension BotsiTextModel {
     
     var textOpacity: Double {
         return Double(text.opacity) / 100.0
-    }
-    
-    var textAlignment: TextAlignment {
-        switch text.align.lowercased() {
-        case "center": return .center
-        case "right": return .trailing
-        default: return .leading
-        }
-    }
-    
-    var truncationMode: Text.TruncationMode {
-        switch onOverflow.lowercased() {
-        case "ellipsis": return .tail
-        case "clip": return .head
-        default: return .tail
-        }
     }
 
     var maxLinesCount: Int? {

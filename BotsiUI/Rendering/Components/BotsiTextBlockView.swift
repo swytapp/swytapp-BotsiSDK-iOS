@@ -21,13 +21,16 @@ struct BotsiTextBlockView: View {
         Text(model.text.text)
             .font(.custom(model.text.font.name, size: model.textSize))
             .foregroundColor(Color(hex: model.text.color).opacity(model.textOpacity))
-            .multilineTextAlignment(model.textAlignment)
+//            .multilineTextAlignment(model.textAlignment)
             .lineLimit(model.maxLinesCount)
-            .truncationMode(model.truncationMode)
             .padding(.leading, margin?.left)
             .padding(.top, margin?.top)
             .padding(.trailing, margin?.right)
             .padding(.bottom, margin?.bottom)
             .offset(y: model.verticalOffsetValue)
+            .if(model.onOverflow == .scale) {
+                $0.minimumScaleFactor(0.5)
+            }
+            .frame(maxWidth: .infinity, alignment: model.text.align.alignment)
     }
 }

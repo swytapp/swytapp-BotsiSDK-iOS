@@ -9,60 +9,72 @@ import Foundation
 
 @available(iOS 15.0, *)
 public struct BotsiLinksModel: Decodable, Sendable {
-    
     public let hasTermOfService: Bool
     public let termOfService: LinkItem?
     public let hasPrivacyPolicy: Bool
     public let privacyPolicy: LinkItem?
     public let hasRestoreButton: Bool
-    public let restoreButton: ButtonTitle?
+    public let restoreButton: LinkItem?
     public let hasLoginButton: Bool
-    public let loginButton: ButtonTitle?
+    public let loginButton: LinkItem?
     public let style: Style
-    public let padding: String?
+    public let padding: BotsiEdge?
     public let verticalOffset: String
-    public let contentLayout: ContentLayout
+    public let contentLayout: BotsiContentLayout
 
     public struct LinkItem: Codable, Sendable {
         public let text: String
-        public let url: String
-        public let textFallback: String?
+        public let url: String?
+        public let textFallback: String
         public let urlFallback: String?
-        
+
         private enum CodingKeys: String, CodingKey {
             case text, url
             case textFallback = "text_fallback"
             case urlFallback  = "url_fallback"
         }
     }
-    
+
     public struct ButtonTitle: Codable, Sendable {
         public let text: String
-        public let font: BotsiLayoutModel.DefaultFont?
-        public let size: String?
-        public let color: String?
-        public let opacity: Int?
-    }
-    
-    public struct ContentLayout: Decodable, Sendable {
-        public let padding: String?
-        public let verticalOffset: String?
-        public let align: String?
-    }
-    
-    public struct Style: Codable, Sendable {
-        public let color: String?
-        public let opacity: Int?
-        public let borderColor: String?
-        public let borderOpacity: Int?
-        public let borderThickness: Int?
-        public let radius: String?
-        
+        public let textFallback: String?
+
         private enum CodingKeys: String, CodingKey {
-            case opacity, radius, color
-            case borderColor = "border_color"
-            case borderOpacity = "border_opacity"
-            case borderThickness = "border_thickness"
+            case text
+            case textFallback = "text_fallback"
+        }
+    }
+
+    public struct Style: Codable, Sendable {
+        public let font: BotsiLayoutModel.DefaultFont
+        public let size: String
+        public let color: String
+        public let opacity: Int
+        public let dividersColor: String?
+        public let dividersOpacity: String?
+        public let dividersThickness: String?
+
+        private enum CodingKeys: String, CodingKey {
+            case font, size, color, opacity
+            case dividersColor = "dividers_color"
+            case dividersOpacity = "dividers_opacity"
+            case dividersThickness = "dividers_thickness"
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            font = try container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font)
+            size = try container.decode(String.self, forKey: .size)
+            color = try container.decode(String.self, forKey: .color)
+            opacity = try container.decode(Int.self, forKey: .opacity)
+            dividersColor = try container.decodeIfPresent(String.self, forKey: .dividersColor)
+            dividersThickness = try container.decodeIfPresent(String.self, forKey: .dividersThickness)
+
+            if let intValue = try? container.decode(Int.self, forKey: .dividersOpacity) {
+                dividersOpacity = String(intValue)
+            } else {
+                dividersOpacity = try container.decodeIfPresent(String.self, forKey: .dividersOpacity)
+            }
         }
     }
 

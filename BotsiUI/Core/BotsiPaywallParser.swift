@@ -63,10 +63,6 @@ public final class BotsiPaywallParser {
                 return .image(try decoder.decode(BotsiImageModel.self, from: jsonData))
             case .card:
                 return .card(try decoder.decode(BotsiCardModel.self, from: jsonData))
-            case .products:
-                return .products(try decoder.decode(BotsiProductsModel.self, from: jsonData))
-            case .productItem:
-                return .productItem(try decoder.decode(BotsiProductItemModel.self, from: jsonData))
             case .footer:
                 return .footer(try decoder.decode(BotsiFooterModel.self, from: jsonData))
             case .list:
@@ -75,10 +71,18 @@ public final class BotsiPaywallParser {
                 return .listItem(try decoder.decode(BotsiListItemModel.self, from: jsonData))
             case .button:
                 return .button(try decoder.decode(BotsiButtonModel.self, from: jsonData))
-            case .toggleControl:
-                return .toggleControl(try decoder.decode(BotsiToggleControlModel.self, from: jsonData))
             case .localization:
                 return .localization(try decoder.decode(BotsiLocalizationModel.self, from: jsonData))
+            case .products:
+                return .products(try decoder.decode(BotsiProductsModel.self, from: jsonData))
+            case .productItem:
+                return .productItem(try decoder.decode(BotsiProductItemModel.self, from: jsonData))
+            case .toggleControl:
+                return .toggleControl(try decoder.decode(BotsiToggleControlModel.self, from: jsonData))
+            case .toggleOn:
+                return .toggleOn(try decoder.decode(BotsiToggleOnModel.self, from: jsonData))
+            case .toggleOff:
+                return .toggleOff(try decoder.decode(BotsiToggleOffModel.self, from: jsonData))
             case .unknown:
                 return .unknown(nil)
             }

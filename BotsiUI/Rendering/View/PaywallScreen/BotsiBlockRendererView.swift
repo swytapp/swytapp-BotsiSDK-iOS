@@ -27,7 +27,9 @@ public struct BotsiBlockRendererView: View {
             
         case .links(let model):
             let vm = BotsiLinksViewModel(model)
-            BotsiLinksBlockView(viewModel: vm)
+            BotsiLinksBlockView(model: model) { action in
+                print("KA: Links action: \(action)")
+            }
             
         case .layout(let model):
             //            BotsiLayoutView(model: model)
@@ -58,10 +60,32 @@ public struct BotsiBlockRendererView: View {
         case .card(let model):
             let vm = BotsiCardViewModel(block: block, model: model)
             BotsiCardBlockView(viewModel: vm)
-        case .toggleControl(_):
+        case .toggleControl(let model):
             EmptyView()
-        case .products(_):
-            EmptyView()
+        case .products(let model):
+            if let toggleControlBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_control" }),
+               case .toggleControl(let toggleControlModel) = toggleControlBlock.content,
+               let toggleOnBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_on" }),
+               case .toggleOn(let toggleOnModel) = toggleOnBlock.content,
+               let toggleOffBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_off" }),
+               case .toggleOff(let toggleOffModel) = toggleOffBlock.content {
+                
+                let toggleChildren = toggleOffBlock.children?.filter { child in
+                    child.meta.type.rawValue == "product_item"
+                }
+                
+                let vm = BotsiProductsToggleViewModel(
+                    contentModel: model,
+                    toggleControlModel: toggleControlModel,
+                    toggleOnModel: toggleOnModel,
+                    toggleOffModel: toggleOffModel,
+                    toggleChildren: toggleChildren ?? []
+                )
+                
+                BotsiProductsToggleView(viewModel: vm)
+            } else {
+                EmptyView()
+            }
         case .localization(_):
             EmptyView()
         case .unknown(_):
