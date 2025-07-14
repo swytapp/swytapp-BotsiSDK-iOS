@@ -48,6 +48,17 @@ struct TopButtonView: View {
     var tap: (BotsiActionType) -> Void
     
     var body: some View {
+        switch button.buttonType {
+        case .icon:
+            IconButton()
+        case .text:
+            TextButton()
+        default:
+            EmptyView()
+        }
+    }
+    
+    private func IconButton() -> some View {
         Button(action: {
             guard let actionId = button.actionId else { return }
             tap(actionId)
@@ -77,11 +88,51 @@ struct TopButtonView: View {
         .disabled(!button.enabled)
     }
     
+    private func TextButton() -> some View {
+        Button(action: {
+            guard let actionId = button.actionId else { return }
+            tap(actionId)
+        }) {
+            Text(button.text.text ?? "")
+                .font(.system(size: button.text.size.toCGFloat()))
+                .foregroundColor(Color.black
+                    .opacity(Double(button.text.opacity)))
+                .padding(.vertical, 2)
+                .padding(.horizontal, 10)
+        }
+        .background(fillBackground(for: button.style.fillColor, opacity: Double(button.styleOpacity)))
+        .overlay(
+            Capsule()
+                .stroke(
+                    Color(hex: button.style.borderColor)
+                        .opacity(Double(button.style.borderOpacity)),
+                    lineWidth: button.style.borderThickness.toCGFloat()
+                )
+        )
+        .disabled(!button.enabled)
+    }
+    
     private func systemIconName(for type: String) -> String {
         switch type.lowercased() {
         case "close": return "xmark"
         case "back": return "chevron.backward"
         default: return "questionmark"
+        }
+    }
+    
+    @ViewBuilder
+    private func fillBackground(for fillColor: BotsiFillColor?, opacity: Double) -> some View {
+        switch fillColor {
+        case .solid(let color):
+            Circle()
+                .fill(color)
+                .opacity(opacity)
+        case .gradient(let gradient):
+            Circle()
+                .fill(gradient)
+                .opacity(opacity)
+        case .none:
+            EmptyView()
         }
     }
 }

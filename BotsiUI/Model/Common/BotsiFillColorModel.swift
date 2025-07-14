@@ -8,7 +8,7 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-public enum BotsiFillColor: Sendable, Decodable {
+public enum BotsiFillColor: Decodable, Sendable {
     case solid(Color)
     case gradient(LinearGradient)
     
@@ -67,5 +67,30 @@ extension BotsiFillColor: Decodable {
 
         guard stops.count >= 2 else { return nil }
         return LinearGradient(colors: stops, startPoint: .leading, endPoint: .trailing)
+    }
+}
+
+@available(iOS 15.0, *)
+public extension BotsiFillColor {
+    var asAnyView: AnyView {
+        switch self {
+        case .solid(let color):
+            return AnyView(color)
+        case .gradient(let gradient):
+            return AnyView(gradient)
+        }
+    }
+
+    var asColorOrDefault: Color {
+        switch self {
+        case .solid(let color):
+            return color
+        case .gradient:
+            return .clear
+        }
+    }
+
+    var isGradient: Bool {
+        if case .gradient = self { return true } else { return false }
     }
 }

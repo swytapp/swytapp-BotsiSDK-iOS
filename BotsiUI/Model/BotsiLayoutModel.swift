@@ -76,7 +76,7 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let opacity: Int
     }
     
-    public struct TopButton: Codable, Identifiable, Sendable {
+    public struct TopButton: Decodable, Identifiable, Sendable {
         public let id = UUID()
         public let action: String
         public let enabled: Bool
@@ -118,8 +118,9 @@ public enum BotsiActionType: String, Codable, Sendable {
 }
 
 @available(iOS 15.0, *)
-public struct BotsiButtonStyle: Codable, Sendable {
+public struct BotsiButtonStyle: Decodable, Sendable {
     public let color: String
+    public let fillColor: BotsiFillColor?
     public let opacity: Int
     public let borderColor: String
     public let borderOpacity: Int
@@ -127,17 +128,18 @@ public struct BotsiButtonStyle: Codable, Sendable {
     public let radius: String
 
     private enum CodingKeys: String, CodingKey {
-        case color, opacity
+        case color, opacity, radius
+        case fillColor = "fill_color"
         case borderColor = "border_color"
         case borderOpacity = "border_opacity"
         case borderThickness = "border_thickness"
-        case radius
     }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.color = try container.decode(String.self, forKey: .color)
+        self.fillColor = try? container.decode(BotsiFillColor.self, forKey: .fillColor)
         self.opacity = try container.decode(Int.self, forKey: .opacity)
         self.borderColor = try container.decode(String.self, forKey: .borderColor)
         self.borderOpacity = try container.decode(Int.self, forKey: .borderOpacity)

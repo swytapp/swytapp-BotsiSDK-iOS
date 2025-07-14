@@ -8,7 +8,7 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiButtonModel: Codable, Sendable {
+public struct BotsiButtonModel: Decodable, Sendable {
     
     public let action: String
     public let actionLabel: String?

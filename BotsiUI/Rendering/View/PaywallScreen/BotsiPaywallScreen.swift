@@ -65,36 +65,6 @@ extension BotsiPaywallScreen {
             }
         }
     }
-    
-//    @available(iOS 15.0, *)
-//    @ViewBuilder
-//    func TopButtonLabel(_ button: BotsiLayoutModel.TopButton) -> some View {
-//        switch button.buttonType {
-//        case .text:
-//            Text(button.text.text)
-//                .foregroundStyle(Color(hex: button.text.color))
-//        case .icon:
-//            Button {
-//                
-//            } label: {
-//                RoundedRectangle(cornerRadius: 16)
-//                    .stroke(
-//                        Color(hex: button.style.borderColor).opacity(Double(button.style.borderOpacity)),
-//                        lineWidth: 1
-//                    )
-//                    .background(Color(hex: button.style.color))
-//                    .overlay(
-//                        Image(systemName: "xmark")
-//                            .foregroundColor(Color(hex: button.icon.color).opacity(Double(button.icon.opacity)))
-//                            .frame(width: 32, height: 32)
-//                    )
-//                    .cornerRadius(button.style.radius.toCGFloat(default: 16))
-//            }
-//            .opacity(Double(button.style.opacity))
-//        default:
-//            EmptyView()
-//        }
-//    }
 }
 
 #Preview {
