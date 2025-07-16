@@ -1,0 +1,51 @@
+//
+//  BotsiHeroImageView.swift
+//  Botsi
+//
+//  Created by Konstantin on 14.07.2025.
+//
+
+import SwiftUI
+
+@available(iOS 15.0, *)
+public struct BotsiHeroImageView: View {
+    
+    let model: BotsiHeroImageModel
+
+    public var body: some View {
+        switch model.style {
+        case .transparent:
+            Color.clear
+                .background(
+                    BotsiHeroImage(imageURL: model.backgroundImage)
+                        .ignoresSafeArea()
+                )
+
+        case .overlay:
+            BotsiHeroImage(imageURL: model.backgroundImage)
+
+        case .flat:
+            BotsiHeroImage(imageURL: model.backgroundImage)
+        }
+    }
+}
+
+@available(iOS 15.0, *)
+private struct BotsiHeroImage: View {
+    
+    let imageURL: String?
+
+    var body: some View {
+        if let imageURL, let url = URL(string: imageURL) {
+            AsyncImage(url: url) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+            } placeholder: {
+                Color.gray.opacity(0.2)
+            }
+        } else {
+            Color.gray.opacity(0.2)
+        }
+    }
+}

@@ -12,19 +12,93 @@ public struct BotsiPaywallScreen: View {
     
     @Environment(\.dismiss) var dismiss
     @StateObject var vm: BotsiPaywallViewModel
-
+    
     public init(viewModel: BotsiPaywallViewModel) {
         _vm = .init(wrappedValue: viewModel)
     }
-
+    
     public var body: some View {
         let margins = vm.layoutVM?.model.contentLayout.margin
-        ZStack {
-            ScrollView {
+        GeometryReader { proxy in
+            ZStack {
+                switch vm.heroImage?.style {
+                case .transparent:
+                    BotsiHeroImageView(model: vm.heroImage!)
+                    ContentScroll(height: proxy.size.height)
+                    
+                case .overlay:
+                    VStack(spacing: 0) {
+                        BotsiHeroImageView(model: vm.heroImage!)
+                            .frame(height: proxy.size.height * ((vm.heroImage?.heightPercent ?? 0.3) + 0.08))
+                            .clipped()
+                        Spacer()
+                        
+                    }
+                    .frame(maxHeight: .infinity)
+                    .backgroundFill(vm.layoutVM?.fillColor)
+                    .ignoresSafeArea()
+                    
+                    ContentScroll(height: proxy.size.height)
+                        .ignoresSafeArea()
+                    
+                case .flat, .none:
+                    ContentScroll(height: proxy.size.height)
+                        .ignoresSafeArea()
+                }
+                
+                BotsiTopButtonsRenderer(layout: vm.layoutVM?.model)
+                
+                //            if let footerBlock = vm.footerVM?.model {
+                //                VStack(spacing: 0) {
+                //                    Divider()
+                //                    BotsiBlockRenderer(block: footerBlock)
+                //                        .padding(.top, 8)
+                //                        .padding(.horizontal)
+                //                        .background(.ultraThinMaterial)
+                //                }
+                //                .transition(.move(edge: .bottom))
+                //            }
+            }
+            .frame(maxWidth: .infinity)
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
+        }
+        .if(vm.heroImage?.style != .transparent, transform: {
+            $0
+                .backgroundFill(vm.layoutVM?.fillColor)
+        })
+    }
+}
+
+@available(iOS 15.0, *)
+private extension BotsiPaywallScreen {
+    
+    func ContentScroll(height: CGFloat) -> some View {
+        NonBouncingScrollView {
+            VStack(spacing: 0) {
+                if vm.heroImage?.style == .overlay {
+                    Rectangle()
+                        .fill(.clear)
+                        .frame(height: height * ((vm.heroImage?.heightPercent ?? 0.3) - 0.01))
+                }
                 VStack(spacing: vm.layoutVM?.spacing) {
+                    if vm.heroImage?.style == .flat {
+                        VStack {
+                            BotsiHeroImageView(model: vm.heroImage!)
+                                .frame(height: height * (vm.heroImage?.heightPercent ?? 0.3))
+                                .clipped()
+                                .applyBotsiMask(vm.heroImage?.shape)
+                        }
+                        .frame(height: height * (vm.heroImage?.heightPercent ?? 0.3))
+                        .padding(.leading, vm.heroImage?.layout.padding.left)
+                        .padding(.top, vm.heroImage?.layout.padding.top)
+                        .padding(.trailing, vm.heroImage?.layout.padding.right)
+                        .padding(.bottom, vm.heroImage?.layout.padding.bottom)
+                        .offset(y: vm.heroImage?.layout.verticalOffset.toCGFloat() ?? 0)
+                    }
                     ForEach(vm.contentBlocks, id: \.meta.id) { block in
                         BotsiBlockRendererView(block: block) { action in
-                            print("KA: Paywall action  \(action)")
+                            print("KA: \(action)")
                         }
                     }
                 }
@@ -32,30 +106,14 @@ public struct BotsiPaywallScreen: View {
                 .padding(.top, vm.layoutVM?.padding.top)
                 .padding(.trailing, vm.layoutVM?.padding.right)
                 .padding(.bottom, vm.layoutVM?.padding.bottom)
+                .if(vm.heroImage?.style != .transparent) {
+                    $0.backgroundFill(vm.layoutVM?.fillColor)
+                }
+                .applyBotsiMask(vm.heroImage?.shape)
             }
-            .backgroundFill(vm.layoutVM?.fillColor)
-            .navigationBarHidden(true)
-            .navigationBarBackButtonHidden(true)
-            
-            BotsiTopButtonsRenderer(layout: vm.layoutVM?.model)
-            
-//            if let footerBlock = vm.footerVM?.model {
-//                VStack(spacing: 0) {
-//                    Divider()
-//                    BotsiBlockRenderer(block: footerBlock)
-//                        .padding(.top, 8)
-//                        .padding(.horizontal)
-//                        .background(.ultraThinMaterial)
-//                }
-//                .transition(.move(edge: .bottom))
-//            }
         }
-        .frame(maxWidth: .infinity)
     }
-}
-
-@available(iOS 15.0, *)
-extension BotsiPaywallScreen {
+    
     @available(iOS 15.0, *)
     @ViewBuilder
     func BotsiTopButtonsRenderer(layout: BotsiLayoutModel?) -> some View {
@@ -63,33 +121,6 @@ extension BotsiPaywallScreen {
             TopButtonsOverlayView(buttons: buttons) { action in
                 dismiss()
             }
-        }
-    }
-}
-
-#Preview {
-    HStack {
-        if #available(iOS 15.0, *) {
-            Button {
-                
-            } label: {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(
-                        .black.opacity(40),
-                        lineWidth: 1
-                    )
-                    .background(.green)
-                    .overlay(
-                        Image(systemName: "xmark")
-                            .foregroundColor(.red)
-                            .frame(width: 32, height: 32)
-                    )
-                    .cornerRadius(16)
-            }
-            .frame(width: 32, height: 32)
-            .opacity(40)
-        } else {
-            // Fallback on earlier versions
         }
     }
 }

@@ -23,7 +23,6 @@ struct TopButtonsOverlayView: View {
                 buttonGroup(for: .right)
             }
             .padding(.horizontal, 16)
-            .padding(.top, 8)
             Spacer()
         }
         .zIndex(1000)
@@ -72,9 +71,7 @@ struct TopButtonView: View {
                 .padding(12)
         }
         .background(
-            Circle()
-                .fill(Color(hex: button.style.color)
-                    .opacity(Double(button.styleOpacity)))
+            shapeFill(Circle(), fill: button.style.fillColor)
                 .frame(width: 25)
         )
         .overlay(
@@ -100,7 +97,7 @@ struct TopButtonView: View {
                 .padding(.vertical, 2)
                 .padding(.horizontal, 10)
         }
-        .background(fillBackground(for: button.style.fillColor, opacity: Double(button.styleOpacity)))
+        .backgroundFill(button.style.fillColor)
         .overlay(
             Capsule()
                 .stroke(
@@ -120,19 +117,18 @@ struct TopButtonView: View {
         }
     }
     
-    @ViewBuilder
-    private func fillBackground(for fillColor: BotsiFillColor?, opacity: Double) -> some View {
-        switch fillColor {
-        case .solid(let color):
-            Circle()
-                .fill(color)
-                .opacity(opacity)
-        case .gradient(let gradient):
-            Circle()
-                .fill(gradient)
-                .opacity(opacity)
-        case .none:
-            EmptyView()
+    private func shapeFill<S: Shape>(_ shape: S, fill: BotsiFillColor?) -> some View {
+        Group {
+            if let fill = fill {
+                switch fill {
+                case .solid(let color):
+                    shape.fill(color)
+                case .gradient(let gradient):
+                    shape.fill(gradient)
+                }
+            } else {
+                shape.fill(Color.clear)
+            }
         }
     }
 }
@@ -152,8 +148,7 @@ struct TopButtonView: View {
     .frame(width: 45, height: 45)
     .background(
         Circle()
-            .fill(Color.black
-                .opacity(Double(0.1)))
+            .fill(Color(red: 0/255, green: 207/255, blue: 131/255, opacity: 1))
             .frame(width: 30)
     )
     .overlay(

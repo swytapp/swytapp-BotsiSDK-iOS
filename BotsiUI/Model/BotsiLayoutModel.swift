@@ -128,8 +128,7 @@ public struct BotsiButtonStyle: Decodable, Sendable {
     public let radius: String
 
     private enum CodingKeys: String, CodingKey {
-        case color, opacity, radius
-        case fillColor = "fill_color"
+        case color, opacity, radius, fillColor
         case borderColor = "border_color"
         case borderOpacity = "border_opacity"
         case borderThickness = "border_thickness"
