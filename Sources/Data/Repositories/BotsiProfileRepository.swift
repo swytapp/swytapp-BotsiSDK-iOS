@@ -7,7 +7,7 @@
 import Foundation
 
 protocol BotsiProfileRepository {
-    func createUserProfile(identifier: String, customerId: String?) async throws -> BotsiProfile
+    func createUserProfile(identifier: String, customerId: String?, birthday: Date?) async throws -> BotsiProfile
 }
 
 final class UserProfileRepository: BotsiProfileRepository {
@@ -19,7 +19,7 @@ final class UserProfileRepository: BotsiProfileRepository {
         self.mapper = mapper
     }
 
-    func createUserProfile(identifier: String, customerId: String? = nil) async throws -> BotsiProfile {
+    func createUserProfile(identifier: String, customerId: String? = nil, birthday: Date? = nil) async throws -> BotsiProfile {
         do {
             var request = CreateProfileRequest(uuid: identifier)
             request.headers = [
@@ -28,7 +28,11 @@ final class UserProfileRepository: BotsiProfileRepository {
             ]
             
             let environment = try await BotsiEnvironment()
-            let params = (environment, customerId)
+            var birthdayStringValue: String?
+            if let birthday {
+                birthdayStringValue = birthday.toISO8601DateString()
+            }
+            let params = (environment, customerId, birthdayStringValue)
             let body = try mapper.toDTO(from: params).toData()
             request.body = body
             

@@ -28,6 +28,7 @@ struct CreateProfileMetaDto: Encodable {
     let os: String
     let platform: String
     let timezone: String
+    let birthday: String?
 }
 
 // MARK: - Response model

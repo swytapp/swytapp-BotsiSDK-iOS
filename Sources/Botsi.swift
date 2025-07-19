@@ -20,12 +20,18 @@ public final class Botsi: Sendable {
     
     private let enableStoreKit2: Bool = true
     
+    private let configuration: BotsiConfiguration
+    
     let botsiClient: BotsiHttpClient
     
     init(from configuration: BotsiConfiguration) async {
         self.sdkApiKey = configuration.sdkApiKey
+        self.configuration = configuration
         
-        self.botsiClient = BotsiHttpClient(with: configuration, key: configuration.sdkApiKey)
+        self.botsiClient = BotsiHttpClient(
+            with: configuration,
+            key: configuration.sdkApiKey
+        )
         self.profileStorage = await BotsiProfileStorage()
         
         let cachedTransactionsStore = await BotsiSyncedTransactionStore()
@@ -61,7 +67,10 @@ public final class Botsi: Sendable {
     private func verifyUser() async {
         guard let profile = await profileStorage.getProfile() else {
             let uuid = await profileStorage.getNewProfileUUID()
-            if let profile = try? await createUserProfile(with: uuid) {
+            if let profile = try? await createUserProfile(
+                with: uuid,
+                birthday: configuration.birthday
+            ) {
                 await profileStorage.setProfile(profile)
                 await updateASAToken(profile.profileId)
                 do {
@@ -109,9 +118,13 @@ public extension Botsi {
         try await proceedWithActivation(with: configuration)
     }
     
-    private static func proceedWithActivation(with config: BotsiConfiguration) async throws {
+    nonisolated static func activate(_ configuration: BotsiConfiguration) async throws {
+        try await proceedWithActivation(with: configuration)
+    }
+    
+    private static func proceedWithActivation(with configuration: BotsiConfiguration) async throws {
         try await lifecycle.initializeIfNeeded {
-            let botsi = await Botsi(from: config)
+            let botsi = await Botsi(from: configuration)
             return botsi
         }
     }
@@ -231,9 +244,17 @@ public extension Botsi {
     }
     
     @discardableResult
-    private func createUserProfile(with id: ProfileIdentifier, userCustomerId: UserCustomerIdentifier? = nil) async throws -> BotsiProfile {
+    private func createUserProfile(
+        with id: ProfileIdentifier,
+        userCustomerId: UserCustomerIdentifier? = nil,
+        birthday: Date? = nil
+    ) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
-        return try await createProfile.createUserProfile(identifier: id, customerId: userCustomerId)
+        return try await createProfile.createUserProfile(
+            identifier: id,
+            customerId: userCustomerId,
+            birthday: birthday
+        )
     }
     
     @discardableResult
@@ -508,5 +529,20 @@ public extension Botsi {
         try await lifecycle.withInitializedSDK { botsi in
             try await botsi.logPaywallShown(paywall)
         }
+    }
+    
+    nonisolated static func updateRefundDataConsent(_ consent: Bool) async throws {
+        try await lifecycle.withInitializedSDK { botsi in
+            return try await botsi.sendRefundDataConsent(consent)
+        }
+    }
+    
+    private func sendRefundDataConsent(_ consent: Bool) async throws {
+        guard let profile = await profileStorage.getProfile() else {
+            throw BotsiError.userProfileNotFound
+        }
+        let repository = UpdateRefundConsentRepository(httpClient: botsiClient)
+        let useCase = BotsiUpdateRefundConsentUseCase(repository: repository)
+        return try await useCase.execute(profileId: profile.profileId, consent: consent)
     }
 }
