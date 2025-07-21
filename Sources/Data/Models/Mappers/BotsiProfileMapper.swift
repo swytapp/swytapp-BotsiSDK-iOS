@@ -8,7 +8,7 @@
 import Foundation
 
 struct CreateProfileMapper: DomainMapper {
-    typealias Parameters = (environment: BotsiEnvironment, customerUserId: String?)
+    typealias Parameters = (environment: BotsiEnvironment, customerUserId: String?, birthday: String?)
     
     typealias DTOResponseModel = CreateProfileDtoResponse
     
@@ -33,7 +33,8 @@ struct CreateProfileMapper: DomainMapper {
                 locale: env.locale,
                 os: env.os,
                 platform: env.platform,
-                timezone: env.timezone
+                timezone: env.timezone,
+                birthday: params.birthday
             )
         )
     }

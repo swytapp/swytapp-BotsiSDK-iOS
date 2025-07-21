@@ -14,6 +14,7 @@ public struct BotsiConfiguration: Sendable {
 
     let sdkApiKey: String
     let customerUserId: String?
+    let birthday: Date?
     
     let delegateQueue: BotsiDelegateQueue?
     let backend: URL
@@ -24,6 +25,7 @@ public extension BotsiConfiguration {
     protocol BotsiConfigurationAdapterConformable {
         var sdkApiKey: String { get }
         var profileIdentifier: String? { get }
+        var birthday: Date? { get }
         var customerUserIdentifier: String? { get }
         var backendHost: URL { get }
         
@@ -49,7 +51,13 @@ public extension BotsiConfiguration {
             .createAdapter(with: sdkApiKey)
             .set(customerIdentifier: customerUserIdentifier)
             .buildConfiguration()
-            
+    }
+    
+    @discardableResult func set(birthday: Date) -> Self {
+        return BotsiConfigurationFactory
+            .createAdapter(with: sdkApiKey)
+            .set(birthday: birthday)
+            .buildConfiguration()
     }
 }
 
@@ -68,23 +76,27 @@ public extension BotsiConfiguration {
         public private(set) var sdkApiKey: String
         public private(set) var customerUserIdentifier: String?
         public private(set) var backendHost: URL
+        public private(set) var birthday: Date?
         
         init(
             sdkApiKey: String,
             profileIdentifier: String? = nil,
             customerUserIdentifier: String? = nil,
+            birthday: Date? = nil,
             backendHost: URL
         ) {
             self.sdkApiKey = sdkApiKey
             self.backendHost = backendHost
             self.customerUserIdentifier = customerUserIdentifier
+            self.birthday = birthday
             self.profileIdentifier = profileIdentifier
         }
         
         public func buildConfiguration() -> BotsiConfiguration {
             return .init(
                 sdkApiKey: self.sdkApiKey,
-                customerUserId: nil,
+                customerUserId: self.customerUserIdentifier,
+                birthday: self.birthday,
                 delegateQueue: nil,
                 backend: self.backendHost
             )
@@ -92,12 +104,14 @@ public extension BotsiConfiguration {
         
         public func set(
             profileIdentifier: String? = nil,
-            customerIdentifier: String? = nil
+            customerIdentifier: String? = nil,
+            birthday: Date? = nil
         ) -> Self {
             return .init(
                 sdkApiKey: sdkApiKey,
                 profileIdentifier: profileIdentifier,
                 customerUserIdentifier: customerIdentifier,
+                birthday: birthday,
                 backendHost: backendHost
             )
         }
