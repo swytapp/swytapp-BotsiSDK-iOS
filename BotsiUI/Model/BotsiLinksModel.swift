@@ -45,11 +45,10 @@ public struct BotsiLinksModel: Decodable, Sendable {
         }
     }
 
-    public struct Style: Codable, Sendable {
+    public struct Style: Decodable, Sendable {
         public let font: BotsiLayoutModel.DefaultFont
         public let size: String
-        public let color: String
-        public let opacity: Int
+        public let color: BotsiFillColor
         public let dividersColor: String?
         public let dividersOpacity: String?
         public let dividersThickness: String?
@@ -65,8 +64,7 @@ public struct BotsiLinksModel: Decodable, Sendable {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             font = try container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font)
             size = try container.decode(String.self, forKey: .size)
-            color = try container.decode(String.self, forKey: .color)
-            opacity = try container.decode(Int.self, forKey: .opacity)
+            color = try container.decode(BotsiFillColor.self, forKey: .color)
             dividersColor = try container.decodeIfPresent(String.self, forKey: .dividersColor)
             dividersThickness = try container.decodeIfPresent(String.self, forKey: .dividersThickness)
 

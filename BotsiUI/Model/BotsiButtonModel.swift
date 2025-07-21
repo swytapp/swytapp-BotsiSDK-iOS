@@ -53,6 +53,6 @@ public struct BotsiButtonModel: Decodable, Sendable {
         public let font: BotsiLayoutModel.DefaultFont
         public let size: String
         public let color: String
-        public let opacity: Int
+        public let opacity: Int?
     }
 }

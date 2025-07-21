@@ -67,13 +67,13 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let font: DefaultFont
         public let size: String
         public let color: String
-        public let opacity: Int
+        public let opacity: Int?
     }
     
     public struct ButtonIcon: Codable, Sendable {
         public let type:  String
         public let color: String
-        public let opacity: Int
+        public let opacity: Int?
     }
     
     public struct TopButton: Decodable, Identifiable, Sendable {
@@ -89,15 +89,11 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let icon: ButtonIcon
         
         public var iconOpacity: CGFloat {
-            CGFloat(icon.opacity) / 100.0
-        }
-        
-        public var styleOpacity: CGFloat {
-            CGFloat(style.opacity) / 100.0
+            CGFloat(icon.opacity ?? 100) / 100.0
         }
         
         public var styleBorderOpacity: CGFloat {
-            CGFloat(style.borderOpacity) / 100.0
+            CGFloat(style.borderOpacity ?? 100) / 100.0
         }
         
         private enum CodingKeys: String, CodingKey {
@@ -119,16 +115,15 @@ public enum BotsiActionType: String, Codable, Sendable {
 
 @available(iOS 15.0, *)
 public struct BotsiButtonStyle: Decodable, Sendable {
-    public let color: String
     public let fillColor: BotsiFillColor?
-    public let opacity: Int
     public let borderColor: String
-    public let borderOpacity: Int
+    public let borderOpacity: Int?
     public let borderThickness: String
     public let radius: String
 
     private enum CodingKeys: String, CodingKey {
-        case color, opacity, radius, fillColor
+        case color, opacity, radius
+        case fillColor = "fill_color"
         case borderColor = "border_color"
         case borderOpacity = "border_opacity"
         case borderThickness = "border_thickness"
@@ -137,11 +132,9 @@ public struct BotsiButtonStyle: Decodable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.color = try container.decode(String.self, forKey: .color)
         self.fillColor = try? container.decode(BotsiFillColor.self, forKey: .fillColor)
-        self.opacity = try container.decode(Int.self, forKey: .opacity)
         self.borderColor = try container.decode(String.self, forKey: .borderColor)
-        self.borderOpacity = try container.decode(Int.self, forKey: .borderOpacity)
+        self.borderOpacity = try? container.decode(Int.self, forKey: .borderOpacity)
         self.radius = try container.decode(String.self, forKey: .radius)
 
         if let thickness = try? container.decode(String.self, forKey: .borderThickness) {

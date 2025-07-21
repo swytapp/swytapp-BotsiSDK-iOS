@@ -8,9 +8,9 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiStyleModel: Codable, Sendable {
+public struct BotsiStyleModel: Decodable, Sendable {
     
-    public let fillColor: String
+    public let fillColor: BotsiFillColor
     public let color: String
     public let opacity: Int
     public let borderColor: String
@@ -19,10 +19,10 @@ public struct BotsiStyleModel: Codable, Sendable {
     public let radius: CGFloat
 
     private enum CodingKeys: String, CodingKey {
-        case fillColor
         case color
         case opacity
         case radius
+        case fillColor = "fill_color"
         case borderColor = "border_color"
         case borderOpacity = "border_opacity"
         case borderThickness = "border_thickness"
@@ -31,7 +31,7 @@ public struct BotsiStyleModel: Codable, Sendable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.fillColor = try container.decodeIfPresent(String.self, forKey: .fillColor) ?? ""
+        self.fillColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .fillColor) ?? .solid(.white)
         self.color = try container.decodeIfPresent(String.self, forKey: .color) ?? ""
         self.opacity = try container.decodeIfPresent(Int.self, forKey: .opacity) ?? 100
         self.borderColor = try container.decodeIfPresent(String.self, forKey: .borderColor) ?? ""

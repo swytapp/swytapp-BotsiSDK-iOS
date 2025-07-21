@@ -35,14 +35,13 @@ final class BotsiButtonViewModel: ObservableObject {
             .opacity(Double(model.text?.opacity ?? 100) / 100.0)
     }
     
-    var fillColor: Color {
-        Color(hex: model.style.color)
-            .opacity(Double(model.style.opacity) / 100.0)
+    var fillColor: BotsiFillColor? {
+        model.style.fillColor
     }
     
     var borderColor: Color {
         Color(hex: model.style.borderColor)
-            .opacity(Double(model.style.borderOpacity) / 100.0)
+            .opacity(Double(model.style.borderOpacity ?? 0) / 100.0)
     }
     
     var borderWidth: CGFloat {

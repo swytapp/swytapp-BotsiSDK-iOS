@@ -34,7 +34,7 @@ struct BotsiButtonBlockView: View {
                 .padding(.top, padding?.top)
                 .padding(.trailing, padding?.right)
                 .padding(.bottom, padding?.bottom)
-                .background(bgColor)
+                .backgroundFill(bgColor)
                 .cornerRadius(cornerRadius)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)

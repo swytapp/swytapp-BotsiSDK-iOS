@@ -23,11 +23,10 @@ public struct BotsiTextModel: Decodable, Sendable {
         public let font: BotsiLayoutModel.DefaultFont
         public let size: StringOrInt
         public let align: BotsiAlign
-        public let color: String
-        public let opacity: Int
+        public let color: BotsiFillColor?
 
         private enum CodingKeys: String, CodingKey {
-            case text, size, align, color, opacity, font
+            case text, size, align, color, font
             case textFallback = "text_fallback"
         }
     }
@@ -57,10 +56,6 @@ extension BotsiTextModel {
         case .string(let str):
             return CGFloat(Double(str) ?? 14)
         }
-    }
-    
-    var textOpacity: Double {
-        return Double(text.opacity) / 100.0
     }
 
     var maxLinesCount: Int? {

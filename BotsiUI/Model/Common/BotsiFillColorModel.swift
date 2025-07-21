@@ -35,7 +35,7 @@ extension BotsiFillColor: Decodable {
             self = .gradient(gradient)
         } else {
             guard let color = Color.cssCompatible(raw) else {
-                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid color string")
+                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid color string: raw: \(raw)")
             }
             self = .solid(color)
         }

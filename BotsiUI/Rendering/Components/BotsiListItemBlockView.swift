@@ -13,26 +13,27 @@ public struct BotsiListItemView: View {
     let item: BotsiListItemModel
 
     public var body: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(spacing: 10) {
             iconView
                 .frame(width: 30, height: 30)
 
             VStack(alignment: .leading, spacing: 0) {
                 if let title = item.titleText ?? item.titleTextFallback {
                     Text(title)
-                        .foregroundColor(Color(hex: item.titleTextStyle.color))
+                        .foregroundFill(item.titleTextStyle?.color)
                         .font(.system(size: 12))
                 }
 
                 if let caption = item.captionText ?? item.captionTextFallback {
                     Text(caption)
-                        .foregroundColor(Color(hex: item.captionTextStyle.color))
+                        .foregroundFill(item.captionTextStyle?.color)
                         .font(.system(size: 10))
                 }
             }
 
-
+            Spacer()
         }
+        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
@@ -61,7 +62,7 @@ public struct BotsiListItemView: View {
         Image(systemName: "checkmark.circle")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .foregroundColor(Color(hex: item.connectorColor))
+            .foregroundColor(Color(hex: item.connectorColor ?? "#ffffff"))
             .opacity(Double(item.connectorOpacity ?? 100) / 100)
     }
 }

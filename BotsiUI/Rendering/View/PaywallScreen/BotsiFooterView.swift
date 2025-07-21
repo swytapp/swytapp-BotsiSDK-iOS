@@ -1,30 +1,28 @@
+////
+////  BotsiFooterView.swift
+////  Botsi
+////
+////  Created by Kostiantyn Antoniuk on 20.06.2025.
+////
 //
-//  BotsiFooterView.swift
-//  Botsi
+//import SwiftUI
 //
-//  Created by Kostiantyn Antoniuk on 20.06.2025.
-//
-
-import SwiftUI
-
-@available(iOS 15.0, *)
-public struct BotsiFooterView: View {
-    
-    @ObservedObject var vm: BotsiFooterViewModel
-
-    public var body: some View {
-        VStack(spacing: 8) {
-//            Text(vm.model.title)
-//                .font(.caption)
-//                .foregroundStyle(.secondary)
-
-//            ForEach(vm.childVMs, id: \.id) { block in
-//                BotsiBlockRenderer.render(block)
+//@available(iOS 15.0, *)
+//public struct BotsiFooterView: View {
+//    let model: BotsiFooterModel
+//    let block: BotsiBlockMeta
+//    
+//    var body: some View {
+//        VStack(spacing: model.content.spacing.toCGFloat()) {
+//            ForEach(model.children, id: \.meta.id) { child in
+//                BotsiBlockRendererView(from: child)
 //            }
-        }
-        .padding()
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal)
-    }
-}
+//        }
+//        .padding(.all, model.content.padding.toCGFloat())
+//        .background(
+//            Color.fromRGBA(model.content.style.fill_color)
+//        )
+//        .cornerRadius(model.content.style.radius.toCGFloat())
+//        .padding(.horizontal)
+//    }
+//}

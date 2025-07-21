@@ -8,7 +8,7 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiListModel: Codable, Sendable {
+public struct BotsiListModel: Decodable, Sendable {
     
     public let padding: String?
     public let verticalOffset: String?
@@ -47,7 +47,7 @@ public struct BotsiListModel: Codable, Sendable {
 }
 
 @available(iOS 15.0, *)
-public struct BotsiListItemModel: Codable, Sendable, Identifiable {
+public struct BotsiListItemModel: Decodable, Sendable, Identifiable {
     
     public let id: String?
     
@@ -57,16 +57,16 @@ public struct BotsiListItemModel: Codable, Sendable, Identifiable {
     
     public let icon: String?
     public let connectorThickness: String?
-    public let connectorColor: String
+    public let connectorColor: String?
     public let connectorOpacity: Int?
     
     public let titleText: String?
     public let titleTextFallback: String?
-    public let titleTextStyle: BotsiTextStyleModel
+    public let titleTextStyle: BotsiTextStyleModel?
     
     public let captionText: String?
     public let captionTextFallback: String?
-    public let captionTextStyle: BotsiTextStyleModel
+    public let captionTextStyle: BotsiTextStyleModel?
     
     private enum CodingKeys: String, CodingKey {
         case id, icon

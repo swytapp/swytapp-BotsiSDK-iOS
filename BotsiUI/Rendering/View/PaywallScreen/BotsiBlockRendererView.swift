@@ -32,36 +32,33 @@ public struct BotsiBlockRendererView: View {
             }
             
         case .layout(let model):
-            //            BotsiLayoutView(model: model)
             EmptyView()
             
-        case .footer(let model):
-            let vm = BotsiFooterViewModel(model)
-            BotsiFooterView(vm: vm)
-            
         case .timer(let model):
-            let vm = BotsiTimerViewModel(model)
-            BotsiTimerBlockView(viewModel: vm)
+            BotsiTimerBlockView(model: model)
             
         case .carousel:
             BotsiCarouselBlockView(block: block)
             
         case .productItem(let model):
-            //            BotsiProductItemView(model: model)
             EmptyView()
             
         case .heroImage(let model):
-            //            BotsiHeroImageView(model: model)
             EmptyView()
+            
         case .list(let model):
             BotsiListBlockView(block: block)
+            
         case .listItem(_):
             EmptyView()
+            
         case .card(let model):
             let vm = BotsiCardViewModel(block: block, model: model)
             BotsiCardBlockView(viewModel: vm)
+            
         case .toggleControl(let model):
             EmptyView()
+            
         case .products(let model):
             if let toggleControlBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_control" }),
                case .toggleControl(let toggleControlModel) = toggleControlBlock.content,
@@ -86,10 +83,16 @@ public struct BotsiBlockRendererView: View {
             } else {
                 EmptyView()
             }
+            
+        case .footer(let model):
+            EmptyView()
+            
         case .localization(_):
             EmptyView()
+            
         case .unknown(_):
             EmptyView()
+            
         default:
             EmptyView()
         }

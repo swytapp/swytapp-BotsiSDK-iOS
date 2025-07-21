@@ -20,48 +20,43 @@ public struct BotsiPaywallScreen: View {
     public var body: some View {
         let margins = vm.layoutVM?.model.contentLayout.margin
         GeometryReader { proxy in
-            ZStack {
-                switch vm.heroImage?.style {
-                case .transparent:
-                    BotsiHeroImageView(model: vm.heroImage!)
-                    ContentScroll(height: proxy.size.height)
-                    
-                case .overlay:
-                    VStack(spacing: 0) {
+            VStack {
+                ZStack {
+                    switch vm.heroImage?.style {
+                    case .transparent:
                         BotsiHeroImageView(model: vm.heroImage!)
-                            .frame(height: proxy.size.height * ((vm.heroImage?.heightPercent ?? 0.3) + 0.08))
-                            .clipped()
-                        Spacer()
+                        ContentScroll(height: proxy.size.height)
                         
+                    case .overlay:
+                        VStack(spacing: 0) {
+                            BotsiHeroImageView(model: vm.heroImage!)
+                                .frame(height: proxy.size.height * ((vm.heroImage?.heightPercent ?? 0.3) + 0.08))
+                                .clipped()
+                            Spacer()
+                            
+                        }
+                        .frame(maxHeight: .infinity)
+                        .backgroundFill(vm.layoutVM?.fillColor)
+                        .ignoresSafeArea()
+                        
+                        ContentScroll(height: proxy.size.height)
+                            .ignoresSafeArea()
+                        
+                    case .flat, .none:
+                        ContentScroll(height: proxy.size.height)
+                            .ignoresSafeArea()
                     }
-                    .frame(maxHeight: .infinity)
-                    .backgroundFill(vm.layoutVM?.fillColor)
-                    .ignoresSafeArea()
                     
-                    ContentScroll(height: proxy.size.height)
-                        .ignoresSafeArea()
-                    
-                case .flat, .none:
-                    ContentScroll(height: proxy.size.height)
-                        .ignoresSafeArea()
+                    BotsiTopButtonsRenderer(layout: vm.layoutVM?.model)
                 }
+                .frame(maxWidth: .infinity)
+                .navigationBarHidden(true)
+                .navigationBarBackButtonHidden(true)
                 
-                BotsiTopButtonsRenderer(layout: vm.layoutVM?.model)
-                
-                //            if let footerBlock = vm.footerVM?.model {
-                //                VStack(spacing: 0) {
-                //                    Divider()
-                //                    BotsiBlockRenderer(block: footerBlock)
-                //                        .padding(.top, 8)
-                //                        .padding(.horizontal)
-                //                        .background(.ultraThinMaterial)
-                //                }
-                //                .transition(.move(edge: .bottom))
-                //            }
+                if let footerVM = vm.footerVM {
+                    BotsiFooterBlockView(viewModel: footerVM)
+                }
             }
-            .frame(maxWidth: .infinity)
-            .navigationBarHidden(true)
-            .navigationBarBackButtonHidden(true)
         }
         .if(vm.heroImage?.style != .transparent, transform: {
             $0

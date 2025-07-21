@@ -20,8 +20,7 @@ struct BotsiTextBlockView: View {
         let margin = model.margin
         Text(model.text.text)
             .font(.custom(model.text.font.name, size: model.textSize))
-            .foregroundColor(Color(hex: model.text.color).opacity(model.textOpacity))
-//            .multilineTextAlignment(model.textAlignment)
+            .foregroundFill(model.text.color)
             .lineLimit(model.maxLinesCount)
             .padding(.leading, margin?.left)
             .padding(.top, margin?.top)

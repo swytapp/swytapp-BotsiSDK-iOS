@@ -11,9 +11,36 @@ import SwiftUI
 @MainActor
 public final class BotsiFooterViewModel: ObservableObject, Identifiable {
     
-    public let model: BotsiFooterModel
+    private let model: BotsiFooterModel
+    private let block: BotsiBlockMeta
+    public var childrens: [BotsiPaywallBlock] = []
+    
+    var spacing: CGFloat {
+        model.spacing.toCGFloat()
+    }
+    
+    var padding: BotsiEdge {
+        model.padding
+    }
+    
+    var fillColor: BotsiFillColor {
+        model.style.fillColor
+    }
+    
+    var radius: CGFloat {
+        model.style.radius
+    }
 
-    public init(_ model: BotsiFooterModel) {
-        self.model = model
+    public init?(block: BotsiPaywallBlock, model: BotsiFooterModel) {
+        guard case let .footer(decodedModel) = block.content else {
+            return nil
+        }
+        
+        let blockMeta = block.meta
+        let children = block.children ?? []
+        
+        self.model = decodedModel
+        self.block = blockMeta
+        self.childrens = children
     }
 }

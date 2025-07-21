@@ -68,7 +68,7 @@ public struct BotsiLinksBlockView: View {
         }) {
             Text(item.text)
                 .font(.system(size: model.style.size.toCGFloat() ?? 12))
-                .foregroundColor(Color(hex: model.style.color ?? "#03bfdd"))
+                .foregroundFill(model.style.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
         }
@@ -80,7 +80,7 @@ public struct BotsiLinksBlockView: View {
         }) {
             Text(item.text)
                 .font(.system(size: model.style.size.toCGFloat() ?? 12))
-                .foregroundColor(Color(hex: model.style.color ?? "#03bfdd").opacity(Double(model.style.opacity) / 100))
+                .foregroundFill(model.style.color)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
         }

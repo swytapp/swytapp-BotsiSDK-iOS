@@ -7,15 +7,16 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiTextStyleModel: Codable, Sendable {
+public struct BotsiTextStyleModel: Decodable, Sendable {
     public let font: BotsiFontModel?
     public let size: String?
-    public let color: String
+    public let align: BotsiAlign?
+    public let color: BotsiFillColor
     public let opacity: Int?
 }
 
 @available(iOS 15.0, *)
-public struct BotsiFontModel: Codable, Sendable {
+public struct BotsiFontModel: Decodable, Sendable {
     public let id: String?
     public let name: String?
     public let isSelected: Bool?
@@ -23,7 +24,7 @@ public struct BotsiFontModel: Codable, Sendable {
 }
 
 @available(iOS 15.0, *)
-public struct BotsiFontTypeModel: Codable, Sendable {
+public struct BotsiFontTypeModel: Decodable, Sendable {
     public let name: String?
     public let id: String?
     public let fontWeight: Int?

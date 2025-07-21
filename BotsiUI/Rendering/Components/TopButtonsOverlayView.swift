@@ -78,7 +78,7 @@ struct TopButtonView: View {
             Circle()
                 .stroke(
                     Color(hex: button.style.borderColor)
-                        .opacity(Double(button.style.borderOpacity)),
+                        .opacity(Double(button.style.borderOpacity ?? 0)),
                     lineWidth: button.style.borderThickness.toCGFloat()
                 )
         )
@@ -93,7 +93,7 @@ struct TopButtonView: View {
             Text(button.text.text ?? "")
                 .font(.system(size: button.text.size.toCGFloat()))
                 .foregroundColor(Color.black
-                    .opacity(Double(button.text.opacity)))
+                    .opacity(Double(button.text.opacity ?? 0)))
                 .padding(.vertical, 2)
                 .padding(.horizontal, 10)
         }
@@ -102,7 +102,7 @@ struct TopButtonView: View {
             Capsule()
                 .stroke(
                     Color(hex: button.style.borderColor)
-                        .opacity(Double(button.style.borderOpacity)),
+                        .opacity(Double(button.style.borderOpacity ?? 0)),
                     lineWidth: button.style.borderThickness.toCGFloat()
                 )
         )

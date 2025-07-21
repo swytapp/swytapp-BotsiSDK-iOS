@@ -34,6 +34,7 @@ public struct BotsiListBlockView: View {
                 BotsiListItemView(item: item)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var itemSpacing: CGFloat {

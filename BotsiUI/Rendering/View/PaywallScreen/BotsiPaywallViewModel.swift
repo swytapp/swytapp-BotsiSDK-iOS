@@ -15,6 +15,7 @@ public final class BotsiPaywallViewModel: ObservableObject {
 
     public let contentBlocks: [BotsiPaywallBlock]
     public let layoutVM: BotsiLayoutViewModel?
+    public let footerVM: BotsiFooterViewModel?
     public let heroImage: BotsiHeroImageModel?
 
     init(model: BotsiPaywallModel, delegate: BotsiPaywallDelegate?) {
@@ -29,6 +30,17 @@ public final class BotsiPaywallViewModel: ObservableObject {
             }
         } else {
             self.heroImage = nil
+        }
+        
+        
+        if let footeBlock = model.footer {
+            if case let .footer(model) = footeBlock.content {
+                self.footerVM = BotsiFooterViewModel(block: footeBlock, model: model)
+            } else {
+                self.footerVM = nil
+            }
+        } else {
+            self.footerVM = nil
         }
     }
 
