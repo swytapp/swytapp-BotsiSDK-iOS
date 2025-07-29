@@ -25,8 +25,6 @@ final class BotsiTimerViewModel: ObservableObject {
     private let storageKey: String
     
     init(model: BotsiTimerModel) {
-        print("KA: model.startText = \(model.startText)")
-        print("KA: parsed totalSeconds = \(BotsiTimerViewModel.seconds(from: model.startText))")
         self.format = model.format
         self.separator = model.separator
         self.totalSeconds = BotsiTimerViewModel.seconds(from: model.startText)
@@ -88,7 +86,6 @@ final class BotsiTimerViewModel: ObservableObject {
             .filter { !$0.isEmpty }
             .joined(separator: " ")
         
-        print("KA: \(fullText)")
     }
     
     static func seconds(from timeString: String) -> Int {

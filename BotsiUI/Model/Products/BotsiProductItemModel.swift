@@ -90,12 +90,12 @@ public struct BotsiProductItemTextState: Decodable, Sendable {
 public struct BotsiProductItemBadge: Decodable, Sendable {
     public let badgeText: String
     public let badgeColor: String
-    public let badgeOpacity: Int
+    public let badgeOpacity: Int?
     public let badgeRadius: String
     public let badgeTextFont: BotsiFontModel
     public let badgeTextSize: String
     public let badgeTextColor: String
-    public let badgeTextOpacity: Int
+    public let badgeTextOpacity: Int?
 
     private enum CodingKeys: String, CodingKey {
         case badgeText = "badge_text"

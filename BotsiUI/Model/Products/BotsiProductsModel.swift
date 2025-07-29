@@ -9,7 +9,7 @@ import Foundation
 
 @available(iOS 15.0, *)
 public struct BotsiProductsModel: Decodable, Sendable {
-    public let grouping: String
+    public let grouping: BotsiProductGrouping
     public let selectedProduct: String
     public let state: String
     public let defaultStyle: BotsiStyleModel
@@ -51,3 +51,19 @@ public struct ProductContentLayoutModel: Decodable, Sendable {
     }
 }
 
+@available(iOS 15.0, *)
+public enum BotsiProductGrouping: String, Decodable, Sendable {
+    case noSwitch = "no switch"                     // No switch (all products are visible)
+    case toggle = "Toggle"                          // Toggle (for free trial and other offers)
+    case tabs = "Tabs"                              // Tabs (for comparing plan groups)
+    case revealMore = "Buttons"          // Button that reveals more plans below
+    case bottomSheet = "Bottom sheet"               // Bottom sheet with more plans
+    case unknown                                     // fallback
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let raw = try container.decode(String.self).lowercased()
+
+        self = BotsiProductGrouping(rawValue: raw) ?? .unknown
+    }
+}

@@ -60,29 +60,7 @@ public struct BotsiBlockRendererView: View {
             EmptyView()
             
         case .products(let model):
-            if let toggleControlBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_control" }),
-               case .toggleControl(let toggleControlModel) = toggleControlBlock.content,
-               let toggleOnBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_on" }),
-               case .toggleOn(let toggleOnModel) = toggleOnBlock.content,
-               let toggleOffBlock = block.children?.first(where: { $0.meta.type.rawValue == "toggle_off" }),
-               case .toggleOff(let toggleOffModel) = toggleOffBlock.content {
-                
-                let toggleChildren = toggleOffBlock.children?.filter { child in
-                    child.meta.type.rawValue == "product_item"
-                }
-                
-                let vm = BotsiProductsToggleViewModel(
-                    contentModel: model,
-                    toggleControlModel: toggleControlModel,
-                    toggleOnModel: toggleOnModel,
-                    toggleOffModel: toggleOffModel,
-                    toggleChildren: toggleChildren ?? []
-                )
-                
-                BotsiProductsToggleView(viewModel: vm)
-            } else {
-                EmptyView()
-            }
+            BotsiProductRendererView(block: block, onAction: onAction)
             
         case .footer(let model):
             EmptyView()

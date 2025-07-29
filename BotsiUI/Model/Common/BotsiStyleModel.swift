@@ -32,7 +32,7 @@ public struct BotsiStyleModel: Decodable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.fillColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .fillColor) ?? .solid(.white)
-        self.color = try container.decodeIfPresent(String.self, forKey: .color) ?? ""
+        self.color = try container.decodeIfPresent(String.self, forKey: .color) ?? "#ffffff"
         self.opacity = try container.decodeIfPresent(Int.self, forKey: .opacity) ?? 100
         self.borderColor = try container.decodeIfPresent(String.self, forKey: .borderColor) ?? ""
         self.borderOpacity = try container.decodeIfPresent(Int.self, forKey: .borderOpacity) ?? 100

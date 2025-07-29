@@ -27,8 +27,10 @@ extension BotsiFillColor: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let raw = try container.decode(String.self)
-
-        if raw.starts(with: "linear-gradient") {
+        
+        if raw.isEmpty {
+            self = .solid(.white)
+        } else if raw.starts(with: "linear-gradient") {
             guard let gradient = BotsiFillColor.parseGradient(from: raw) else {
                 throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid gradient string")
             }
@@ -40,7 +42,7 @@ extension BotsiFillColor: Decodable {
             self = .solid(color)
         }
     }
-
+    
     private static func parseGradient(from css: String) -> LinearGradient? {
         let pattern = #"linear-gradient\(([\d.]+)deg, (.+)\)"#
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
@@ -52,7 +54,7 @@ extension BotsiFillColor: Decodable {
         else {
             return nil
         }
-
+        
         let _ = Double(css[angleRange])
         let colorStopsString = css[colorsRange]
         let stops = colorStopsString
@@ -64,7 +66,7 @@ extension BotsiFillColor: Decodable {
                 }
                 return nil
             }
-
+        
         guard stops.count >= 2 else { return nil }
         return LinearGradient(colors: stops, startPoint: .leading, endPoint: .trailing)
     }
@@ -80,7 +82,7 @@ public extension BotsiFillColor {
             return AnyView(gradient)
         }
     }
-
+    
     var asColorOrDefault: Color {
         switch self {
         case .solid(let color):
@@ -89,7 +91,7 @@ public extension BotsiFillColor {
             return .clear
         }
     }
-
+    
     var isGradient: Bool {
         if case .gradient = self { return true } else { return false }
     }
