@@ -164,25 +164,61 @@ do {
 }
 ```
 
-## Product Management
-
-### `fetchProductIDs()`
+### `updateProfile(_:)`
 ```swift
-static func fetchProductIDs() async throws -> [String]
+static func updateProfile(_ profileUpdate: BotsiUserProfileInformation) async throws -> BotsiProfile
 ```
 
-Retrieves the list of product IDs available for the application.
+Updates the current user's profile with the provided information.
+
+This method allows you to associate user profile information including birthday, email, username, gender, and phone. All fields are optional.
+
+**Parameters:**
+- `profileUpdate`: A `BotsiUserProfileInformation` object containing the fields to update.
 
 **Returns:**
-- `[String]`: Array of product identifiers that can be used for purchases.
+- `BotsiProfile`: Updated user profile after the update is complete.
+
+**Throws:**
+- `BotsiError.userProfileNotFound`: If no profile has been created for the current user.
+- `BotsiError.customError`: With details if the network request fails.
 
 **Example:**
 ```swift
 do {
-    let productIDs = try await Botsi.fetchProductIDs()
-    print("Available product IDs: \(productIDs)")
+    let profileUpdate = BotsiUserProfileInformation(
+        birthday: Date(),
+        email: "user@example.com",
+        username: "john_doe",
+        gender: .male,
+        phone: "+1234567890"
+    )
+    let updatedProfile = try await Botsi.updateProfile(profileUpdate)
+    print("Profile updated successfully!")
 } catch let error as BotsiError {
-    print("Failed to fetch product IDs: \(error)")
+    print("Failed to update profile: \(error)")
+}
+```
+
+**BotsiUserProfileInformation Structure:**
+```swift
+public struct BotsiUserProfileInformation {
+    public let birthday: Date?
+    public let email: String?
+    public let username: String?
+    public let gender: BotsiGender?
+    public let phone: String?
+    public let ip: String?
+}
+```
+
+**BotsiGender Options:**
+```swift
+public enum BotsiGender: String {
+    case male = "male"
+    case female = "female"
+    case other = "other"
+    case preferNotSay = "preferNotSay"
 }
 ```
 

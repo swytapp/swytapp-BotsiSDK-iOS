@@ -21,8 +21,7 @@ struct CreateUserProfileUseCase {
     ) async throws -> BotsiProfile {
         return try await repository.createUserProfile(
             identifier: identifier,
-            customerId: customerUserIdentifier,
-            birthday: birthday
+            customerId: customerUserIdentifier
         )
     }
 }

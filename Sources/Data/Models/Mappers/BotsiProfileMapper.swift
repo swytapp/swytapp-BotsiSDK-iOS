@@ -8,7 +8,7 @@
 import Foundation
 
 struct CreateProfileMapper: DomainMapper {
-    typealias Parameters = (environment: BotsiEnvironment, customerUserId: String?, birthday: String?)
+    typealias Parameters = (environment: BotsiEnvironment, customerUserId: String?)
     
     typealias DTOResponseModel = CreateProfileDtoResponse
     
@@ -33,8 +33,7 @@ struct CreateProfileMapper: DomainMapper {
                 locale: env.locale,
                 os: env.os,
                 platform: env.platform,
-                timezone: env.timezone,
-                birthday: params.birthday
+                timezone: env.timezone
             )
         )
     }
@@ -45,7 +44,7 @@ struct CreateProfileMapper: DomainMapper {
 }
 
 struct UpdateProfileMapper: DomainMapper {
-    typealias Parameters = String
+    typealias Parameters = BotsiUserProfileInformation
     
     typealias DTOResponseModel = UpdateProfileDtoResponse
     
@@ -53,9 +52,15 @@ struct UpdateProfileMapper: DomainMapper {
     
     typealias DomainModel = BotsiProfile
     
-    func toDTO(from params: Parameters) -> BotsiUpdateProfileRequestDto {
-        return BotsiUpdateProfileRequestDto(ip: params)
-        
+    func toDTO(from params: BotsiUserProfileInformation) -> BotsiUpdateProfileRequestDto {
+        return BotsiUpdateProfileRequestDto(
+            birthday: params.birthday?.toISO8601String(),
+            email: params.email,
+            username: params.username,
+            gender: params.gender,
+            phone: params.phone,
+            ip: params.ip
+        )
     }
     
     func toDomain(from dto: UpdateProfileDtoResponse) -> BotsiProfile {

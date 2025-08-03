@@ -10,7 +10,7 @@ import Foundation
 protocol BotsiUpdateProfileRepository {
     func updateUserProfile(
         identifier: String,
-        ip: String
+        profileUpdate: BotsiUserProfileInformation
     ) async throws -> BotsiProfile
 }
 
@@ -25,7 +25,7 @@ final class UpdateUserProfileRepository: BotsiUpdateProfileRepository {
 
     func updateUserProfile(
         identifier: String,
-        ip: String
+        profileUpdate: BotsiUserProfileInformation
     ) async throws -> BotsiProfile {
         do {
             var request = UpdateProfileRequest(uuid: identifier)
@@ -34,8 +34,7 @@ final class UpdateUserProfileRepository: BotsiUpdateProfileRepository {
                 "Content-type": "application/json"
             ]
             
-            let requestParameters = ip
-            let body = try mapper.toDTO(from: requestParameters).toData()
+            let body = try mapper.toDTO(from: profileUpdate).toData()
             request.body = body
             
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
@@ -47,7 +46,7 @@ final class UpdateUserProfileRepository: BotsiUpdateProfileRepository {
                 let responseDto: UpdateProfileDtoResponse = try wrapper.decode()
                 return mapper.toDomain(from: responseDto)
             } catch {
-                let errorDto: CreateProfileErrorDtoResponse = try wrapper.decode()
+                let errorDto: UpdateProfileErrorDtoResponse = try wrapper.decode()
                 if errorDto.status == 403 {
                     throw BotsiError.sdkActivationKeyNotValid
                 } else {
@@ -55,10 +54,9 @@ final class UpdateUserProfileRepository: BotsiUpdateProfileRepository {
                 }
             }
         } catch let error as BotsiError {
-            BotsiLog.error("Failed to fetch user profile: \(error.localizedDescription)")
             throw error
         } catch {
-            throw BotsiError.userGetProfileFailed
+            throw BotsiError.networkError(error.localizedDescription)
         }
     }
 }

@@ -59,18 +59,15 @@ public final class Botsi: Sendable {
         
         Task.detached {
             let ip = try await IPAddressManager.getIPAddress()
-            let userId = await self.profileStorage.currentProfileId()
-            try await self.updateUserProfile(with: userId, ipAddress: ip)
+            let profileInfo = BotsiUserProfileInformation(ip: ip)
+            try await self.updateUserProfile(profileUpdate: profileInfo)
         }
     }
     
     private func verifyUser() async {
         guard let profile = await profileStorage.getProfile() else {
             let uuid = await profileStorage.getNewProfileUUID()
-            if let profile = try? await createUserProfile(
-                with: uuid,
-                birthday: configuration.birthday
-            ) {
+            if let profile = try? await createUserProfile(with: uuid) {
                 await profileStorage.setProfile(profile)
                 await updateASAToken(profile.profileId)
                 do {
@@ -243,25 +240,60 @@ public extension Botsi {
         }
     }
     
+    /// Updates the current user's profile with the provided information.
+    ///
+    /// This method allows to associate user profile information including birthday, email,
+    /// username, gender, phone, and IP address. All fields are optional.
+    ///
+    /// - Parameter profileUpdate: A `BotsiUserProfileInformation` object containing the fields to update.
+    ///
+    /// - Returns: Updated user profile after the update is complete.
+    ///
+    /// - Throws: `BotsiError.userProfileNotFound` if no profile has been created for the current user,
+    ///           or other errors if the network request fails.
+    ///
+    /// - Example:
+    ///   ```swift
+    ///   do {
+    ///       let profileUpdate = BotsiUserProfileInformation(
+    ///           birthday: Date(),
+    ///           email: "user@example.com",
+    ///           username: "john_doe",
+    ///           gender: .male,
+    ///           phone: "+1234567890"
+    ///       )
+    ///       let updatedProfile = try await Botsi.updateProfile(profileUpdate)
+    ///       print("Profile updated successfully!")
+    ///   } catch {
+    ///       print("Failed to update profile: \(error)")
+    ///   }
+    ///   ```
+    nonisolated static func updateProfile(_ profileUpdate: BotsiUserProfileInformation) async throws -> BotsiProfile {
+        return try await lifecycle.withInitializedSDK { botsi in
+            try await botsi.updateUserProfile(profileUpdate: profileUpdate)
+        }
+    }
+    
     @discardableResult
     private func createUserProfile(
         with id: ProfileIdentifier,
-        userCustomerId: UserCustomerIdentifier? = nil,
-        birthday: Date? = nil
+        userCustomerId: UserCustomerIdentifier? = nil
     ) async throws -> BotsiProfile {
         let createProfile = UserProfileRepository(httpClient: botsiClient)
         return try await createProfile.createUserProfile(
             identifier: id,
-            customerId: userCustomerId,
-            birthday: birthday
+            customerId: userCustomerId
         )
     }
     
     @discardableResult
-    private func updateUserProfile(with id: ProfileIdentifier, ipAddress: String) async throws -> BotsiProfile {
+    private func updateUserProfile(profileUpdate: BotsiUserProfileInformation) async throws -> BotsiProfile {
+        let userId = await profileStorage.currentProfileId()
         let updateUserRepository = UpdateUserProfileRepository(httpClient: botsiClient)
         let useCase = BotsiUpdateProfileUseCase(repository: updateUserRepository)
-        return try await useCase.execute(identifier: id, ip: ipAddress)
+        let profile = try await useCase.execute(identifier: userId, profileUpdate: profileUpdate)
+        await profileStorage.setProfile(profile)
+        return profile
     }
     
     @discardableResult
@@ -272,29 +304,6 @@ public extension Botsi {
         } else {
             throw BotsiError.userProfileNotFound
         }
-    }
-    
-    // MARK: - Product Management
-
-    /// Retrieves the list of product IDs available for the application.
-    ///
-    /// This method fetches all product identifiers registered with your Botsi account.
-    /// These IDs can be used to make purchases or retrieve product details.
-    ///
-    /// - Returns: An array of product identifiers that can be used for purchases.
-    ///
-    /// - Throws: An error if the network request fails or if the SDK is not initialized.
-    ///
-    nonisolated static func fetchProductIDs() async throws -> [String] {
-        return try await lifecycle.withInitializedSDK { botsi in
-            return try await botsi.fetchProductIDs()
-        }
-    }
-    
-    @discardableResult
-    private func fetchProductIDs() async throws -> [String] {
-        let fetchProductIDsRepository = FetchProductIDsRepository(httpClient: botsiClient)
-        return try await fetchProductIDsRepository.fetchProductIds()
     }
 
     /// Initiates a purchase for the specified product ID.

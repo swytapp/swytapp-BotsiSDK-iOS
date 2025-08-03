@@ -10,7 +10,28 @@ import Foundation
 
 // MARK: - Request model
 struct BotsiUpdateProfileRequestDto: Encodable {
-    let ip: String
+    let birthday: String?
+    let email: String?
+    let username: String?
+    let gender: BotsiGender?
+    let phone: String?
+    let ip: String?
+    
+    init(
+        birthday: String? = nil,
+        email: String? = nil,
+        username: String? = nil,
+        gender: BotsiGender? = nil,
+        phone: String? = nil,
+        ip: String? = nil
+    ) {
+        self.birthday = birthday
+        self.email = email
+        self.username = username
+        self.gender = gender
+        self.phone = phone
+        self.ip = ip
+    }
 }
 
 // MARK: - Response model

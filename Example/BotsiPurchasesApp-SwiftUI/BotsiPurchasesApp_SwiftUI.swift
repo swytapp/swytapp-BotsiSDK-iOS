@@ -41,9 +41,6 @@ class BotsiPurchasesViewModel: ObservableObject {
             
             // fetch profile
             let profile = try await Botsi.getProfile()
-            
-            // fetch configured product identifiers
-            let productIdFetched = try await Botsi.fetchProductIDs()
            
             // fetch paywall with name
             let paywall = try await Botsi.getPaywall(from: "paywall_name")
