@@ -13,6 +13,7 @@ public struct BotsiUserProfileInformation: Sendable {
     public let username: String?
     public let gender: BotsiGender?
     public let phone: String?
+    public let custom: [BotsiProfile.BotsiCustomEntry]?
     internal let ip: String?
     
     public init(
@@ -21,6 +22,7 @@ public struct BotsiUserProfileInformation: Sendable {
         username: String? = nil,
         gender: BotsiGender? = nil,
         phone: String? = nil,
+        custom: [BotsiProfile.BotsiCustomEntry]? = nil,
         ip: String? = nil
     ) {
         self.birthday = birthday
@@ -28,6 +30,7 @@ public struct BotsiUserProfileInformation: Sendable {
         self.username = username
         self.gender = gender
         self.phone = phone
+        self.custom = custom
         self.ip = ip
     }
 } 

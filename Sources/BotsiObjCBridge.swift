@@ -7,6 +7,104 @@
 
 import Foundation
 
+@objc(BotsiObjCGender)
+public enum BotsiObjCGender: Int {
+    case male = 0
+    case female = 1
+    case other = 2
+    case preferNotSay = 3
+    
+    init(swift: BotsiGender) {
+        switch swift {
+        case .male:
+            self = .male
+        case .female:
+            self = .female
+        case .other:
+            self = .other
+        case .preferNotSay:
+            self = .preferNotSay
+        }
+    }
+    
+    var swift: BotsiGender {
+        switch self {
+        case .male:
+            return .male
+        case .female:
+            return .female
+        case .other:
+            return .other
+        case .preferNotSay:
+            return .preferNotSay
+        }
+    }
+}
+
+@objc(BotsiObjCCustomEntry)
+public class BotsiObjCCustomEntry: NSObject {
+    @objc public let key: String
+    @objc public let value: String
+    @objc public let id: String
+    
+    @objc public init(key: String, value: String, id: String) {
+        self.key = key
+        self.value = value
+        self.id = id
+        super.init()
+    }
+    
+    convenience init(swift: BotsiProfile.BotsiCustomEntry) {
+        self.init(key: swift.key, value: swift.value, id: swift.id)
+    }
+    
+    var swift: BotsiProfile.BotsiCustomEntry {
+        return BotsiProfile.BotsiCustomEntry(key: key, value: value, id: id)
+    }
+}
+
+@objc(BotsiObjCUserProfileInformation)
+public class BotsiObjCUserProfileInformation: NSObject {
+    @objc public let birthday: Date?
+    @objc public let email: String?
+    @objc public let username: String?
+    @objc public let gender: BotsiObjCGender
+    @objc public let phone: String?
+    @objc public let custom: [BotsiObjCCustomEntry]?
+    
+    @objc public init(birthday: Date?, email: String?, username: String?, gender: BotsiObjCGender, phone: String?, custom: [BotsiObjCCustomEntry]?) {
+        self.birthday = birthday
+        self.email = email
+        self.username = username
+        self.gender = gender
+        self.phone = phone
+        self.custom = custom
+        super.init()
+    }
+    
+    convenience init(swift: BotsiUserProfileInformation) {
+        let objcGender = BotsiObjCGender(swift: swift.gender ?? .preferNotSay)
+        let objcCustom = swift.custom?.map { BotsiObjCCustomEntry(swift: $0) }
+        self.init(birthday: swift.birthday,
+                  email: swift.email,
+                  username: swift.username,
+                  gender: objcGender,
+                  phone: swift.phone,
+                  custom: objcCustom)
+    }
+    
+    var swift: BotsiUserProfileInformation {
+        return BotsiUserProfileInformation(
+            birthday: birthday,
+            email: email,
+            username: username,
+            gender: gender.swift,
+            phone: phone,
+            custom: custom?.map { $0.swift }
+        )
+    }
+}
+
 @objc(BotsiObjCProfile)
 public class BotsiObjCProfile: NSObject {
     @objc public let profileId: String
@@ -160,6 +258,18 @@ public class BotsiObjCSDK: NSObject {
         }
     }
     
+    @objc public static func updateProfile(_ profileUpdate: BotsiObjCUserProfileInformation, completion: @escaping @Sendable (BotsiObjCProfile?, BotsiObjCError?) -> Void) {
+        let swiftProfileUpdate = profileUpdate.swift
+        Task {
+            do {
+                let updatedProfile = try await Botsi.updateProfile(swiftProfileUpdate)
+                completion(BotsiObjCProfile(swift: updatedProfile), nil)
+            } catch {
+                completion(nil, BotsiObjCError(swift: error))
+            }
+        }
+    }
+    
     @objc public static func getPaywall(from placementId: String, completion: @escaping @Sendable (BotsiObjCPaywall?, BotsiObjCError?) -> Void) {
         Task {
             do {
@@ -234,6 +344,17 @@ public class BotsiObjCSDK: NSObject {
         Task {
             do {
                 try await Botsi.logPaywallShown(for: swiftPaywall)
+                completion(nil)
+            } catch {
+                completion(BotsiObjCError(swift: error))
+            }
+        }
+    }
+    
+    @objc public static func updateRefundDataConsent(_ consent: Bool, completion: @escaping @Sendable (BotsiObjCError?) -> Void) {
+        Task {
+            do {
+                try await Botsi.updateRefundDataConsent(consent)
                 completion(nil)
             } catch {
                 completion(BotsiObjCError(swift: error))

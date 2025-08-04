@@ -59,6 +59,7 @@ struct UpdateProfileMapper: DomainMapper {
             username: params.username,
             gender: params.gender,
             phone: params.phone,
+            custom: params.custom,
             ip: params.ip
         )
     }

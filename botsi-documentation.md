@@ -186,12 +186,18 @@ This method allows you to associate user profile information including birthday,
 **Example:**
 ```swift
 do {
+    let customEntries = [
+        BotsiProfile.BotsiCustomEntry(key: "preference", value: "dark_mode", id: "1"),
+        BotsiProfile.BotsiCustomEntry(key: "region", value: "US", id: "2")
+    ]
+    
     let profileUpdate = BotsiUserProfileInformation(
         birthday: Date(),
         email: "user@example.com",
         username: "john_doe",
         gender: .male,
-        phone: "+1234567890"
+        phone: "+1234567890",
+        custom: customEntries
     )
     let updatedProfile = try await Botsi.updateProfile(profileUpdate)
     print("Profile updated successfully!")
@@ -208,6 +214,7 @@ public struct BotsiUserProfileInformation {
     public let username: String?
     public let gender: BotsiGender?
     public let phone: String?
+    public let custom: [BotsiProfile.BotsiCustomEntry]?
     public let ip: String?
 }
 ```
