@@ -31,44 +31,23 @@ public struct BotsiBlockRendererView: View {
                 print("KA: Links action: \(action)")
             }
             
-        case .layout(let model):
-            EmptyView()
-            
         case .timer(let model):
             BotsiTimerBlockView(model: model)
             
         case .carousel:
             BotsiCarouselBlockView(block: block)
             
-        case .productItem(let model):
-            EmptyView()
-            
-        case .heroImage(let model):
-            EmptyView()
-            
         case .list(let model):
             BotsiListBlockView(block: block)
-            
-        case .listItem(_):
-            EmptyView()
             
         case .card(let model):
             let vm = BotsiCardViewModel(block: block, model: model)
             BotsiCardBlockView(viewModel: vm)
             
-        case .toggleControl(let model):
-            EmptyView()
-            
         case .products(let model):
             BotsiProductRendererView(block: block, onAction: onAction)
             
-        case .footer(let model):
-            EmptyView()
-            
-        case .localization(_):
-            EmptyView()
-            
-        case .unknown(_):
+        case .layout, .productItem, .heroImage, .listItem, .toggleControl, .footer, .localization, .unknown:
             EmptyView()
             
         default:

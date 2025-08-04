@@ -18,7 +18,7 @@ public struct BotsiProductsModel: Decodable, Sendable {
     public let text2: BotsiTextStyleModel
     public let text3: BotsiTextStyleModel
     public let text4: BotsiTextStyleModel
-    public let padding: String
+    public let padding: BotsiEdge
     public let verticalOffset: String
     public let contentLayout: ProductContentLayoutModel
 
@@ -38,9 +38,9 @@ public struct BotsiProductsModel: Decodable, Sendable {
 
 @available(iOS 15.0, *)
 public struct ProductContentLayoutModel: Decodable, Sendable {
-    public let layout: String
-    public let align: String
-    public let padding: String
+    public let layout: BotsiLayout
+    public let align: BotsiAlign
+    public let padding: BotsiEdge
     public let spacing: String
 
     enum CodingKeys: String, CodingKey {
@@ -53,12 +53,12 @@ public struct ProductContentLayoutModel: Decodable, Sendable {
 
 @available(iOS 15.0, *)
 public enum BotsiProductGrouping: String, Decodable, Sendable {
-    case noSwitch = "no switch"                     // No switch (all products are visible)
-    case toggle = "Toggle"                          // Toggle (for free trial and other offers)
-    case tabs = "Tabs"                              // Tabs (for comparing plan groups)
-    case revealMore = "Buttons"          // Button that reveals more plans below
-    case bottomSheet = "Bottom sheet"               // Bottom sheet with more plans
-    case unknown                                     // fallback
+    case noSwitch = "no switch"       // No switch (all products are visible)
+    case toggle = "Toggle"            // Toggle (for free trial and other offers)
+    case tabs = "Tabs"                // Tabs (for comparing plan groups)
+    case revealMore = "Buttons"       // Button that reveals more plans below
+    case bottomSheet = "Bottom sheet" // Bottom sheet with more plans
+    case unknown                      // fallback
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

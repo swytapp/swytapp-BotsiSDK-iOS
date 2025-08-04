@@ -23,6 +23,18 @@ public enum BotsiFillColor: Decodable, Sendable {
 }
 
 @available(iOS 15.0, *)
+public extension BotsiFillColor {
+    func toColor() -> Color {
+        switch self {
+        case .solid(let color):
+            return color
+        default:
+            return .primary
+        }
+    }
+}
+
+@available(iOS 15.0, *)
 extension BotsiFillColor: Decodable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()

@@ -76,7 +76,8 @@ private extension BotsiProductRendererView {
     
     @ViewBuilder
     func NoSwitchView() -> some View {
-        EmptyView()
+        let vm = BotsiNoSwitchProductsViewModel(block: block, model: model)
+        BotsiNoSwitchProductsView(viewModel: vm)
     }
     
     @ViewBuilder

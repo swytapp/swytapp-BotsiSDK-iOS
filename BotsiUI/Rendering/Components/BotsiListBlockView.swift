@@ -30,8 +30,12 @@ public struct BotsiListBlockView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: itemSpacing) {
-            ForEach(items, id: \.safeID) { item in
-                BotsiListItemView(item: item)
+            ForEach(Array(items.enumerated()), id: \.1.safeID) { index, item in
+                BotsiListItemView(
+                    item: item,
+                    connectorThickness: item.thickness,
+                    connectorColor: item.connectorColor,
+                )
             }
         }
         .frame(maxWidth: .infinity)

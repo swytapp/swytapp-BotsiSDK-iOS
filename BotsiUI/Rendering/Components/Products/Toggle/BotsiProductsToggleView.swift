@@ -56,30 +56,26 @@ struct BotsiProductsToggleView: View {
             VStack(alignment: viewModel.toggleOffModel.contentLayout.align.horizontalAlignment, spacing: 4) {
                 Text(product.defaultText.text1)
                     .font(.system(size: product.defaultState?.text1.size.toCGFloat() ?? 12))
-                    .foregroundStyle(Color(hex: product.defaultState?.text1.color ?? "#ffffff")
-                        .opacity(Double(product.defaultState?.text1.opacity ?? 0)))
+                    .foregroundStyle(product.defaultState?.text1.color?.toColor() ?? .clear)
                 if !product.defaultText.text2.isEmpty {
                     Text(product.defaultText.text2)
                         .font(.system(size: product.defaultState?.text2.size.toCGFloat() ?? 12))
-                        .foregroundStyle(Color(hex: product.defaultState?.text2.color ?? "#ffffff")
-                            .opacity(Double(product.defaultState?.text2.opacity ?? 0)))
+                        .foregroundStyle(product.defaultState?.text2.color?.toColor() ?? .clear)
                 }
                 if !product.defaultText.text3.isEmpty {
                     Text(product.defaultText.text3)
                         .font(.system(size: product.defaultState?.text3.size.toCGFloat() ?? 12))
-                        .foregroundStyle(Color(hex: product.defaultState?.text3.color ?? "#ffffff")
-                            .opacity(Double(product.defaultState?.text3.opacity ?? 0)))
+                        .foregroundStyle(product.defaultState?.text3.color?.toColor() ?? .clear)
                 }
                 if !product.defaultText.text4.isEmpty {
                     Text(product.defaultText.text4)
                         .font(.system(size: product.defaultState?.text4.size.toCGFloat() ?? 12))
-                        .foregroundStyle(Color(hex: product.defaultState?.text4.color ?? "#ffffff")
-                            .opacity(Double(product.defaultState?.text4.opacity ?? 0)))
+                        .foregroundStyle(product.defaultState?.text4.color?.toColor() ?? .clear)
                 }
             }
             .frame(maxWidth: .infinity, alignment: viewModel.toggleOffModel.contentLayout.align.alignment)
             .padding()
-            .background(Color(.systemGray6))
+            .backgroundFill(viewModel.contentModel.defaultStyle.fillColor)
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -93,10 +89,10 @@ struct BotsiProductsToggleView: View {
                 let badge = product.badge
                 Text(badge.badgeText)
                     .font(.system(size: badge.badgeTextSize.toCGFloat()))
-                    .foregroundStyle(Color(hex: badge.badgeTextColor))
+                    .foregroundStyle(badge.badgeTextColor?.toColor() ?? .clear)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color(hex: badge.badgeColor))
+                    .background(badge.badgeColor.toColor())
                     .cornerRadius(12)
                     .offset(y: -12)
             }

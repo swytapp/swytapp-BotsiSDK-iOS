@@ -11,29 +11,43 @@ import SwiftUI
 public struct BotsiListItemView: View {
     
     let item: BotsiListItemModel
+    let connectorThickness: CGFloat
+    let connectorColor: BotsiFillColor?
 
     public var body: some View {
-        HStack(spacing: 10) {
-            iconView
-                .frame(width: 30, height: 30)
-
-            VStack(alignment: .leading, spacing: 0) {
-                if let title = item.titleText ?? item.titleTextFallback {
-                    Text(title)
-                        .foregroundFill(item.titleTextStyle?.color)
-                        .font(.system(size: 12))
+        GeometryReader { geometry in
+            HStack(spacing: 10) {
+                ZStack {
+                    if connectorThickness > 0 {
+                        Color.clear
+                            .frame(width: connectorThickness)
+                            .frame(maxHeight: .infinity)
+                            .backgroundFill(connectorColor)
+                            .offset(y: geometry.size.height / 2)
+                    }
+                    
+                    iconView
+                        .frame(width: 30, height: 30)
                 }
-
-                if let caption = item.captionText ?? item.captionTextFallback {
-                    Text(caption)
-                        .foregroundFill(item.captionTextStyle?.color)
-                        .font(.system(size: 10))
+                
+                VStack(alignment: .leading, spacing: 0) {
+                    if let title = item.titleText ?? item.titleTextFallback {
+                        Text(title)
+                            .foregroundFill(item.titleTextStyle?.color)
+                            .font(.system(size: 12))
+                    }
+                    
+                    if let caption = item.captionText ?? item.captionTextFallback {
+                        Text(caption)
+                            .foregroundFill(item.captionTextStyle?.color)
+                            .font(.system(size: 10))
+                    }
                 }
+                
+                Spacer()
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity)
         }
-        .frame(maxWidth: .infinity)
     }
 
     @ViewBuilder
@@ -62,7 +76,5 @@ public struct BotsiListItemView: View {
         Image(systemName: "checkmark.circle")
             .resizable()
             .aspectRatio(contentMode: .fit)
-            .foregroundColor(Color(hex: item.connectorColor ?? "#ffffff"))
-            .opacity(Double(item.connectorOpacity ?? 100) / 100)
     }
 }

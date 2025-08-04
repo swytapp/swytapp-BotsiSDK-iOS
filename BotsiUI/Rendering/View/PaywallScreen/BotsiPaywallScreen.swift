@@ -78,15 +78,22 @@ private extension BotsiPaywallScreen {
                 }
                 VStack(spacing: vm.layoutVM?.spacing) {
                     if vm.heroImage?.style == .flat {
+                        let horizontalPadding = vm.heroHorizontalPadding
+                        let verticalPadding = vm.heroVerticalPadding
                         VStack {
-                            BotsiHeroImageView(model: vm.heroImage!)
-                                .frame(height: height * (vm.heroImage?.heightPercent ?? 0.3))
-                                .clipped()
-                                .applyBotsiMask(vm.heroImage?.shape)
+                            GeometryReader { geometry in
+                                BotsiHeroImageView(model: vm.heroImage!)
+                                    .frame(
+                                        width: geometry.size.width - horizontalPadding,
+                                        height: geometry.size.height - verticalPadding
+                                    )
+                                    .clipped()
+                                    .applyBotsiMask(vm.heroImage?.shape)
+                            }
                         }
                         .frame(height: height * (vm.heroImage?.heightPercent ?? 0.3))
                         .padding(.leading, vm.heroImage?.layout.padding.left)
-                        .padding(.top, vm.heroImage?.layout.padding.top)
+                        .padding(.top, (vm.heroImage?.layout.padding.top ?? 0) + 10)
                         .padding(.trailing, vm.heroImage?.layout.padding.right)
                         .padding(.bottom, vm.heroImage?.layout.padding.bottom)
                         .offset(y: vm.heroImage?.layout.verticalOffset.toCGFloat() ?? 0)
@@ -104,7 +111,6 @@ private extension BotsiPaywallScreen {
                 .if(vm.heroImage?.style != .transparent) {
                     $0.backgroundFill(vm.layoutVM?.fillColor)
                 }
-                .applyBotsiMask(vm.heroImage?.shape)
             }
         }
     }

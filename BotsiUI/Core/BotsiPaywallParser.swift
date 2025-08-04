@@ -7,11 +7,8 @@
 
 import Foundation
 
-@available(iOS 15.0, *)
-public struct BotsiPaywallResponse: Decodable, Sendable {
-    public let ok: Bool
-    public let data: [BotsiPaywallBlock]
-}
+// MARK: - Type fore store universal content
+public typealias BotsiBlockContentValue = [String: CodableValue]
 
 @available(iOS 15.0, *)
 public final class BotsiPaywallParser {
@@ -160,6 +157,3 @@ public enum CodableValue: Codable, Sendable {
         }
     }
 }
-
-// MARK: - Type fore store universal content
-public typealias BotsiBlockContentValue = [String: CodableValue]

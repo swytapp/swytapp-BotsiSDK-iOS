@@ -17,6 +17,20 @@ public final class BotsiPaywallViewModel: ObservableObject {
     public let layoutVM: BotsiLayoutViewModel?
     public let footerVM: BotsiFooterViewModel?
     public let heroImage: BotsiHeroImageModel?
+    
+    public var heroHorizontalPadding: CGFloat {
+        let left = heroImage?.layout.padding.left ?? 0
+        let right = heroImage?.layout.padding.right ?? 0
+        
+        return left + right
+    }
+    
+    public var heroVerticalPadding: CGFloat {
+        let top = heroImage?.layout.padding.top ?? 0
+        let bottom = heroImage?.layout.padding.bottom ?? 0
+        
+        return top + bottom
+    }
 
     init(model: BotsiPaywallModel, delegate: BotsiPaywallDelegate?) {
         self.delegate = delegate

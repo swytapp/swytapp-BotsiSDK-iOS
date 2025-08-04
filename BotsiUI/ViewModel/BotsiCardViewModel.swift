@@ -34,7 +34,7 @@ final class BotsiCardViewModel: ObservableObject {
     }
 
     var borderColor: Color {
-        Color(hex: model.style.borderColor).opacity(Double(model.style.borderOpacity ?? 0) / 100)
+        model.style.borderColor.toColor() 
     }
 
     var borderWidth: CGFloat {

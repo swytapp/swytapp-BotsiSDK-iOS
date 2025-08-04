@@ -65,52 +65,16 @@ struct BotsiButtonBlockView: View {
 
                 if let secondaryText = vm.secondaryText, !secondaryText.text.isEmpty {
                     Text(secondaryText.text)
+                        .font(vm.secondaryFont)
+                        .foregroundColor(vm.secondaryTextColor)
+                        .frame(maxWidth: .infinity)
                 }
             }
         }
     }
 }
 
-@available(iOS 15.0, *)
-#Preview {
-    HStack {
-//        if vm.alignment == .trailing {
-//            Spacer()
-//        }
-//        
-        Button {
-            
-        } label: {
-            VStack(spacing: 0) {
-                Text("Continue")
-//                    .font(vm.font)
-                    .foregroundColor(.yellow)
-                    .frame(maxWidth: .infinity)
-                
-//                if let secondaryText = vm.secondaryText {
-//                    Text(secondaryText.text)
-//                }
-            }
-        }
-        .frame(height: 40)
-        .padding(.leading, 0)
-        .padding(.top, 0)
-        .padding(.trailing, 0)
-        .padding(.bottom, 0)
-        .background(.red)
-        .cornerRadius(5)
-//        .overlay(
-//            RoundedRectangle(cornerRadius: 5)
-//                .stroke(.black, lineWidth: CGFloat(0))
-//        )
-        
-//        if vm.alignment == .leading {
-//            Spacer()
-//        }
-    }
-    .padding(.leading, 0)
-    .padding(.top, 0)
-    .padding(.trailing, 0)
-    .padding(.bottom, 0)
-    .offset(y: 0)
-}
+//@available(iOS 15.0, *)
+//#Preview {
+//    BotsiButtonBlockView()
+//}

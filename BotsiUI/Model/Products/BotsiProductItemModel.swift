@@ -9,6 +9,7 @@ import Foundation
 
 @available(iOS 15.0, *)
 public struct BotsiProductItemModel: Decodable, Sendable {
+    
     public let state: String
     public let offerState: String
     public let defaultText: BotsiProductItemTextBlock
@@ -65,7 +66,7 @@ public struct BotsiProductItemTextBlock: Decodable, Sendable {
 public struct BotsiControlTextModel: Decodable, Sendable {
     public let font: BotsiFontModel
     public let size: String
-    public let color: String?
+    public let color: BotsiFillColor?
     public let opacity: Int?
     public let selectedColor: String?
     public let selectedOpacity: Int?
@@ -89,12 +90,12 @@ public struct BotsiProductItemTextState: Decodable, Sendable {
 @available(iOS 15.0, *)
 public struct BotsiProductItemBadge: Decodable, Sendable {
     public let badgeText: String
-    public let badgeColor: String
+    public let badgeColor: BotsiFillColor
     public let badgeOpacity: Int?
     public let badgeRadius: String
     public let badgeTextFont: BotsiFontModel
     public let badgeTextSize: String
-    public let badgeTextColor: String
+    public let badgeTextColor: BotsiFillColor?
     public let badgeTextOpacity: Int?
 
     private enum CodingKeys: String, CodingKey {

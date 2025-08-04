@@ -76,11 +76,8 @@ struct TopButtonView: View {
         )
         .overlay(
             Circle()
-                .stroke(
-                    Color(hex: button.style.borderColor)
-                        .opacity(Double(button.style.borderOpacity ?? 0)),
-                    lineWidth: button.style.borderThickness.toCGFloat()
-                )
+                .stroke(button.style.borderColor.toColor() ?? .clear,
+                        lineWidth: button.style.borderThickness.toCGFloat())
         )
         .disabled(!button.enabled)
     }
@@ -100,13 +97,9 @@ struct TopButtonView: View {
         .backgroundFill(button.style.fillColor)
         .overlay(
             Capsule()
-                .stroke(
-                    Color(hex: button.style.borderColor)
-                        .opacity(Double(button.style.borderOpacity ?? 0)),
-                    lineWidth: button.style.borderThickness.toCGFloat()
-                )
+                .stroke(button.style.borderColor.toColor() ?? .clear,
+                        lineWidth: button.style.borderThickness.toCGFloat())
         )
-        .disabled(!button.enabled)
     }
     
     private func systemIconName(for type: String) -> String {

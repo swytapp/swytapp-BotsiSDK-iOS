@@ -48,11 +48,10 @@ public struct BotsiButtonModel: Decodable, Sendable {
         }
     }
 
-    public struct ButtonText: Codable, Sendable {
+    public struct ButtonText: Decodable, Sendable {
         public let text: String
         public let font: BotsiLayoutModel.DefaultFont
         public let size: String
-        public let color: String
-        public let opacity: Int?
+        public let color: BotsiFillColor?
     }
 }

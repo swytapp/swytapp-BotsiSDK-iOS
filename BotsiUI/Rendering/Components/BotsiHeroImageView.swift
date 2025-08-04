@@ -15,11 +15,15 @@ public struct BotsiHeroImageView: View {
     public var body: some View {
         switch model.style {
         case .transparent:
-            Color.clear
-                .background(
-                    BotsiHeroImage(imageURL: model.backgroundImage)
-                        .ignoresSafeArea()
-                )
+            ZStack {
+                Color.clear
+                    .background(
+                        BotsiHeroImage(imageURL: model.backgroundImage)
+                            .ignoresSafeArea()
+                    )
+                Color.clear
+                    .backgroundFill(model.fillColor)
+            }
 
         case .overlay:
             BotsiHeroImage(imageURL: model.backgroundImage)

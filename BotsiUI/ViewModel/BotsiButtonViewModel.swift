@@ -31,17 +31,24 @@ final class BotsiButtonViewModel: ObservableObject {
     }
     
     var textColor: Color {
-        Color(hex: model.text?.color ?? "#FFFFFF")
-            .opacity(Double(model.text?.opacity ?? 100) / 100.0)
+        model.text?.color?.toColor() ?? .clear
     }
     
     var fillColor: BotsiFillColor? {
         model.style.fillColor
     }
     
+    var secondaryFont: Font {
+        Font.custom(model.secondaryText?.font.name ?? "System",
+                    size: model.secondaryText?.size.toCGFloat() ?? 16)
+    }
+    
+    var secondaryTextColor: Color {
+        model.secondaryText?.color?.toColor() ?? .clear
+    }
+    
     var borderColor: Color {
-        Color(hex: model.style.borderColor)
-            .opacity(Double(model.style.borderOpacity ?? 0) / 100.0)
+        model.style.borderColor.toColor() ?? .clear
     }
     
     var borderWidth: CGFloat {

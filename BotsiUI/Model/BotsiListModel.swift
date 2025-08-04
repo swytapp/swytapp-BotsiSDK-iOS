@@ -57,7 +57,7 @@ public struct BotsiListItemModel: Decodable, Sendable, Identifiable {
     
     public let icon: String?
     public let connectorThickness: String?
-    public let connectorColor: String?
+    public let connectorColor: BotsiFillColor?
     public let connectorOpacity: Int?
     
     public let titleText: String?
@@ -67,6 +67,10 @@ public struct BotsiListItemModel: Decodable, Sendable, Identifiable {
     public let captionText: String?
     public let captionTextFallback: String?
     public let captionTextStyle: BotsiTextStyleModel?
+    
+    public var thickness: CGFloat {
+        connectorThickness?.toCGFloat() ?? .zero
+    }
     
     private enum CodingKeys: String, CodingKey {
         case id, icon

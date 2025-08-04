@@ -116,7 +116,7 @@ public enum BotsiActionType: String, Codable, Sendable {
 @available(iOS 15.0, *)
 public struct BotsiButtonStyle: Decodable, Sendable {
     public let fillColor: BotsiFillColor?
-    public let borderColor: String
+    public let borderColor: BotsiFillColor
     public let borderOpacity: Int?
     public let borderThickness: String
     public let radius: String
@@ -133,7 +133,7 @@ public struct BotsiButtonStyle: Decodable, Sendable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.fillColor = try? container.decode(BotsiFillColor.self, forKey: .fillColor)
-        self.borderColor = try container.decode(String.self, forKey: .borderColor)
+        self.borderColor = try container.decode(BotsiFillColor.self, forKey: .borderColor)
         self.borderOpacity = try? container.decode(Int.self, forKey: .borderOpacity)
         self.radius = try container.decode(String.self, forKey: .radius)
 

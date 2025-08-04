@@ -13,7 +13,7 @@ public struct BotsiStyleModel: Decodable, Sendable {
     public let fillColor: BotsiFillColor
     public let color: String
     public let opacity: Int
-    public let borderColor: String
+    public let borderColor: BotsiFillColor
     public let borderOpacity: Int?
     public let borderThickness: CGFloat?
     public let radius: CGFloat
@@ -34,7 +34,7 @@ public struct BotsiStyleModel: Decodable, Sendable {
         self.fillColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .fillColor) ?? .solid(.white)
         self.color = try container.decodeIfPresent(String.self, forKey: .color) ?? "#ffffff"
         self.opacity = try container.decodeIfPresent(Int.self, forKey: .opacity) ?? 100
-        self.borderColor = try container.decodeIfPresent(String.self, forKey: .borderColor) ?? ""
+        self.borderColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .borderColor) ?? .solid(.clear)
         self.borderOpacity = try container.decodeIfPresent(Int.self, forKey: .borderOpacity) ?? 100
 
         if let doubleValue = try? container.decodeIfPresent(Double.self, forKey: .borderThickness) {

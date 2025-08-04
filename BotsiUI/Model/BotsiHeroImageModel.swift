@@ -14,22 +14,13 @@ public struct BotsiHeroImageModel: Decodable, Sendable {
     public let backgroundImage: String
     public let height: CGFloat
     public let shape: BotsiHeroShapeType
-    public let tint: Tint?
+    public let fillColor: BotsiFillColor?
     public let layout: Layout
     
     public var heightPercent: CGFloat {
         return height / 100
     }
 
-    public struct Tint: Decodable, Sendable {
-        public let opacity: Int
-        public let fillColor: String
-        
-        private enum CodingKeys: String, CodingKey {
-            case opacity
-            case fillColor = "fill_color"
-        }
-    }
     public struct Layout: Decodable, Sendable {
         public let padding: BotsiEdge
         public let verticalOffset: String
@@ -41,8 +32,9 @@ public struct BotsiHeroImageModel: Decodable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case height, shape, tint, layout, type, style
+        case height, shape, layout, type, style
         case backgroundImage = "background_image"
+        case fillColor = "fill_color"
     }
 }
 
@@ -53,11 +45,10 @@ public enum HeroImageType: String, Decodable, Sendable {
 }
 
 public enum BotsiHeroShapeType: String, Decodable, Sendable {
-    case rectangle
+    case rectangle, circle
     case convexMask = "convex_mask"
     case concaveMask = "concave_mask"
     case roundedRectangle = "rounded_rectangle"
-    case circle
     case leafSape = "leaf"
 }
 
@@ -193,7 +184,22 @@ public extension View {
         case .concaveMask:
             self.clipShape(ConcaveMaskShape(curveHeight: 30))
         case .circle:
-            self.clipShape(Circle())
+            self.mask(
+                GeometryReader { proxy in
+                    let width = proxy.size.width
+                    let height = proxy.size.height
+                    
+                    if height > width {
+                        Ellipse()
+                            .frame(width: width, height: height)
+                    } else {
+                        let size = height
+                        Circle()
+                            .frame(width: size, height: size)
+                            .position(x: width / 2, y: height / 2)
+                    }
+                }
+            )
         case .leafSape:
             self.clipShape(LeafMaskShape(radius: 100, corners: [.topLeft, .bottomRight]))
         default:
