@@ -73,6 +73,30 @@ do {
 }
 ```
 
+### `activate(_ key:customerUserId:)`
+```swift
+static func activate(_ key: String, customerUserId: String?) async throws
+```
+
+Activates and initializes the Botsi SDK with your public key and optionally links it to a specific user in your system.
+
+**Parameters:**
+- `key`: Your Botsi SDK API key
+- `customerUserId`: Optional identifier for the user in your system. If provided, the SDK profile will be linked to this user immediately upon activation.
+
+**Example:**
+```swift
+do {
+    // Activate with user ID for immediate user linking
+    try await Botsi.activate("your_api_key", customerUserId: "user_12345")
+    // SDK is now initialized and linked to the specified user
+} catch let error as BotsiError {
+    print("Failed to initialize Botsi SDK: \(error.localizedDescription)")
+} catch {
+    print("Unknown error")
+}
+```
+
 ### `isInitialized`
 ```swift
 static var isInitialized: Bool { get async }
@@ -215,6 +239,8 @@ public struct BotsiUserProfileInformation {
     public let gender: BotsiGender?
     public let phone: String?
     public let custom: [BotsiProfile.BotsiCustomEntry]?
+    public let idfa: String?
+    public let advertisingId: String?
     public let ip: String?
 }
 ```

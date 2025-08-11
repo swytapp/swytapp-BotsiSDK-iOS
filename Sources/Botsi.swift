@@ -28,10 +28,7 @@ public final class Botsi: Sendable {
         self.sdkApiKey = configuration.sdkApiKey
         self.configuration = configuration
         
-        self.botsiClient = BotsiHttpClient(
-            with: configuration,
-            key: configuration.sdkApiKey
-        )
+        self.botsiClient = BotsiHttpClient(with: configuration)
         self.profileStorage = await BotsiProfileStorage()
         
         let cachedTransactionsStore = await BotsiSyncedTransactionStore()
@@ -66,24 +63,57 @@ public final class Botsi: Sendable {
     
     private func verifyUser() async {
         guard let profile = await profileStorage.getProfile() else {
-            let uuid = await profileStorage.getNewProfileUUID()
-            if let profile = try? await createUserProfile(with: uuid) {
-                await profileStorage.setProfile(profile)
-                await updateASAToken(profile.profileId)
-                do {
-                    try await restorePurchases()
-                } catch {
-                    BotsiLog.error("Unable to restore purchases.")
-                }
-            }
+            await createAndSetupNewProfile()
             return
         }
+        
+        if profile.customerUserId != configuration.customerUserId {
+            await switchToNewUserProfile()
+            return
+        }
+        
+        await updateExistingProfile(profile)
+    }
+    
+    private func createAndSetupNewProfile() async {
+        let uuid = await profileStorage.getNewProfileUUID()
+        if let profile = try? await createUserProfile(with: uuid, userCustomerId: configuration.customerUserId) {
+            await profileStorage.setProfile(profile)
+            await updateASAToken(profile.profileId)
+            await restorePurchasesSafely()
+        }
+    }
+    
+    private func switchToNewUserProfile() async {
+        guard let currentProfile = await profileStorage.getProfile() else { return }
+        
+        BotsiLog.info("CustomerUserId changed from '\(currentProfile.customerUserId ?? "nil")' to '\(configuration.customerUserId ?? "nil")'. Switching to new user profile.")
+        
+        let newUuid = await profileStorage.getNewProfileUUID()
+        await profileStorage.clearProfile()
+        
+        if let newProfile = try? await createUserProfile(with: newUuid, userCustomerId: configuration.customerUserId) {
+            await profileStorage.setProfile(newProfile)
+            await updateASAToken(newProfile.profileId)
+            await restorePurchasesSafely()
+        }
+    }
+    
+    private func updateExistingProfile(_ profile: BotsiProfile) async {
         do {
             let updatedProfile = try await getUserProfile()
-            BotsiLog.info("Fetched user profile with id: \(profile.profileId)")
+            BotsiLog.info("Fetched updated user profile with id: \(updatedProfile.profileId)")
             await profileStorage.setProfile(updatedProfile)
         } catch {
             BotsiLog.error("Unable to update profile: \(error.localizedDescription)")
+        }
+    }
+    
+    private func restorePurchasesSafely() async {
+        do {
+            try await restorePurchases()
+        } catch {
+            BotsiLog.error("Unable to restore purchases: \(error.localizedDescription)")
         }
     }
 }
@@ -94,24 +124,24 @@ public extension Botsi {
     /// This is the entry point for using the Botsi SDK. Call this method before using any other
     /// SDK functionality. The SDK will create and manage user profiles automatically.
     ///
-    /// - Parameter config: A `BotsiConfiguration` object containing your SDK API key and observer settings.
+    /// - Parameter key: A string object containing your SDK API key.
+    /// - Parameter customerUserId: A string object containing an internal user identifier, e.g. `john@doe.com` or `user_1234`.
     ///
     /// - Throws: An error if the SDK fails to initialize properly.
     ///
     /// - Example:
     ///   ```swift
     ///   do {
-    ///       try await Botsi.activate(with: BotsiConfiguration(
-    ///           sdkApiKey: "your_api_key"
-    ///       ))
+    ///       try await Botsi.activate("your_api_key", customerUserId: "user_12345")
     ///       // SDK is now initialized and ready for use
     ///   } catch {
     ///       print("Failed to initialize Botsi SDK: \(error)")
     ///   }
     ///   ```
     
-    nonisolated static func activate(_ key: String) async throws {
+    nonisolated static func activate(_ key: String, customerUserId: String? = nil) async throws {
         let configuration = BotsiConfiguration.build(sdkApiKey: key)
+            .set(customerUserIdentifier: customerUserId)
         try await proceedWithActivation(with: configuration)
     }
     
@@ -149,27 +179,24 @@ public extension Botsi {
     private func identifyUser(with customerUserId: String) async throws {
         guard let profile = await profileStorage.getProfile() else {
             let uuid = await profileStorage.getNewProfileUUID()
-            if let profile = try? await createUserProfile(with: uuid) {
+            if let profile = try? await createUserProfile(with: uuid, userCustomerId: customerUserId) {
                 await profileStorage.setProfile(profile)
-                do {
-                    try await restorePurchases() // TODO: refactor
-                    return
-                } catch {
-                    BotsiLog.error("Identify. Unable to restore purchases.")
-                    return
-                }
+                await restorePurchasesSafely()
             }
             return
         }
         
         guard profile.customerUserId != customerUserId else { return }
         
-        let uuid = await profileStorage.getNewProfileUUID()
-        if let profile = try? await createUserProfile(with: uuid, userCustomerId: customerUserId) {
-            await profileStorage.setProfile(profile)
-            return
+        BotsiLog.info("CustomerUserId changed from '\(profile.customerUserId ?? "nil")' to '\(customerUserId)'. Switching to new user profile.")
+        
+        let newUuid = await profileStorage.getNewProfileUUID()
+        await profileStorage.clearProfile()
+        
+        if let newProfile = try? await createUserProfile(with: newUuid, userCustomerId: customerUserId) {
+            await profileStorage.setProfile(newProfile)
+            await restorePurchasesSafely()
         }
-        return
     }
     
     /// Ends the current user session and reverts the SDK to an anonymous state.
@@ -186,16 +213,7 @@ public extension Botsi {
     
     private func clearProfile() async throws {
         await profileStorage.clearProfile()
-        let uuid = await profileStorage.getNewProfileUUID()
-        do {
-            let newProfile = try await createUserProfile(with: uuid)
-            await profileStorage.setProfile(newProfile)
-        } catch let error as BotsiError {
-            BotsiLog.warn("Logout error: \(error.localizedDescription)")
-            throw error
-        } catch {
-            throw BotsiError.customError("Logout error", "\(error.localizedDescription)")
-        }
+        await createAndSetupNewProfile()
     }
     
     /// Checks if the Botsi SDK has been properly initialized.
@@ -334,6 +352,7 @@ public extension Botsi {
     ///   } catch {
     ///       print("Purchase failed: \(error)")
     ///   }
+    ///   ```
     nonisolated static func makePurchase(_ product: BotsiProduct) async throws -> BotsiProfile {
         return try await lifecycle.withInitializedSDK { botsi in
             try await botsi.makePurchase(from: product)

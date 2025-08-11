@@ -60,6 +60,8 @@ struct UpdateProfileMapper: DomainMapper {
             gender: params.gender,
             phone: params.phone,
             custom: params.custom,
+            idfa: params.idfa,
+            advertisingId: params.advertisingId,
             ip: params.ip
         )
     }

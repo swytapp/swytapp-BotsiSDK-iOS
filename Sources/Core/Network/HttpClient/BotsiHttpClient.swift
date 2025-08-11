@@ -17,12 +17,12 @@ public struct BotsiHttpClient: Sendable {
         static let backendHost: URL = URL(string: "https://app.botsi.com")!
     }
     
-    init(with configuration: BotsiConfiguration, key: String) {
+    init(with configuration: BotsiConfiguration) {
         let config = HTTPCodableConfiguration(sessionConfiguration: .default)
         let errorHandler = HTTPErrorHandler()
         let session = BotsiHTTPSession(configuration: config, errorHandler: errorHandler)
         self.session = session
-        self.sdkApiKey = key
+        self.sdkApiKey = configuration.sdkApiKey
     }
 }
 

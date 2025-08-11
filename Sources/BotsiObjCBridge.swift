@@ -71,14 +71,18 @@ public class BotsiObjCUserProfileInformation: NSObject {
     @objc public let gender: BotsiObjCGender
     @objc public let phone: String?
     @objc public let custom: [BotsiObjCCustomEntry]?
+    @objc public let idfa: String?
+    @objc public let advertisingId: String?
     
-    @objc public init(birthday: Date?, email: String?, username: String?, gender: BotsiObjCGender, phone: String?, custom: [BotsiObjCCustomEntry]?) {
+    @objc public init(birthday: Date?, email: String?, username: String?, gender: BotsiObjCGender, phone: String?, custom: [BotsiObjCCustomEntry]?, idfa: String?, advertisingId: String?) {
         self.birthday = birthday
         self.email = email
         self.username = username
         self.gender = gender
         self.phone = phone
         self.custom = custom
+        self.idfa = idfa
+        self.advertisingId = advertisingId
         super.init()
     }
     
@@ -90,7 +94,9 @@ public class BotsiObjCUserProfileInformation: NSObject {
                   username: swift.username,
                   gender: objcGender,
                   phone: swift.phone,
-                  custom: objcCustom)
+                  custom: objcCustom,
+                  idfa: swift.idfa,
+                  advertisingId: swift.advertisingId)
     }
     
     var swift: BotsiUserProfileInformation {
@@ -100,7 +106,9 @@ public class BotsiObjCUserProfileInformation: NSObject {
             username: username,
             gender: gender.swift,
             phone: phone,
-            custom: custom?.map { $0.swift }
+            custom: custom?.map { $0.swift },
+            idfa: idfa,
+            advertisingId: advertisingId
         )
     }
 }
@@ -240,6 +248,17 @@ public class BotsiObjCSDK: NSObject {
         Task {
             do {
                 try await Botsi.activate(key)
+                completion(nil)
+            } catch {
+                completion(BotsiObjCError(swift: error))
+            }
+        }
+    }
+    
+    @objc public static func activate(_ key: String, customerUserId: String?, completion: @escaping @Sendable (BotsiObjCError?) -> Void) {
+        Task {
+            do {
+                try await Botsi.activate(key, customerUserId: customerUserId)
                 completion(nil)
             } catch {
                 completion(BotsiObjCError(swift: error))

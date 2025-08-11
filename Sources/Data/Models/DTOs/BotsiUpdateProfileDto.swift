@@ -16,6 +16,8 @@ struct BotsiUpdateProfileRequestDto: Encodable {
     let gender: BotsiGender?
     let phone: String?
     let custom: [BotsiProfile.BotsiCustomEntry]?
+    let idfa: String?
+    let advertisingId: String?
     let ip: String?
     
     init(
@@ -25,6 +27,8 @@ struct BotsiUpdateProfileRequestDto: Encodable {
         gender: BotsiGender? = nil,
         phone: String? = nil,
         custom: [BotsiProfile.BotsiCustomEntry]? = nil,
+        idfa: String? = nil,
+        advertisingId: String? = nil,
         ip: String? = nil
     ) {
         self.birthday = birthday
@@ -33,6 +37,8 @@ struct BotsiUpdateProfileRequestDto: Encodable {
         self.gender = gender
         self.phone = phone
         self.custom = custom
+        self.idfa = idfa
+        self.advertisingId = advertisingId
         self.ip = ip
     }
 }
