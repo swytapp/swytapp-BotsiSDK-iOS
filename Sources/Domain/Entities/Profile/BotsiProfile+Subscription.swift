@@ -21,9 +21,9 @@ extension BotsiProfile {
         public let isInGracePeriod: Bool
         public let cancellationReason: String?
         public let offerId: String?
-        public let startsAt: Date
-        public let renewedAt: Date
-        public let expiresAt: Date
+        public let startsAt: Date?
+        public let renewedAt: Date?
+        public let expiresAt: Date?
         public let activeIntroductoryOfferType: String?
         public let activePromotionalOfferType: String?
         public let activePromotionalOfferId: String?
@@ -83,9 +83,9 @@ extension BotsiProfile {
             try container.encodeIfPresent(cancellationReason, forKey: .cancellationReason)
             try container.encodeIfPresent(offerId, forKey: .offerId)
             
-            try container.encode(startsAt.toISO8601String(), forKey: .startsAt)
-            try container.encode(renewedAt.toISO8601String(), forKey: .renewedAt)
-            try container.encode(expiresAt.toISO8601String(), forKey: .expiresAt)
+            try container.encodeIfPresent(startsAt?.toISO8601String(), forKey: .startsAt)
+            try container.encodeIfPresent(renewedAt?.toISO8601String(), forKey: .renewedAt)
+            try container.encodeIfPresent(expiresAt?.toISO8601String(), forKey: .expiresAt)
             
             try container.encodeIfPresent(activeIntroductoryOfferType, forKey: .activeIntroductoryOfferType)
             try container.encodeIfPresent(activePromotionalOfferType, forKey: .activePromotionalOfferType)

@@ -23,7 +23,7 @@ extension BotsiProfile {
         public let store: String
         
         /// `The timestamp indicating when this access level was activated.`
-        public let activatedAt: String
+        public let activatedAt: String?
         
         /// `Returns true if this access level is valid for a lifetime, meaning there is no expiration date.`
         public let isLifetime: Bool
@@ -42,13 +42,13 @@ extension BotsiProfile {
         public let offerId: String?
         
         /// `The timestamp indicating when this access level begins, which may be set in the future.`
-        public let startsAt: Date
+        public let startsAt: Date?
         
         /// `The timestamp for when the access level was renewed. It may be nil if this was the initial purchase in the chain or if it is a non-renewing subscription or a non-consumable item (e.g., lifetime access).`
-        public let renewedAt: Date
+        public let renewedAt: Date?
         
         /// `The timestamp that shows when the access level is set to expire. This could either be a past date or nil if the access is for a lifetime.`
-        public let expiresAt: Date
+        public let expiresAt: Date?
         
         /// `The type of an active introductory offer. If this value is not nil, it indicates that the offer was utilized during the current subscription period.`
         public let activeIntroductoryOfferType: String?
@@ -114,9 +114,9 @@ extension BotsiProfile {
             try container.encodeIfPresent(cancellationReason, forKey: .cancellationReason)
             try container.encodeIfPresent(offerId, forKey: .offerId)
             
-            try container.encode(startsAt.toISO8601String(), forKey: .startsAt)
-            try container.encode(renewedAt.toISO8601String(), forKey: .renewedAt)
-            try container.encode(expiresAt.toISO8601String(), forKey: .expiresAt)
+            try container.encodeIfPresent(startsAt?.toISO8601String(), forKey: .startsAt)
+            try container.encodeIfPresent(renewedAt?.toISO8601String(), forKey: .renewedAt)
+            try container.encodeIfPresent(expiresAt?.toISO8601String(), forKey: .expiresAt)
             
             try container.encodeIfPresent(activeIntroductoryOfferType, forKey: .activeIntroductoryOfferType)
             try container.encodeIfPresent(activePromotionalOfferType, forKey: .activePromotionalOfferType)
