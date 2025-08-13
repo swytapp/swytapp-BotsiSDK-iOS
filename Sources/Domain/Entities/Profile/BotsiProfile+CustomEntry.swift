@@ -10,5 +10,11 @@ extension BotsiProfile {
         public let key: String
         public let value: String
         public let id: String
+        
+        public init(key: String, value: String, id: String) {
+            self.key = key
+            self.value = value
+            self.id = id
+        }
     }
 }

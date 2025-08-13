@@ -39,11 +39,11 @@ class BotsiPurchasesViewModel: ObservableObject {
             // activate SDK with public key
             try await Botsi.activate("pk_O50YzT5Hv........")
             
+            // Alternative: activate SDK with public key and user ID for immediate linking
+            // try await Botsi.activate("pk_O50YzT5Hv........", customerUserId: "user_12345")
+            
             // fetch profile
             let profile = try await Botsi.getProfile()
-            
-            // fetch configured product identifiers
-            let productIdFetched = try await Botsi.fetchProductIDs()
            
             // fetch paywall with name
             let paywall = try await Botsi.getPaywall(from: "paywall_name")

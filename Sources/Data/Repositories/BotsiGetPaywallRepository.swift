@@ -43,8 +43,7 @@ final class GetPaywallRepository: BotsiGetPaywallRepository {
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
             let responseDto: BotsiGetPaywallResponseDto = try wrapper.decode()
             
-            var paywall = mapper.toDomain(from: responseDto)
-            paywall.placementId = paywall.placementId ?? id
+            let paywall = mapper.toDomain(from: responseDto)
             return paywall
         } catch {
             BotsiLog.error("Failed to fetch paywall with id \(id): \(error.localizedDescription)")

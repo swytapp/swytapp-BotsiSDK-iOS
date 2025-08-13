@@ -13,6 +13,7 @@ public struct BotsiConfiguration: Sendable {
     static let `default` = BotsiHttpClient.URLConstants.backendHost
 
     let sdkApiKey: String
+    
     let customerUserId: String?
     
     let delegateQueue: BotsiDelegateQueue?
@@ -25,6 +26,7 @@ public extension BotsiConfiguration {
         var sdkApiKey: String { get }
         var profileIdentifier: String? { get }
         var customerUserIdentifier: String? { get }
+
         var backendHost: URL { get }
         
         func buildConfiguration() -> BotsiConfiguration
@@ -44,20 +46,23 @@ public extension BotsiConfiguration {
             .buildConfiguration()
     }
     
-    @discardableResult func set(customerUserIdentifier: String) -> Self {
+    @discardableResult func set(customerUserIdentifier: String?) -> Self {
         return BotsiConfigurationFactory
             .createAdapter(with: sdkApiKey)
             .set(customerIdentifier: customerUserIdentifier)
             .buildConfiguration()
-            
     }
 }
 
 public extension BotsiConfiguration {
     fileprivate struct BotsiConfigurationFactory {
-        public static func createAdapter(with sdkApiKey: String, customerUserIdentifier: String? = nil) -> BotsiConfigurationAdapter {
+        public static func createAdapter(
+            with sdkApiKey: String,
+            customerUserIdentifier: String? = nil
+        ) -> BotsiConfigurationAdapter {
             return BotsiConfigurationAdapter(
                 sdkApiKey: sdkApiKey,
+                customerUserIdentifier: customerUserIdentifier,
                 backendHost: BotsiHttpClient.URLConstants.backendHost
             )
         }
@@ -84,7 +89,7 @@ public extension BotsiConfiguration {
         public func buildConfiguration() -> BotsiConfiguration {
             return .init(
                 sdkApiKey: self.sdkApiKey,
-                customerUserId: nil,
+                customerUserId: self.customerUserIdentifier,
                 delegateQueue: nil,
                 backend: self.backendHost
             )
