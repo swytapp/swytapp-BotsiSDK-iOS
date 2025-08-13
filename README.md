@@ -26,7 +26,7 @@ A powerful Swift SDK for:
 
 Add to your Podfile:
 
-`pod 'Botsi', '~> 1.0.6'`
+`pod 'Botsi', '~> 1.0.7'`
 
 Then run:
 
@@ -40,7 +40,7 @@ Enter:
 
 `https://github.com/BotsiTeam/BotsiSDK-iOS.git`
 
-Select Up to Next Major version 1.0.6
+Select Up to Next Major version 1.0.7
 
 **🛠 Quick Start**
 
