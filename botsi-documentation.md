@@ -23,7 +23,7 @@ To integrate the BotsiSDK into your project using Swift Package Manager (SPM), f
 3. **Enter the Repository URL**  
    When prompted, enter the repository URL below:
 
-https://github.com/swytapp/swytapp-BotsiSDK-iOS.git
+https://github.com/BotsiTeam/BotsiSDK-iOS.git
 
 4. **Specify the Version**  
 Under the version rule options, select **Version** and specify the SDK version:
