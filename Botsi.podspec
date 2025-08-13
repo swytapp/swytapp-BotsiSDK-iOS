@@ -13,7 +13,8 @@ Pod::Spec.new do |s|
     s.swift_version = '5.9'
 
     s.source_files = 'Sources/**/*.swift'
-    s.resource_bundles = {"Botsi" => ["Sources/PrivacyInfo.xcprivacy"]}
-
+    
+    s.resources = ['Sources/PrivacyInfo.xcprivacy']
+    
     s.frameworks = 'StoreKit'
 end
