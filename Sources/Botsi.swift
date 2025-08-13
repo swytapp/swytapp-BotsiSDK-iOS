@@ -556,7 +556,7 @@ public extension Botsi {
             message: "Paywall presented.",
             placementId: paywall.placementId
         )
-        await loggerWithContext.logEvent(userActionEvent)
+        try await loggerWithContext.logEvent(userActionEvent)
     }
     
     nonisolated static func logPaywallShown(for paywall: BotsiPaywall) async throws {
