@@ -400,3 +400,135 @@ The SDK uses `BotsiError` for error reporting. Common errors include:
     
 
 Properly handle these errors in your application to provide appropriate feedback to users.
+
+## Objective-C Bridge
+
+The Botsi SDK provides an Objective-C bridge (`BotsiObjCBridge.swift`) that enables seamless integration with Objective-C projects while maintaining full functionality of the Swift SDK.
+
+### Core Components
+
+**`BotsiObjCProfile` (Class)**
+User profile with subscription and access information including `profileId`, `customerUserId`, `accessLevels`, `subscriptions`, `nonSubscriptions`, and `custom` data.
+
+**`BotsiObjCProduct` (Class)**
+In-app purchase product representation with pricing, subscription details, and offer eligibility information.
+
+**`BotsiObjCPaywall` (Class)**
+Paywall configuration and metadata including placement ID, paywall ID, name, and configuration details.
+
+**`BotsiObjCUserProfileInformation` (Class)**
+Comprehensive user profile container including personal info, demographics, custom data, and device identifiers.
+
+**`BotsiObjCError` (Class)**
+Standardized error representation with `localizedDescription` and `errorCode`.
+
+### Main SDK Interface
+
+**`BotsiObjCSDK` (Class)**
+Primary interface for all SDK operations. All methods are static and use completion handlers for asynchronous operations.
+
+### API Methods
+
+#### Initialization & Authentication
+```objc
+// Activate SDK with Public Key
++ (void)activate:(NSString *)key 
+       completion:(void(^)(BotsiObjCError * _Nullable error))completion;
+
+// Activate with Public Key and Customer user ID
++ (void)activate:(NSString *)key 
+   customerUserId:(NSString * _Nullable)customerUserId 
+       completion:(void(^)(BotsiObjCError * _Nullable error))completion;
+
+// Identify user within your internal user management system
++ (void)identify:(NSString *)userId 
+       completion:(void(^)(BotsiObjCError * _Nullable error))completion;
+
+// Logout user
++ (void)logoutWithCompletion:(void(^)(BotsiObjCError * _Nullable error))completion;
+```
+
+#### Profile Management
+```objc
+// Retrieve user profile
++ (void)getProfileWithCompletion:(void(^)(BotsiObjCProfile * _Nullable profile, 
+                                         BotsiObjCError * _Nullable error))completion;
+
+// Update user profile
++ (void)updateProfile:(BotsiObjCUserProfileInformation *)profileUpdate 
+           completion:(void(^)(BotsiObjCProfile * _Nullable profile, 
+                              BotsiObjCError * _Nullable error))completion;
+```
+
+#### Paywall & Products
+```objc
+// Fetch paywall by placement ID
++ (void)getPaywallFrom:(NSString *)placementId 
+             completion:(void(^)(BotsiObjCPaywall * _Nullable paywall, 
+                                BotsiObjCError * _Nullable error))completion;
+
+// Get products for specific paywall
++ (void)getPaywallProductsFrom:(BotsiObjCPaywall *)paywall 
+                    completion:(void(^)(NSArray<BotsiObjCProduct *> * _Nullable products, 
+                                       BotsiObjCError * _Nullable error))completion;
+```
+
+#### Purchases
+```objc
+// Make purchase
++ (void)makePurchase:(BotsiObjCProduct *)product 
+           completion:(void(^)(BotsiObjCProfile * _Nullable profile, 
+                              BotsiObjCError * _Nullable error))completion;
+
+// Restore purchases
++ (void)restorePurchasesWithCompletion:(void(^)(BotsiObjCProfile * _Nullable profile, 
+                                               BotsiObjCError * _Nullable error))completion;
+```
+
+#### Analytics & Consent
+```objc
+// Log paywall display
++ (void)logPaywallShown:(BotsiObjCPaywall *)paywall 
+              completion:(void(^)(BotsiObjCError * _Nullable error))completion;
+
+// Update refund consent
++ (void)updateRefundDataConsent:(BOOL)consent 
+                     completion:(void(^)(BotsiObjCError * _Nullable error))completion;
+```
+
+### Example Usage
+
+```objc 
+// Example method that incorporates main SDK methods
+- (void)activateAndFetchProducts {
+    // activate SDK with your public key
+    [BotsiObjCSDK activate:@"pk_VgKsJTMAUVJOHopK.llSPKivjLLlsgpPAb123OWzYbo9o" completion:^(BotsiObjCError *error) {
+        if (error) { NSLog(@"Activation failed: %@", error.localizedDescription); return; }
+        [self fetchAndDisplayProfile]; // update UI
+        // fetch Paywall by the placement ID key
+        [BotsiObjCSDK getPaywallFrom:@"your_placement_id" completion:^(BotsiObjCPaywall *paywall, BotsiObjCError *error) {
+            if (error) { NSLog(@"Failed to get paywall: %@", error.localizedDescription); return; }
+            NSLog(@"Successfully got paywall: %@", paywall);
+            // retrieve products from paywall
+            [BotsiObjCSDK getPaywallProductsFrom:paywall completion:^(NSArray<BotsiObjCProduct *> *products, BotsiObjCError *error) {
+                if (error) { NSLog(@"Failed to retrieve products: %@", error.localizedDescription); return; }
+                // update UI
+                self.products = products;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self.tableView reloadData];
+                });
+                NSLog(@"About to call logPaywallShown with paywall: %@", paywall);
+                // send analytics event to console
+                [BotsiObjCSDK logPaywallShown:paywall completion:^(BotsiObjCError *error) {
+                    NSLog(@"logPaywallShown completion called");
+                    if (error) { 
+                        NSLog(@"Failed to log paywall shown: %@", error.localizedDescription); 
+                    } else {
+                        NSLog(@"Successfully logged paywall shown");
+                    }
+                }];
+            }];
+        }];
+    }];
+}
+```
