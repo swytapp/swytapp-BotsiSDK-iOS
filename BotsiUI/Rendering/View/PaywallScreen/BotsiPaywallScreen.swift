@@ -11,6 +11,7 @@ import SwiftUI
 public struct BotsiPaywallScreen: View {
     
     @Environment(\.dismiss) var dismiss
+    @Environment(\.screenSize) private var screenSize
     @StateObject var vm: BotsiPaywallViewModel
     
     public init(viewModel: BotsiPaywallViewModel) {
@@ -57,6 +58,8 @@ public struct BotsiPaywallScreen: View {
                     BotsiFooterBlockView(viewModel: footerVM)
                 }
             }
+            .withScreenSize(CGSize(width: proxy.size.width + proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing,
+                                   height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom))
         }
         .if(vm.heroImage?.style != .transparent, transform: {
             $0
