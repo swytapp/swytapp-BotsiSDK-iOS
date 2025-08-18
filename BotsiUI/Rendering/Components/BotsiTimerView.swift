@@ -27,7 +27,7 @@ struct BotsiTimerBlockView: View {
                 .minimumScaleFactor(0.01)
                 .allowsTightening(true)
         }
-        .frame(maxWidth: .infinity, alignment: model.style.align?.alignment ?? .center)
+        .frame(maxWidth: .infinity, alignment: model.style.align?.alignments.frame ?? .center)
         .padding(.leading, model.padding.left)
         .padding(.top, model.padding.top)
         .padding(.trailing, model.padding.right)

@@ -20,13 +20,3 @@ public struct BotsiImageModel: Decodable, Sendable {
         case verticalOffset = "vertical_offset"
     }
 }
-
-public enum StringOrInt: Decodable, Sendable {
-    case int(Int), string(String)
-
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if let i = try? container.decode(Int.self) { self = .int(i) }
-        else { self = .string(try container.decode(String.self)) }
-    }
-}

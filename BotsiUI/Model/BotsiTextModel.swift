@@ -14,16 +14,20 @@ public struct BotsiTextModel: Decodable, Sendable {
     public let text: TextBlock
     public let maxLines: String?
     public let onOverflow: BotsiTextOverflow
-    public let margin: BotsiEdge?
+    public let margin: BotsiEdge
     public let verticalOffset: String?
     
-    public struct TextBlock: Decodable, Sendable {
+    public struct TextBlock: Decodable, Sendable, BotsiTextBlockProvider {
         public let text: String
         public let textFallback: String?
         public let font: BotsiLayoutModel.DefaultFont
-        public let size: StringOrInt
+        public let size: String
         public let align: BotsiAlign
-        public let color: BotsiFillColor?
+        public let color: BotsiFillColor
+
+        public var textSize: CGFloat {
+            CGFloat(Double(size) ?? 14)
+        }
 
         private enum CodingKeys: String, CodingKey {
             case text, size, align, color, font
@@ -48,16 +52,6 @@ public enum BotsiTextOverflow: String, Decodable, Sendable {
 
 @available(iOS 15.0, *)
 extension BotsiTextModel {
-    
-    var textSize: CGFloat {
-        switch text.size {
-        case .int(let value):
-            return CGFloat(value)
-        case .string(let str):
-            return CGFloat(Double(str) ?? 14)
-        }
-    }
-
     var maxLinesCount: Int? {
         guard let maxLines else { return nil }
         return Int(maxLines)

@@ -8,28 +8,51 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct BotsiTextBlockView: View {
+struct BotsiTextBlockView<T: BotsiTextBlockProvider>: View {
     
-    private var model: BotsiTextModel
+    private let textProvider: T
+    private let text: String
+    private let options: (margin: BotsiEdge, align: BotsiAlign, maxLines: Int?, onOverflow: BotsiTextOverflow?, opacity: Double, verticalOffset: CGFloat)
     
-    init(model: BotsiTextModel) {
-        self.model = model
+    init(textProvider: T, 
+         text: String,
+         margin: BotsiEdge = .defaultEdge,
+         align: BotsiAlign = .left,
+         maxLines: Int? = nil,
+         onOverflow: BotsiTextOverflow? = nil,
+         opacity: Double = 100,
+         verticalOffset: CGFloat = 0) {
+        self.textProvider = textProvider
+        self.text = text
+        self.options = (margin, align, maxLines, onOverflow, opacity / 100, verticalOffset)
+    }
+    
+    init(model: BotsiTextModel) where T == BotsiTextModel.TextBlock {
+        self.textProvider = model.text
+        self.text = model.text.text
+        self.options = (model.margin, model.text.align ?? .left, model.maxLinesCount, model.onOverflow, 1, model.verticalOffsetValue)
     }
     
     var body: some View {
-        let margin = model.margin
-        Text(model.text.text)
-            .font(.custom(model.text.font.name, size: model.textSize))
-            .foregroundFill(model.text.color)
-            .lineLimit(model.maxLinesCount)
-            .padding(.leading, margin?.left)
-            .padding(.top, margin?.top)
-            .padding(.trailing, margin?.right)
-            .padding(.bottom, margin?.bottom)
-            .offset(y: model.verticalOffsetValue)
-            .if(model.onOverflow == .scale) {
+        Text(text)
+            .font(.customFont(
+                ofSize: textProvider.textSize,
+                name: textProvider.font.name,
+                weight: textProvider.font.fontWeight,
+                italic: textProvider.font.isItalic
+            ))
+            .foregroundFill(textProvider.color)
+            .opacity(options.opacity)
+            .lineLimit(options.maxLines)
+            .padding(.leading, options.margin.left)
+            .padding(.top, options.margin.top)
+            .padding(.trailing, options.margin.right)
+            .padding(.bottom, options.margin.bottom)
+            .offset(y: options.verticalOffset)
+            .if(options.onOverflow == .scale) {
                 $0.minimumScaleFactor(0.5)
             }
-            .frame(maxWidth: .infinity, alignment: model.text.align.alignment)
+            .frame(maxWidth: .infinity, alignment: options.align.alignments.frame)
+            .multilineTextAlignment(options.align.alignments.text)
     }
 }

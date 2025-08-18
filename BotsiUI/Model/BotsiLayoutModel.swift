@@ -53,6 +53,20 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let name: String
         public let isSelected: Bool
         public let types: [FontType]
+
+         /// Returns the selected font type from the font's types array
+        public var selectedFontType: BotsiLayoutModel.FontType? {
+            types.first { $0.isSelected }
+        }
+
+        public var fontWeight: Int {
+            selectedFontType?.fontWeight ?? 400
+        }
+
+        public var isItalic: Bool {
+            guard let selectedFontType else { return false }
+            return selectedFontType.fontStyle.lowercased() == "italic"
+        }
     }
     
     // content_layout ---------------------------------------------------------
@@ -221,25 +235,14 @@ public enum BotsiAlign: String, Codable, Sendable {
     case center = "center"
     case right = "right"
     
-    public var horizontalAlignment: HorizontalAlignment {
+    public var alignments: (horizontal: HorizontalAlignment, frame: Alignment, text: TextAlignment) {
         switch self {
         case .left:
-            return .leading
+            return (.leading, .leading, .leading)
         case .center:
-            return .center
+            return (.center, .center, .center)
         case .right:
-            return .trailing
-        }
-    }
-    
-    public var alignment: Alignment {
-        switch self {
-        case .left:
-            return .leading
-        case .center:
-            return .center
-        case .right:
-            return .trailing
+            return (.trailing, .trailing, .trailing)
         }
     }
 }
