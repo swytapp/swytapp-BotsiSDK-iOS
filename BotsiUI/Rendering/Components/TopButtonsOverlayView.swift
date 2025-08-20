@@ -66,16 +66,16 @@ struct TopButtonView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 8, height: 8)
-                .foregroundColor(Color(hex: button.icon.color)
-                    .opacity(Double(button.iconOpacity)))
+                .foregroundColor(button.icon.color.toColor().opacity(button.iconOpacity))
                 .padding(12)
         }
         .background(
             shapeFill(Circle(), fill: button.style.fillColor)
-                .frame(width: 25)
+                .frame(width: 30)
         )
         .overlay(
             Circle()
+                .inset(by: button.style.borderThickness.toCGFloat() / 2)
                 .stroke(button.style.borderColor.toColor() ?? .clear,
                         lineWidth: button.style.borderThickness.toCGFloat())
         )
@@ -87,12 +87,12 @@ struct TopButtonView: View {
             guard let actionId = button.actionId else { return }
             tap(actionId)
         }) {
-            Text(button.text.text ?? "")
-                .font(.system(size: button.text.size.toCGFloat()))
-                .foregroundColor(Color.black
-                    .opacity(Double(button.text.opacity ?? 0)))
-                .padding(.vertical, 2)
-                .padding(.horizontal, 10)
+            BotsiTextBlockView(textProvider: button.text,
+                               text: button.text.text,
+                               align: .center,
+                               opacity: Double(button.text.opacity ?? 100))
+                               .padding(.vertical, 2)
+                               .padding(.horizontal, 10)
         }
         .backgroundFill(button.style.fillColor)
         .overlay(

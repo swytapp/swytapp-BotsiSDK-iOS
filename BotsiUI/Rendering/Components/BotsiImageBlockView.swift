@@ -31,10 +31,10 @@ struct BotsiImageBlockView: View {
                 }
             }
         }
-        .padding(.leading, padding?.left)
-        .padding(.top, padding?.top)
-        .padding(.trailing, padding?.right)
-        .padding(.bottom, padding?.bottom)
+        .padding(.leading, padding.left)
+        .padding(.top, padding.top)
+        .padding(.trailing, padding.right)
+        .padding(.bottom, padding.bottom)
         .offset(y: model.verticalOffset?.toCGFloat() ?? 0)
     }
 }

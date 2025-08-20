@@ -8,19 +8,20 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiButtonModel: Decodable, Sendable {
+public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let action: String
     public let actionLabel: String?
     public let text: ButtonText?
     public let secondaryText: ButtonText?
     public let style: BotsiButtonStyle
-    public let margin: BotsiEdge?
+    public let padding: BotsiEdge
     public let verticalOffset: String?
     public let contentLayout: BotsiContentLayout?
 
     private enum CodingKeys: String, CodingKey {
-        case style, text, action, margin
+        case style, text, action
+        case padding = "margin"
         case actionLabel = "action_label"
         case secondaryText = "secondary_text"
         case verticalOffset = "vertical_offset"
@@ -34,7 +35,7 @@ public struct BotsiButtonModel: Decodable, Sendable {
         self.style = try container.decode(BotsiButtonStyle.self, forKey: .style)
         self.text = try container.decodeIfPresent(ButtonText.self, forKey: .text)
         self.secondaryText = try container.decodeIfPresent(ButtonText.self, forKey: .secondaryText)
-        self.margin = try container.decodeIfPresent(BotsiEdge.self, forKey: .margin)
+        self.padding = try container.decodeIfPresent(BotsiEdge.self, forKey: .padding) ?? .defaultEdge
         self.contentLayout = try container.decodeIfPresent(BotsiContentLayout.self, forKey: .contentLayout)
         
         if let string = try? container.decodeIfPresent(String.self, forKey: .verticalOffset) {

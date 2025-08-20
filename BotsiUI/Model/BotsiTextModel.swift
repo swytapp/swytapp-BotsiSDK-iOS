@@ -9,12 +9,12 @@ import Foundation
 import SwiftUICore
 
 @available(iOS 15.0, *)
-public struct BotsiTextModel: Decodable, Sendable {
+public struct BotsiTextModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let text: TextBlock
     public let maxLines: String?
     public let onOverflow: BotsiTextOverflow
-    public let margin: BotsiEdge
+    public let padding: BotsiEdge
     public let verticalOffset: String?
     
     public struct TextBlock: Decodable, Sendable, BotsiTextBlockProvider {
@@ -25,10 +25,6 @@ public struct BotsiTextModel: Decodable, Sendable {
         public let align: BotsiAlign
         public let color: BotsiFillColor
 
-        public var textSize: CGFloat {
-            CGFloat(Double(size) ?? 14)
-        }
-
         private enum CodingKeys: String, CodingKey {
             case text, size, align, color, font
             case textFallback = "text_fallback"
@@ -37,7 +33,7 @@ public struct BotsiTextModel: Decodable, Sendable {
 
     private enum CodingKeys: String, CodingKey {
         case text
-        case margin
+        case padding = "margin"
         case maxLines = "max_lines"
         case onOverflow = "on_overflow"
         case verticalOffset = "vertical_offset"

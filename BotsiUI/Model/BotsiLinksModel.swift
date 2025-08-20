@@ -8,7 +8,7 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiLinksModel: Decodable, Sendable {
+public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
     public let hasTermOfService: Bool
     public let termOfService: LinkItem?
     public let hasPrivacyPolicy: Bool
@@ -18,7 +18,7 @@ public struct BotsiLinksModel: Decodable, Sendable {
     public let hasLoginButton: Bool
     public let loginButton: LinkItem?
     public let style: Style
-    public let padding: BotsiEdge?
+    public let padding: BotsiEdge
     public let verticalOffset: String
     public let contentLayout: BotsiContentLayout
 

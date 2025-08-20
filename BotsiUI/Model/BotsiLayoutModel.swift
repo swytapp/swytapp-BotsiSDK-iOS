@@ -76,17 +76,17 @@ public struct BotsiLayoutModel: Decodable, Sendable {
     }
     
     // top_buttons ------------------------------------------------------------
-    public struct ButtonText: Codable, Sendable {
+    public struct ButtonText: Decodable, Sendable, BotsiTextBlockProvider {
         public let text: String
         public let font: DefaultFont
         public let size: String
-        public let color: String
+        public let color: BotsiFillColor
         public let opacity: Int?
     }
     
-    public struct ButtonIcon: Codable, Sendable {
+    public struct ButtonIcon: Decodable, Sendable {
         public let type:  String
-        public let color: String
+        public let color: BotsiFillColor
         public let opacity: Int?
     }
     
@@ -193,8 +193,7 @@ public struct BotsiEdge: Codable, Sendable {
         case 4:
             self.init(left: parts[3], top: parts[0], right: parts[1], bottom: parts[2])
         default:
-            throw DecodingError.dataCorruptedError(in: container,
-                debugDescription: "Expected 1 or 4 space-separated values in edge string.")
+            self.init(left: 0, top: 0, right: 0, bottom: 0)
         }
     }
 }

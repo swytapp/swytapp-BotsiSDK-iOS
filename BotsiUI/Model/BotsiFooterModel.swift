@@ -8,8 +8,8 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiFooterModel: Decodable, Sendable {
-    let padding: BotsiEdge
-    let spacing: String
-    let style: BotsiStyleModel
+public struct BotsiFooterModel: Decodable, Sendable, BotsiPaddingProvider {
+    public let padding: BotsiEdge
+    public let spacing: String
+    public let style: BotsiStyleModel
 }

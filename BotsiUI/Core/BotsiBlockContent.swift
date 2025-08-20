@@ -39,66 +39,56 @@ public enum BotsiBlockContent: Decodable, Sendable {
 
         switch meta.type {
         case .layout:
-            let c = try container.decode(BotsiLayoutModel.self, forKey: .content)
-            self = .layout(c)
+            self = .layout(try container.decode(BotsiLayoutModel.self, forKey: .content))
         case .heroImage:
-            let c = try container.decode(BotsiHeroImageModel.self, forKey: .content)
-            self = .heroImage(c)
+            self = .heroImage(try container.decode(BotsiHeroImageModel.self, forKey: .content))
         case .timer:
-            let c = try container.decode(BotsiTimerModel.self, forKey: .content)
-            self = .timer(c)
+            self = .timer(try container.decode(BotsiTimerModel.self, forKey: .content))
         case .carousel:
-            let c = try container.decode(BotsiCarouselModel.self, forKey: .content)
-            self = .carousel(c)
+            self = .carousel(try container.decode(BotsiCarouselModel.self, forKey: .content))
         case .links:
-            let c = try container.decode(BotsiLinksModel.self, forKey: .content)
-            self = .links(c)
+            self = .links(try container.decode(BotsiLinksModel.self, forKey: .content))
         case .list:
-            let c = try container.decode(BotsiListModel.self, forKey: .content)
-            self = .list(c)
+            self = .list(try container.decode(BotsiListModel.self, forKey: .content))
         case .listItem:
-            let c = try container.decode(BotsiListItemModel.self, forKey: .content)
-            self = .listItem(c)
+            self = .listItem(try container.decode(BotsiListItemModel.self, forKey: .content))
         case .text:
-            let c = try container.decode(BotsiTextModel.self, forKey: .content)
-            self = .text(c)
+            self = .text(try container.decode(BotsiTextModel.self, forKey: .content))
         case .image:
-            let c = try container.decode(BotsiImageModel.self, forKey: .content)
-            self = .image(c)
+            self = .image(try container.decode(BotsiImageModel.self, forKey: .content))
         case .card:
-            let c = try container.decode(BotsiCardModel.self, forKey: .content)
-            self = .card(c)
+            self = .card(try container.decode(BotsiCardModel.self, forKey: .content))
         case .footer:
-            let c = try container.decode(BotsiFooterModel.self, forKey: .content)
-            self = .footer(c)
+            self = .footer(try container.decode(BotsiFooterModel.self, forKey: .content))
         case .button:
-            let c = try container.decode(BotsiButtonModel.self, forKey: .content)
-            self = .button(c)
+            self = .button(try container.decode(BotsiButtonModel.self, forKey: .content))
         case .localization:
-            let c = try container.decode(BotsiLocalizationModel.self, forKey: .content)
-            self = .localization(c)
+            self = .localization(try container.decode(BotsiLocalizationModel.self, forKey: .content))
         case .products:
-            let c = try container.decode(BotsiProductsModel.self, forKey: .content)
-            self = .products(c)
+            self = .products(try container.decode(BotsiProductsModel.self, forKey: .content))
         case .productItem:
-            let c = try container.decode(BotsiProductItemModel.self, forKey: .content)
-            self = .productItem(c)
+            self = .productItem(try container.decode(BotsiProductItemModel.self, forKey: .content))
         case .toggleControl:
-            let c = try container.decode(BotsiToggleControlModel.self, forKey: .content)
-            self = .toggleControl(c)
+            self = .toggleControl(try container.decode(BotsiToggleControlModel.self, forKey: .content))
         case .toggleOn:
-            let c = try container.decode(BotsiToggleOnModel.self, forKey: .content)
-            self = .toggleOn(c)
+            self = .toggleOn(try container.decode(BotsiToggleOnModel.self, forKey: .content))
         case .toggleOff:
-            let c = try container.decode(BotsiToggleOffModel.self, forKey: .content)
-            self = .toggleOff(c)
-            
+            self = .toggleOff(try container.decode(BotsiToggleOffModel.self, forKey: .content))
         default:
             self = .unknown(nil)
         }
     }
 
     private enum CodingKeys: String, CodingKey { case meta, content }
+    
+    public var padding: BotsiEdge? {
+        let mirror = Mirror(reflecting: self)
+        guard let model = mirror.children.first?.value,
+              let paddingProvider = model as? BotsiPaddingProvider else {
+            return nil
+        }
+        return paddingProvider.padding
+    }
 }
 
 

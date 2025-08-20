@@ -72,7 +72,7 @@ final class BotsiButtonViewModel: ObservableObject {
     }
     
     var margin: BotsiEdge? {
-        model.margin
+        model.padding
     }
     
     var padding: BotsiEdge? {

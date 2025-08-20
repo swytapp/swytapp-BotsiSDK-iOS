@@ -8,9 +8,9 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiToggleOnModel: Decodable, Sendable {
+public struct BotsiToggleOnModel: Decodable, Sendable, BotsiPaddingProvider {
     public let selectedProduct: String
-    public let padding: String
+    public let padding: BotsiEdge
     public let verticalOffset: String
     public let contentLayout: BotsiContentLayout
 

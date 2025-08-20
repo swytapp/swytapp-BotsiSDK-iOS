@@ -23,7 +23,6 @@ extension EnvironmentValues {
 @available(iOS 15.0, *)
 extension View {
     func withScreenSize(_ value: CGSize) -> some View {
-        debugPrint(value)
         return environment(\.screenSize, value)
     }
 }

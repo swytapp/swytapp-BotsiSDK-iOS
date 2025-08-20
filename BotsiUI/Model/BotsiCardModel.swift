@@ -8,16 +8,17 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiCardModel: Decodable, Sendable {
+public struct BotsiCardModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let style: BotsiStyleModel
     public let backgroundImage: String
-    public let margin: BotsiEdge?
+    public let padding: BotsiEdge
     public let verticalOffset: String?
     public let contentLayout: BotsiContentLayout
     
     private enum CodingKeys: String, CodingKey {
-        case style, margin
+        case style
+        case padding = "margin"
         case backgroundImage = "background_image"
         case verticalOffset  = "vertical_offset"
         case contentLayout   = "content_layout"

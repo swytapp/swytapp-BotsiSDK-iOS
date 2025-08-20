@@ -6,7 +6,7 @@
 //
 
 @available(iOS 15.0, *)
-public struct BotsiToggleControlModel: Decodable, Sendable {
+public struct BotsiToggleControlModel: Decodable, Sendable, BotsiPaddingProvider {
     public let toggleState: String
     public let toggleStyle: BotsiStyleModel
     public let toggleColor: String
@@ -14,7 +14,7 @@ public struct BotsiToggleControlModel: Decodable, Sendable {
     public let state: String
     public let activeState: BotsiToggleStateModel
     public let inactiveState: BotsiToggleStateModel
-    public let padding: String
+    public let padding: BotsiEdge
     public let verticalOffset: String
     public let contentLayout: BotsiContentLayout
 

@@ -22,10 +22,10 @@ public struct BotsiLinksBlockView: View {
                 }
             }
         }
-        .padding(.leading, model.padding?.left)
-        .padding(.top, model.padding?.top)
-        .padding(.trailing, model.padding?.right)
-        .padding(.bottom, model.padding?.bottom)
+        .padding(.leading, model.padding.left)
+        .padding(.top, model.padding.top)
+        .padding(.trailing, model.padding.right)
+        .padding(.bottom, model.padding.bottom)
         .offset(y: CGFloat(Double(model.verticalOffset) ?? 0))
     }
 

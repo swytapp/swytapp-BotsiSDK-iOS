@@ -8,11 +8,11 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiImageModel: Decodable, Sendable {
+public struct BotsiImageModel: Decodable, Sendable, BotsiPaddingProvider {
     public let image: String
     public let height: String?
     public let aspect: String
-    public let padding: BotsiEdge?
+    public let padding: BotsiEdge
     public let verticalOffset: String?
 
     private enum CodingKeys: String, CodingKey {

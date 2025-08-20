@@ -171,37 +171,33 @@ private struct LeafMaskShape: Shape {
 
 // MARK: - View Extension
 
+@available(iOS 15.0, *)
 public extension View {
     @ViewBuilder
-    func applyBotsiMask(_ type: BotsiHeroShapeType?) -> some View {
-        switch type {
+    func mask(with shape: BotsiHeroShapeType?, size: CGSize = .zero, isContainer: Bool = false) -> some View {
+        switch shape {
         case .rectangle:
             self
         case .roundedRectangle:
-            self.clipShape(RoundedRectangle(cornerRadius: 20))
+            if isContainer {
+                if #available(iOS 16.0, *) {
+                    self.clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20))
+                } else {
+                    self.clipShape(RoundedCorners(cornerRadius: 20, corners: [.topLeft, .topRight]))
+                }
+            } else {
+                self.clipShape(RoundedRectangle(cornerRadius: size.height * 0.08))
+            }
+        case .circle where size.height > size.width:
+            self.clipShape(.ellipse)
+        case .circle:
+            self.clipShape(.circle)
+        case .leafSape:
+            self.clipShape(LeafMaskShape(radius: size.height * 0.25, corners: [.topLeft, .bottomRight]))
         case .convexMask:
             self.clipShape(ConvexMaskShape(curveHeight: 10))
         case .concaveMask:
             self.clipShape(ConcaveMaskShape(curveHeight: 30))
-        case .circle:
-            self.mask(
-                GeometryReader { proxy in
-                    let width = proxy.size.width
-                    let height = proxy.size.height
-                    
-                    if height > width {
-                        Ellipse()
-                            .frame(width: width, height: height)
-                    } else {
-                        let size = height
-                        Circle()
-                            .frame(width: size, height: size)
-                            .position(x: width / 2, y: height / 2)
-                    }
-                }
-            )
-        case .leafSape:
-            self.clipShape(LeafMaskShape(radius: 100, corners: [.topLeft, .bottomRight]))
         default:
             self
         }

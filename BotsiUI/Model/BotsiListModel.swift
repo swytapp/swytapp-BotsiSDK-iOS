@@ -8,9 +8,9 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiListModel: Decodable, Sendable {
+public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     
-    public let padding: String?
+    public let padding: BotsiEdge
     public let verticalOffset: String?
     public let itemSpacing: String?
     public let textSpacing: String?

@@ -8,7 +8,7 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiTimerModel: Decodable, Sendable {
+public struct BotsiTimerModel: Decodable, Sendable, BotsiPaddingProvider {
     public let format: String
     public let separator: BotsiTimerSeparator
     public let startText: String
