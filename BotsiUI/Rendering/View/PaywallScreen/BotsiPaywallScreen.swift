@@ -12,6 +12,7 @@ public struct BotsiPaywallScreen: View {
     
     @Environment(\.dismiss) var dismiss
     @StateObject var vm: BotsiPaywallViewModel
+    @State private var footerHeight: CGFloat = 0
     
     public init(viewModel: BotsiPaywallViewModel) {
         _vm = .init(wrappedValue: viewModel)
@@ -23,12 +24,13 @@ public struct BotsiPaywallScreen: View {
                 ZStack {
                     heroContent(proxy)
                     scrollContent(proxy)
-                    topButtons()
+                    topButtons
                 }
                 .frame(maxWidth: .infinity)
                 .navigationBarHidden(true)
                 .navigationBarBackButtonHidden(true)
-                
+            }
+            .overlay(alignment: .bottom) {
                 footerContent
             }
             .withScreenSize(screenSize(for: proxy))
@@ -37,21 +39,10 @@ public struct BotsiPaywallScreen: View {
             $0.backgroundFill(vm.layoutVM?.fillColor)
         })
     }
-}
-
-// MARK: - Computed Properties
-@available(iOS 15.0, *)
-private extension BotsiPaywallScreen {
-    
-    var footerContent: some View {
-        vm.footerVM.map(BotsiFooterBlockView.init)
-    }
     
     func screenSize(for proxy: GeometryProxy) -> CGSize {
-        CGSize(
-            width: proxy.size.width + proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing,
-            height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-        )
+        CGSize(width: proxy.size.width + proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing,
+               height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom)
     }
 }
 
@@ -127,6 +118,7 @@ private extension BotsiPaywallScreen {
             }
         }
         .ignoresSafeArea()
+        .padding(.bottom, footerHeight)
     }
     
     @ViewBuilder
@@ -170,11 +162,30 @@ private extension BotsiPaywallScreen {
 private extension BotsiPaywallScreen {
     
     @ViewBuilder
-    func topButtons() -> some View {
+    var topButtons: some View {
         if let buttons = vm.layoutVM?.model.buttons, !buttons.isEmpty {
             TopButtonsOverlayView(buttons: buttons) { action in
                 dismiss()
             }
         }
+    }
+}
+
+// MARK: - Footer
+@available(iOS 15.0, *)
+private extension BotsiPaywallScreen {
+    
+    var footerContent: some View {
+        vm.footerVM.map(BotsiFooterBlockView.init)
+            .background(
+                GeometryReader { footerGeometry in
+                    Color.clear
+                        .onAppear {
+                            footerHeight = footerGeometry.size.height
+                        }
+                        .onChange(of: footerGeometry.size.height) { newHeight in
+                            footerHeight = newHeight
+                        }
+                })
     }
 }
