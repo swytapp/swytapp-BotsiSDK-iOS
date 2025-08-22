@@ -53,7 +53,7 @@ struct BotsiProductsToggleView: View {
     
     private func productItemView(_ product: BotsiProductItemModel, meta: BotsiBlockMeta, isSelected: Bool) -> some View {
         ZStack(alignment: .top) {
-            VStack(alignment: viewModel.toggleOffModel.contentLayout.align.alignments.horizontal, spacing: 4) {
+            VStack(alignment: viewModel.toggleOffModel.contentLayout.align?.alignments.horizontal ?? .center, spacing: 4) {
                 Text(product.defaultText.text1)
                     .font(.system(size: product.defaultState?.text1.size.toCGFloat() ?? 12))
                     .foregroundStyle(product.defaultState?.text1.color?.toColor() ?? .clear)
@@ -73,7 +73,7 @@ struct BotsiProductsToggleView: View {
                         .foregroundStyle(product.defaultState?.text4.color?.toColor() ?? .clear)
                 }
             }
-            .frame(maxWidth: .infinity, alignment: viewModel.toggleOffModel.contentLayout.align.alignments.frame)
+            .frame(maxWidth: .infinity, alignment: viewModel.toggleOffModel.contentLayout.align?.alignments.frame ?? .center)
             .padding()
             .backgroundFill(viewModel.contentModel.defaultStyle.fillColor)
             .cornerRadius(16)

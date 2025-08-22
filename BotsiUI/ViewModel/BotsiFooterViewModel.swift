@@ -8,10 +8,9 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-@MainActor
-public final class BotsiFooterViewModel: ObservableObject, Identifiable {
+public struct BotsiFooterHelper {
     
-    private let model: BotsiFooterModel
+    private(set) var model: BotsiFooterModel
     private let block: BotsiBlockMeta
     public var childrens: [BotsiPaywallBlock] = []
     

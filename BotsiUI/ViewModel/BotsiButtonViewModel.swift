@@ -11,42 +11,24 @@ import SwiftUI
 @MainActor
 final class BotsiButtonViewModel: ObservableObject {
     
-    private let model: BotsiButtonModel
+    private(set) var model: BotsiButtonModel
     
     init(model: BotsiButtonModel) {
         self.model = model
     }
     
-    var text: BotsiButtonModel.ButtonText? {
-        model.text
-    }
-    
-    var secondaryText: BotsiButtonModel.ButtonText? {
-        model.secondaryText
-    }
-    
-    var font: Font {
-        Font.custom(model.text?.font.name ?? "System",
-                    size: model.text?.size.toCGFloat() ?? 16)
-    }
-    
     var textColor: Color {
-        model.text?.color?.toColor() ?? .clear
+        model.text?.color.toColor() ?? .clear
     }
     
     var fillColor: BotsiFillColor? {
         model.style.fillColor
     }
     
-    var secondaryFont: Font {
-        Font.custom(model.secondaryText?.font.name ?? "System",
-                    size: model.secondaryText?.size.toCGFloat() ?? 16)
-    }
-    
     var secondaryTextColor: Color {
-        model.secondaryText?.color?.toColor() ?? .clear
+        model.secondaryText?.color.toColor() ?? .clear
     }
-    
+
     var borderColor: Color {
         model.style.borderColor.toColor() ?? .clear
     }
@@ -63,20 +45,8 @@ final class BotsiButtonViewModel: ObservableObject {
         model.verticalOffset?.toCGFloat() ?? 0
     }
     
-    var alignment: Alignment {
-        switch model.contentLayout?.align {
-        case .left: return .leading
-        case .right: return .trailing
-        default: return .center
-        }
-    }
-    
-    var margin: BotsiEdge? {
-        model.padding
-    }
-    
-    var padding: BotsiEdge? {
-        model.contentLayout?.padding
+    var align: BotsiAlign {
+        model.contentLayout?.align ?? .center
     }
 
     func tap() {

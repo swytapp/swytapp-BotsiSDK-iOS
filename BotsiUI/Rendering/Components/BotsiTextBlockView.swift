@@ -8,20 +8,20 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct BotsiTextBlockView<T: BotsiTextBlockProvider>: View {
+struct BotsiTextBlockView<T: BotsiPropertiesProvider>: View {
     
     private let textProvider: T
     private let text: String
     private let options: (align: BotsiAlign, maxLines: Int?, onOverflow: BotsiTextOverflow?, opacity: Double, verticalOffset: CGFloat)
     
-    init(textProvider: T, 
+    init(propertiesProvider: T, 
          text: String,
          align: BotsiAlign = .left,
          maxLines: Int? = nil,
          onOverflow: BotsiTextOverflow? = nil,
          opacity: Double = 100,
          verticalOffset: CGFloat = 0) {
-        self.textProvider = textProvider
+        self.textProvider = propertiesProvider
         self.text = text
         self.options = (align, maxLines, onOverflow, opacity / 100, verticalOffset)
     }
@@ -47,7 +47,7 @@ struct BotsiTextBlockView<T: BotsiTextBlockProvider>: View {
             .if(options.onOverflow == .scale) {
                 $0.minimumScaleFactor(0.5)
             }
-            .frame(alignment: options.align.alignments.frame)
-            .multilineTextAlignment(options.align.alignments.text)
+            .frame(alignment: .trailing)
+            .multilineTextAlignment(.trailing)
     }
 }

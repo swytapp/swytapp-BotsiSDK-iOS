@@ -76,7 +76,7 @@ public struct BotsiLayoutModel: Decodable, Sendable {
     }
     
     // top_buttons ------------------------------------------------------------
-    public struct ButtonText: Decodable, Sendable, BotsiTextBlockProvider {
+    public struct ButtonText: Decodable, Sendable, BotsiPropertiesProvider {
         public let text: String
         public let font: DefaultFont
         public let size: String

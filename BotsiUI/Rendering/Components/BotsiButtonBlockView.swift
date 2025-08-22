@@ -20,35 +20,19 @@ struct BotsiButtonBlockView: View {
         let bgColor = vm.fillColor
         let borderColor = vm.borderColor
         let cornerRadius = vm.cornerRadius
-        
-        let padding = vm.padding
-        let margin = vm.margin
+        let padding = vm.model.contentLayout?.padding
         
         HStack {
-            if vm.alignment == .trailing {
-                Spacer()
-            }
             
             buttonContent
-                .padding(.leading, padding?.left)
-                .padding(.top, padding?.top)
-                .padding(.trailing, padding?.right)
-                .padding(.bottom, padding?.bottom)
+                .padding(padding)
                 .backgroundFill(bgColor)
                 .cornerRadius(cornerRadius)
                 .overlay(
                     RoundedRectangle(cornerRadius: cornerRadius)
                         .stroke(borderColor, lineWidth: CGFloat(vm.borderWidth))
                 )
-            
-            if vm.alignment == .leading {
-                Spacer()
-            }
         }
-        .padding(.leading, margin?.left)
-        .padding(.top, margin?.top)
-        .padding(.trailing, margin?.right)
-        .padding(.bottom, margin?.bottom)
         .offset(y: vm.verticalOffset)
     }
     
@@ -58,23 +42,21 @@ struct BotsiButtonBlockView: View {
             vm.tap()
         } label: {
             VStack(spacing: 0) {
-                Text(vm.text?.text ?? "")
-                    .font(vm.font)
-                    .foregroundColor(vm.textColor)
-                    .frame(maxWidth: .infinity)
-
-                if let secondaryText = vm.secondaryText, !secondaryText.text.isEmpty {
-                    Text(secondaryText.text)
-                        .font(vm.secondaryFont)
-                        .foregroundColor(vm.secondaryTextColor)
-                        .frame(maxWidth: .infinity)
+                if let text = vm.model.text {
+                    BotsiTextBlockView(propertiesProvider: text,
+                                       text: text.text,
+                                       align: vm.align)
+                    .frame(maxWidth: .infinity, alignment: vm.model.contentLayout?.align?.alignments.frame ?? .center)
+                }
+                
+                if let secondaryText = vm.model.secondaryText, !secondaryText.text.isEmpty {
+                    BotsiTextBlockView(propertiesProvider: secondaryText,
+                                       text: secondaryText.text,
+                                       align: vm.align)
+                    .frame(maxWidth: .infinity, alignment: vm.model.contentLayout?.align?.alignments.frame ?? .center)
                 }
             }
+            
         }
     }
 }
-
-//@available(iOS 15.0, *)
-//#Preview {
-//    BotsiButtonBlockView()
-//}

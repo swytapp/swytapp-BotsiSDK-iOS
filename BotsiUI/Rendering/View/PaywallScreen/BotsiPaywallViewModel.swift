@@ -15,7 +15,7 @@ public final class BotsiPaywallViewModel: ObservableObject {
 
     public let contentBlocks: [BotsiPaywallBlock]
     public let layoutVM: BotsiLayoutViewModel?
-    public let footerVM: BotsiFooterViewModel?
+    public let footerVM: BotsiFooterHelper?
     public let heroImage: BotsiHeroImageModel?
     
     public var heroHorizontalPadding: CGFloat {
@@ -42,7 +42,7 @@ public final class BotsiPaywallViewModel: ObservableObject {
         
         if let footeBlock = model.footer {
             if case let .footer(model) = footeBlock.content {
-                self.footerVM = BotsiFooterViewModel(block: footeBlock, model: model)
+                self.footerVM = BotsiFooterHelper(block: footeBlock, model: model)
             } else {
                 self.footerVM = nil
             }

@@ -33,11 +33,11 @@ public struct BotsiPaywallScreen: View {
             .overlay(alignment: .bottom) {
                 footerContent
             }
+            .if(vm.heroImage?.style != .transparent, transform: {
+                $0.backgroundFill(vm.layoutVM?.fillColor)
+            })
             .withScreenSize(screenSize(for: proxy))
         }
-        .if(vm.heroImage?.style != .transparent, transform: {
-            $0.backgroundFill(vm.layoutVM?.fillColor)
-        })
     }
     
     func screenSize(for proxy: GeometryProxy) -> CGSize {
@@ -79,7 +79,7 @@ private extension BotsiPaywallScreen {
     @ViewBuilder
     func flatHeroImageIfNeeded(_ proxy: GeometryProxy) -> some View {
         if let heroImage = vm.heroImage, heroImage.style == .flat {
-           let imageSize = calculateImageSize(for: heroImage, proxy: proxy)
+            let imageSize = calculateImageSize(for: heroImage, proxy: proxy)
             
             VStack {
                 BotsiHeroImageView(model: heroImage)
@@ -187,5 +187,6 @@ private extension BotsiPaywallScreen {
                             footerHeight = newHeight
                         }
                 })
+        
     }
 }

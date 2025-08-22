@@ -87,12 +87,12 @@ struct TopButtonView: View {
             guard let actionId = button.actionId else { return }
             tap(actionId)
         }) {
-            BotsiTextBlockView(textProvider: button.text,
+            BotsiTextBlockView(propertiesProvider: button.text,
                                text: button.text.text,
                                align: .center,
                                opacity: Double(button.text.opacity ?? 100))
                                .padding(.vertical, 2)
-                               .padding(.horizontal, 10)
+                               .padding(.horizontal, 12)
         }
         .backgroundFill(button.style.fillColor)
         .overlay(

@@ -29,7 +29,7 @@ public struct BotsiCardModel: Decodable, Sendable, BotsiPaddingProvider {
 public struct BotsiContentLayout: Codable, Sendable {
     public let padding: BotsiEdge?
     public let verticalOffset: String?
-    public let align: BotsiAlign = .left
+    public let align: BotsiAlign?
     public let spacing: String?
     public let layout: BotsiLayout?
 }
