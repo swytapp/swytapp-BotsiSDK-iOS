@@ -47,7 +47,7 @@ struct BotsiTextBlockView<T: BotsiPropertiesProvider>: View {
             .if(options.onOverflow == .scale) {
                 $0.minimumScaleFactor(0.5)
             }
-            .frame(alignment: .trailing)
-            .multilineTextAlignment(.trailing)
+            .frame(maxWidth: .infinity, alignment: options.align.alignments.frame)
+            .multilineTextAlignment(options.align.alignments.text)
     }
 }
