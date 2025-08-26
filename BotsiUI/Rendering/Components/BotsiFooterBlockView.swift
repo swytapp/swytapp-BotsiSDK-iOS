@@ -27,16 +27,12 @@ public struct BotsiFooterBlockView: View {
                 .padding(footer.padding)
             }
         }
-        .padding(.top, 20)
-        .background(
-            RoundedRectangle(cornerRadius: footer.radius)
-                .stroke(footer.model.style.borderColor.toColor(),
-                        lineWidth: footer.model.style.borderThickness ?? 0)
-                .background(
-                    RoundedRectangle(cornerRadius: footer.radius)
-                        .fill(Color.clear)
-                )
-                .ignoresSafeArea()
+        .padding(.top, 15)
+        .styledContainer(
+            fillColor: footer.model.style.fillColor,
+            borderColor: footer.model.style.borderColor,
+            borderThickness: footer.model.style.borderThickness ?? 0,
+            cornerRadius: footer.radius
         )
     }
 }

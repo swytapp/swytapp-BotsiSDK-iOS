@@ -8,10 +8,10 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct BotsiUIPaddingModifier: ViewModifier {
+public struct BotsiUIPaddingModifier: ViewModifier {
     var insets: BotsiEdge?
     
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
         if let insets {
             content
                 .padding(EdgeInsets(top: insets.top,
@@ -25,7 +25,7 @@ struct BotsiUIPaddingModifier: ViewModifier {
 }
 
 @available(iOS 15.0, *)
-extension View {
+public extension View {
     @ViewBuilder
     func padding(_ insets: BotsiEdge?) -> some View {
         if let insets {

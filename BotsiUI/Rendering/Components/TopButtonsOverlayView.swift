@@ -93,12 +93,13 @@ struct TopButtonView: View {
                                opacity: Double(button.text.opacity ?? 100))
                                .padding(.vertical, 2)
                                .padding(.horizontal, 12)
+                               .fixedSize(horizontal: true, vertical: false)
         }
-        .backgroundFill(button.style.fillColor)
-        .overlay(
-            Capsule()
-                .stroke(button.style.borderColor.toColor() ?? .clear,
-                        lineWidth: button.style.borderThickness.toCGFloat())
+        .styledContainer(
+            fillColor: button.style.fillColor,
+            borderColor: button.style.borderColor,
+            borderThickness: button.style.borderThickness.toCGFloat(),
+            cornerRadius: button.style.radius.toCGFloat()
         )
     }
     

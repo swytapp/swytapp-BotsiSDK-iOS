@@ -16,21 +16,16 @@ struct BotsiButtonBlockView: View {
         _vm = StateObject(wrappedValue: viewModel)
     }
     
-    var body: some View {
-        let bgColor = vm.fillColor
-        let borderColor = vm.borderColor
-        let cornerRadius = vm.cornerRadius
-        let padding = vm.model.contentLayout?.padding
-        
+    var body: some View {        
         HStack {
             
             buttonContent
-                .padding(padding)
-                .backgroundFill(bgColor)
-                .cornerRadius(cornerRadius)
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius)
-                        .stroke(borderColor, lineWidth: CGFloat(vm.borderWidth))
+                .padding(vm.model.contentLayout?.padding)
+                .styledContainer(
+                    fillColor: vm.fillColor,
+                    borderColor: vm.model.style.borderColor,
+                    borderThickness: vm.borderWidth,
+                    cornerRadius: vm.cornerRadius
                 )
         }
         .offset(y: vm.verticalOffset)

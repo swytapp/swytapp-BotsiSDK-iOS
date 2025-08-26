@@ -127,7 +127,6 @@ private extension BotsiPaywallScreen {
             flatHeroImageIfNeeded(proxy)
             contentBlocks
         }
-        .padding(.top, 20)
         .padding(vm.layoutVM?.padding)
         .if(vm.heroImage?.style != .transparent) {
             $0.backgroundFill(vm.layoutVM?.fillColor)
