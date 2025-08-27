@@ -47,22 +47,49 @@ extension Color {
 extension Color {
     static func cssCompatible(_ string: String) -> Color? {
         if string.hasPrefix("rgba") {
-            let pattern = #"rgba?\((\d+), ?(\d+), ?(\d+), ?([\d.]+)\)"#
-            let regex = try? NSRegularExpression(pattern: pattern, options: [])
-            guard
-                let match = regex?.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
-                match.numberOfRanges == 5,
-                let r = Int(string[Range(match.range(at: 1), in: string)!]),
-                let g = Int(string[Range(match.range(at: 2), in: string)!]),
-                let b = Int(string[Range(match.range(at: 3), in: string)!]),
-                let a = Double(string[Range(match.range(at: 4), in: string)!])
-            else {
-                return nil
-            }
-            return Color(red: Double(r)/255, green: Double(g)/255, blue: Double(b)/255, opacity: a)
+            return parseRGBA(string)
+        } else if string.hasPrefix("rgb") {
+            return parseRGB(string)
         } else if string.hasPrefix("#") {
             return Color(hex: string)
         }
         return nil
+    }
+    
+    private static func parseRGBA(_ string: String) -> Color? {
+        let pattern = #"rgba\(([\d.]+), ?([\d.]+), ?([\d.]+), ?([\d.]+)\)"#
+        guard let components = extractColorComponents(from: string, pattern: pattern, count: 4) else {
+            return nil
+        }
+        return Color(red: components[0]/255, green: components[1]/255, blue: components[2]/255, opacity: components[3])
+    }
+    
+    private static func parseRGB(_ string: String) -> Color? {
+        let pattern = #"rgb\(([\d.]+), ?([\d.]+), ?([\d.]+)\)"#
+        guard let components = extractColorComponents(from: string, pattern: pattern, count: 3) else {
+            return nil
+        }
+        return Color(red: components[0]/255, green: components[1]/255, blue: components[2]/255, opacity: 1.0)
+    }
+    
+    private static func extractColorComponents(from string: String, pattern: String, count: Int) -> [Double]? {
+        let regex = try? NSRegularExpression(pattern: pattern, options: [])
+        guard
+            let match = regex?.firstMatch(in: string, range: NSRange(string.startIndex..., in: string)),
+            match.numberOfRanges == count + 1
+        else {
+            return nil
+        }
+        
+        var components: [Double] = []
+        for i in 1...count {
+            guard let range = Range(match.range(at: i), in: string),
+                  let value = Double(string[range]) else {
+                return nil
+            }
+            components.append(value)
+        }
+        
+        return components
     }
 }

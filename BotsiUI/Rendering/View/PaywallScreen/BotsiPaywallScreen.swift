@@ -175,17 +175,10 @@ private extension BotsiPaywallScreen {
 private extension BotsiPaywallScreen {
     
     var footerContent: some View {
-        vm.footerVM.map(BotsiFooterBlockView.init)
-            .background(
-                GeometryReader { footerGeometry in
-                    Color.clear
-                        .onAppear {
-                            footerHeight = footerGeometry.size.height
-                        }
-                        .onChange(of: footerGeometry.size.height) { newHeight in
-                            footerHeight = newHeight
-                        }
-                })
-        
+        vm.footerVM.map { footerVM in
+            BotsiFooterBlockView(model: footerVM) { height in
+                footerHeight = height
+            }
+        }
     }
 }

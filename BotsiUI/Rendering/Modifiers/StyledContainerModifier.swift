@@ -16,9 +16,12 @@ public struct StyledContainerModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         content
-            .backgroundFill(fillColor)
-            .cornerRadius(cornerRadius)
-            .overlay(
+            .backgroundFill(fillColor, cornerRadius: cornerRadius)
+            .if(fillColor?.isGradient != true) { view in
+                view
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            }
+            .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
                     .stroke(borderColor?.toColor() ?? .clear, lineWidth: borderThickness)
                     .ignoresSafeArea()

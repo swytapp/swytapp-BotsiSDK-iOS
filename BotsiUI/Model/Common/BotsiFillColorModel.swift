@@ -56,8 +56,22 @@ extension BotsiFillColor: Decodable {
     }
     
     private static func parseGradient(from css: String) -> LinearGradient? {
-        let pattern = #"linear-gradient\(([\d.]+)deg, (.+)\)"#
+        guard let (angle, colorStopsString) = extractGradientComponents(from: css) else {
+            return nil
+        }
+        
+        guard let stops = parseColorStops(from: colorStopsString), stops.count >= 2 else {
+            return nil
+        }
+        
+        let (startPoint, endPoint) = calculateGradientPoints(for: angle)
+        return LinearGradient(stops: stops, startPoint: startPoint, endPoint: endPoint)
+    }
+    
+    private static func extractGradientComponents(from css: String) -> (angle: Double, colorStops: String)? {
+        let pattern = #"linear-gradient\(([\d.]+)deg,\s*((?:rgba?\([^)]+\)\s*\d+%)(?:\s*,\s*rgba?\([^)]+\)\s*\d+%)*)\)"#
         let regex = try? NSRegularExpression(pattern: pattern, options: [])
+        
         guard
             let match = regex?.firstMatch(in: css, range: NSRange(location: 0, length: css.utf16.count)),
             match.numberOfRanges == 3,
@@ -67,20 +81,51 @@ extension BotsiFillColor: Decodable {
             return nil
         }
         
-        let _ = Double(css[angleRange])
-        let colorStopsString = css[colorsRange]
-        let stops = colorStopsString
-            .split(separator: ",")
-            .compactMap { stop -> Color? in
-                let parts = stop.split(separator: " ").map { $0.trimmingCharacters(in: .whitespaces) }
-                if let rgbPart = parts.first {
-                    return Color.cssCompatible(String(rgbPart))
-                }
-                return nil
-            }
+        let angle = Double(css[angleRange]) ?? 0
+        let colorStopsString = String(css[colorsRange])
+        return (angle, colorStopsString)
+    }
+    
+    private static func parseColorStops(from colorStopsString: String) -> [Gradient.Stop]? {
+        let colorStopPattern = #"(rgba?\([^)]+\))\s*(\d+)%"#
+        let colorStopRegex = try? NSRegularExpression(pattern: colorStopPattern, options: [])
+        let matches = colorStopRegex?.matches(in: colorStopsString, range: NSRange(location: 0, length: colorStopsString.utf16.count)) ?? []
         
-        guard stops.count >= 2 else { return nil }
-        return LinearGradient(colors: stops, startPoint: .leading, endPoint: .trailing)
+        let stops = matches.compactMap { match -> Gradient.Stop? in
+            guard match.numberOfRanges == 3,
+                  let colorRange = Range(match.range(at: 1), in: colorStopsString),
+                  let positionRange = Range(match.range(at: 2), in: colorStopsString),
+                  let color = Color.cssCompatible(String(colorStopsString[colorRange])),
+                  let position = Double(colorStopsString[positionRange])
+            else { return nil }
+            
+            return Gradient.Stop(color: color, location: position / 100.0)
+        }
+        
+        return stops.sorted { $0.location < $1.location }
+    }
+    
+    private static func calculateGradientPoints(for angle: Double) -> (start: UnitPoint, end: UnitPoint) {
+        switch angle {
+        case 0...44:
+            return (.bottom, .top)
+        case 45...89:
+            return (.bottomLeading, .topTrailing)
+        case 90...134:
+            return (.leading, .trailing)
+        case 135...179:
+            return (.topLeading, .bottomTrailing)
+        case 180...224:
+            return (.top, .bottom)
+        case 225...269:
+            return (.topTrailing, .bottomLeading)
+        case 270...314:
+            return (.trailing, .leading)
+        case 315...360:
+            return (.bottomTrailing, .topLeading)
+        default:
+            return (.bottom, .top)
+        }
     }
 }
 

@@ -12,9 +12,11 @@ public struct BotsiFooterBlockView: View {
     
     private var footer: BotsiFooterHelper
     private let additionalPadding: BotsiEdge = .init(left: 8, top: 0, right: 8, bottom: 0)
+    private let onHeightChange: ((CGFloat) -> Void)?
     
-    public init(model: BotsiFooterHelper) {
+    public init(model: BotsiFooterHelper, onHeightChange: ((CGFloat) -> Void)? = nil) {
         self.footer = model
+        self.onHeightChange = onHeightChange
     }
     
     public var body: some View {
@@ -28,6 +30,17 @@ public struct BotsiFooterBlockView: View {
             }
         }
         .padding(.top, 15)
+        .background(
+            GeometryReader { contentGeometry in
+                Color.clear
+                    .onAppear {
+                        onHeightChange?(contentGeometry.size.height)
+                    }
+                    .onChange(of: contentGeometry.size.height) { newHeight in
+                        onHeightChange?(newHeight)
+                    }
+            }
+        )
         .styledContainer(
             fillColor: footer.model.style.fillColor,
             borderColor: footer.model.style.borderColor,
