@@ -22,7 +22,7 @@ struct BotsiTimerBlockView: View {
         VStack {
             Text(viewModel.fullText)
                 .foregroundFill(model.style.color)
-                .font(.system(size: model.style.size?.toCGFloat() ?? 14))
+                .font(.system(size: model.style.size.toCGFloat() ?? 14))
                 .lineLimit(1)
                 .minimumScaleFactor(0.01)
                 .allowsTightening(true)

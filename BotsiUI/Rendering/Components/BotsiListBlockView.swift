@@ -29,20 +29,14 @@ public struct BotsiListBlockView: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: itemSpacing) {
-            ForEach(Array(items.enumerated()), id: \.1.safeID) { index, item in
-                BotsiListItemView(
-                    item: item,
-                    connectorThickness: item.thickness,
-                    connectorColor: item.connectorColor,
-                )
+        VStack(alignment: .leading, spacing: model.itemSpacing) {
+            ForEach(Array(items.enumerated()), id: \.1.safeID) { _, item in
+                BotsiListItemView(item: item,
+                                  imageSize: model.imageSize,
+                                  textSpacing: model.textSpacing,
+                                  iconAlignment: model.iconPlacement.alignments.vertical)
             }
         }
         .frame(maxWidth: .infinity)
-    }
-
-    private var itemSpacing: CGFloat {
-        guard let string = model.itemSpacing, let value = Double(string) else { return 8 }
-        return value
     }
 }

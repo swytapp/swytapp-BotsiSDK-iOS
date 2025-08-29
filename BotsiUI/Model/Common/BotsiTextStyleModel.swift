@@ -7,9 +7,9 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiTextStyleModel: Decodable, Sendable {
-    public let font: BotsiFontModel?
-    public let size: String?
+public struct BotsiTextStyleModel: Decodable, Sendable, BotsiPropertiesProvider {
+    public let font: BotsiLayoutModel.DefaultFont
+    public let size: String
     public let align: BotsiAlign?
     public let color: BotsiFillColor
     public let opacity: Int?

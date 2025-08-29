@@ -12,13 +12,13 @@ public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let padding: BotsiEdge
     public let verticalOffset: String?
-    public let itemSpacing: String?
-    public let textSpacing: String?
+    public let itemSpacingString: String?
+    public let textSpacingString: String?
     public let width: String?
     public let height: String?
     
     public let defaultIcon: String?
-    public let iconPlacement: String?
+    public let iconPlacement: BotsiAlign
     public let defaultColor: String?
     public let defaultOpacity: Int?
     
@@ -28,12 +28,24 @@ public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let titleTextStyle: BotsiTextStyleModel?
     public let captionTextStyle: BotsiTextStyleModel?
+
+    public var imageSize: CGSize {
+        CGSize(width: width?.toCGFloat() ?? 30, height: height?.toCGFloat() ?? 30)
+    }
+
+    public var textSpacing: CGFloat {
+        textSpacingString?.toCGFloat() ?? 0
+    }
+
+    public var itemSpacing: CGFloat {
+        itemSpacingString?.toCGFloat() ?? 8
+    }
     
     private enum CodingKeys: String, CodingKey {
         case padding, width, height
         case verticalOffset = "vertical_offset"
-        case itemSpacing = "item_spacing"
-        case textSpacing = "text_spacing"
+        case itemSpacingString = "item_spacing"
+        case textSpacingString = "text_spacing"
         case defaultIcon = "default_icon"
         case iconPlacement = "icon_placement"
         case defaultColor = "default_color"

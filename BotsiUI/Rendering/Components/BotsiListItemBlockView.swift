@@ -11,70 +11,72 @@ import SwiftUI
 public struct BotsiListItemView: View {
     
     let item: BotsiListItemModel
-    let connectorThickness: CGFloat
-    let connectorColor: BotsiFillColor?
-
+    let imageSize: CGSize
+    let textSpacing: CGFloat
+    let iconAlignment: VerticalAlignment
+    
     public var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 10) {
-                ZStack {
-                    if connectorThickness > 0 {
-                        Color.clear
-                            .frame(width: connectorThickness)
-                            .frame(maxHeight: .infinity)
-                            .backgroundFill(connectorColor)
-                            .offset(y: geometry.size.height / 2)
-                    }
-                    
-                    iconView
-                        .frame(width: 30, height: 30)
-                }
-                
-                VStack(alignment: .leading, spacing: 0) {
-                    if let title = item.titleText ?? item.titleTextFallback {
-                        Text(title)
-                            .foregroundFill(item.titleTextStyle?.color)
-                            .font(.system(size: 12))
-                    }
-                    
-                    if let caption = item.captionText ?? item.captionTextFallback {
-                        Text(caption)
-                            .foregroundFill(item.captionTextStyle?.color)
-                            .font(.system(size: 10))
-                    }
-                }
-                
-                Spacer()
+        HStack(alignment: iconAlignment, spacing: 10) {
+            VStack(spacing: 0) {
+                iconView
+                connectorViewIfNeeded()
             }
-            .frame(maxWidth: .infinity)
+            
+            VStack(spacing: textSpacing) {
+                titleView
+                captionView
+            }
         }
     }
+}
 
+// MARK: - Left VStack
+@available(iOS 15.0, *)
+private extension BotsiListItemView {
     @ViewBuilder
-    private var iconView: some View {
-        if let icon = item.icon, let url = URL(string: icon), icon.lowercased().hasPrefix("http") {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                case .success(let image):
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                case .failure:
-                    fallbackIcon
-                @unknown default:
-                    fallbackIcon
-                }
-            }
-        } else {
-            fallbackIcon
+    var iconView: some View {
+        if let iconURL = item.icon {
+            BotsiImageBlockView(url: iconURL,
+                                size: imageSize,
+                                aspect: .fit)
+            .padding(-5)
         }
     }
+}
 
-    private var fallbackIcon: some View {
-        Image(systemName: "checkmark.circle")
-            .resizable()
-            .aspectRatio(contentMode: .fit)
+// MARK: - Right VStack
+@available(iOS 15.0, *)
+private extension BotsiListItemView {
+    
+    @ViewBuilder
+    func connectorViewIfNeeded() -> some View {
+        if item.thickness > 0 {
+            Divider()
+                .frame(width: item.thickness)
+                .frame(maxHeight: .infinity)
+                .backgroundFill(item.connectorColor)
+        }
+    }
+    
+    @ViewBuilder
+    var titleView: some View {
+        if let titleProperties = item.titleTextStyle,
+           let title = item.titleText ?? item.titleTextFallback {
+            BotsiTextBlockView(
+                propertiesProvider: titleProperties,
+                text: title,
+            )
+        }
+    }
+    
+    @ViewBuilder
+    var captionView: some View {
+        if let captionProperties = item.captionTextStyle,
+           let caption = item.captionText ?? item.captionTextFallback {
+            BotsiTextBlockView(
+                propertiesProvider: captionProperties,
+                text: caption,
+            )
+        }
     }
 }

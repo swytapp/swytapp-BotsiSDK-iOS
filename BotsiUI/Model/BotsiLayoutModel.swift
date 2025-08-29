@@ -230,18 +230,24 @@ public enum TemplateContainer: Decodable, Sendable {
 }
 
 public enum BotsiAlign: String, Codable, Sendable {
-    case left = "left"
-    case center = "center"
-    case right = "right"
+    case left
+    case center
+    case right
+    case bottom
+    case top
     
-    public var alignments: (horizontal: HorizontalAlignment, frame: Alignment, text: TextAlignment) {
+    public var alignments: (horizontal: HorizontalAlignment, vertical: VerticalAlignment, frame: Alignment, text: TextAlignment) {
         switch self {
         case .left:
-            return (.leading, .leading, .leading)
+            return (.leading, .center, .leading, .leading)
         case .center:
-            return (.center, .center, .center)
+            return (.center, .center, .center, .center)
         case .right:
-            return (.trailing, .trailing, .trailing)
+            return (.trailing, .center, .trailing, .trailing)
+        case .bottom:
+            return (.leading, .bottom, .bottom, .leading)
+        case .top:
+            return (.leading, .top, .top, .leading)
         }
     }
 }
