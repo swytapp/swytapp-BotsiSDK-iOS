@@ -8,23 +8,21 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-private struct BackgroundFillModifier: ViewModifier {
+public struct BackgroundFillModifier: ViewModifier {
     let fill: BotsiFillColor?
-    let cornerRadius: CGFloat
     
-    func body(content: Content) -> some View {
+    public func body(content: Content) -> some View {
+        content.background(backgroundView)
+    }
+    
+    @ViewBuilder
+    private var backgroundView: some View {
         switch fill {
         case .solid(let color):
-            content
-                .background(color)
+            color
         case .gradient(let gradient):
-            content
-                .background(
-                    gradient
-                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-                        .ignoresSafeArea()
-                )
-        default:
+            gradient
+        case .none:
             Color.clear
         }
     }
@@ -32,7 +30,7 @@ private struct BackgroundFillModifier: ViewModifier {
 
 @available(iOS 15.0, *)
 public extension View {
-    func backgroundFill(_ fill: BotsiFillColor?, cornerRadius: CGFloat = 0) -> some View {
-        self.modifier(BackgroundFillModifier(fill: fill, cornerRadius: cornerRadius))
+    func backgroundFill(_ fill: BotsiFillColor?) -> some View {
+        self.modifier(BackgroundFillModifier(fill: fill))
     }
 }

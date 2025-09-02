@@ -16,22 +16,28 @@ public struct StyledContainerModifier: ViewModifier {
     
     public func body(content: Content) -> some View {
         content
-            .backgroundFill(fillColor, cornerRadius: cornerRadius)
-            .if(fillColor?.isGradient != true) { view in
-                view
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+            .backgroundFill(fillColor)
+            .if(cornerRadius > 0) { view in
+                view.clipShape(RoundedRectangle(cornerRadius: cornerRadius))
             }
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(borderColor?.toColor() ?? .clear, lineWidth: borderThickness)
-                    .ignoresSafeArea()
-            )
+            .if(borderThickness > 0) { view in
+                view.overlay(
+                    RoundedRectangle(cornerRadius: cornerRadius)
+                        .stroke(borderColor?.toColor() ?? .clear, lineWidth: borderThickness)
+                )
+            }
     }
 }
 
 @available(iOS 15.0, *)
 public extension View {
-    func styledContainer(fillColor: BotsiFillColor?, borderColor: BotsiFillColor?, borderThickness: CGFloat, cornerRadius: CGFloat) -> some View {
-        modifier(StyledContainerModifier(fillColor: fillColor, borderColor: borderColor, borderThickness: borderThickness, cornerRadius: cornerRadius))
+    func styledContainer(fillColor: BotsiFillColor?,
+                         borderColor: BotsiFillColor? = nil,
+                         borderThickness: CGFloat = 0,
+                         cornerRadius: CGFloat = 0) -> some View {
+        modifier(StyledContainerModifier(fillColor: fillColor,
+                                         borderColor: borderColor,
+                                         borderThickness: borderThickness,
+                                         cornerRadius: cornerRadius))
     }
 }

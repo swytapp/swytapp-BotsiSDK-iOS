@@ -41,8 +41,8 @@ public struct BotsiBlockRendererView: View {
             BotsiListBlockView(block: block)
             
         case .card(let model):
-            let vm = BotsiCardViewModel(block: block, model: model)
-            BotsiCardBlockView(viewModel: vm)
+            let helper = BotsiCardHelper(block: block, model: model)
+            BotsiCardBlockView(helper: helper)
             
         case .products(let model):
             BotsiProductRendererView(block: block, onAction: onAction)

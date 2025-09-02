@@ -8,92 +8,51 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct TopButtonsOverlayView: View {
+public struct TopButtonsOverlayView: View {
     
     let buttons: [BotsiLayoutModel.TopButton]
     var tap: (BotsiActionType) -> Void
     
     public var body: some View {
-        VStack {
-            HStack {
-                buttonGroup(for: .left)
-                Spacer()
-                buttonGroup(for: .center)
-                Spacer()
-                buttonGroup(for: .right)
+        Color.clear
+            .overlay(alignment: .topLeading) {
+                buttonIfNeeded(for: .left)
             }
-            .padding(.horizontal, 16)
-            Spacer()
-        }
-        .zIndex(1000)
+            .overlay(alignment: .top) {
+                buttonIfNeeded(for: .center)
+            }
+            .overlay(alignment: .topTrailing) {
+                buttonIfNeeded(for: .right)
+            }
+            .padding(.horizontal, 12)
     }
     
-    private func buttonGroup(for align: BotsiAlign) -> some View {
-        let filtered = buttons.filter { $0.buttonAlign == align }
-        return HStack(spacing: 8) {
-            ForEach(filtered) { button in
-                TopButtonView(button: button) { action in
-                    tap(action)
-                }
-            }
+    private func buttonIfNeeded(for align: BotsiAlign) -> AnyView {
+        if let button = buttons.first(where: { $0.buttonAlign == align }) {
+            return AnyView(topButton(for: button))
+        }
+        return AnyView(EmptyView())
+    }
+    
+    private func topButton(for button: BotsiLayoutModel.TopButton) -> some View {
+        TopButtonView(button: button) { action in
+            tap(action)
         }
     }
 }
 
 @available(iOS 15.0, *)
-struct TopButtonView: View {
+public struct TopButtonView: View {
     
     let button: BotsiLayoutModel.TopButton
     var tap: (BotsiActionType) -> Void
     
-    var body: some View {
-        switch button.buttonType {
-        case .icon:
-            IconButton()
-        case .text:
-            TextButton()
-        default:
-            EmptyView()
-        }
-    }
-    
-    private func IconButton() -> some View {
+    public var body: some View {
         Button(action: {
             guard let actionId = button.actionId else { return }
             tap(actionId)
         }) {
-            Image(systemName: systemIconName(for: button.icon.type))
-                .resizable()
-                .scaledToFit()
-                .frame(width: 8, height: 8)
-                .foregroundColor(button.icon.color.toColor().opacity(button.iconOpacity))
-                .padding(12)
-        }
-        .background(
-            shapeFill(Circle(), fill: button.style.fillColor)
-                .frame(width: 30)
-        )
-        .overlay(
-            Circle()
-                .inset(by: button.style.borderThickness.toCGFloat() / 2)
-                .stroke(button.style.borderColor.toColor() ?? .clear,
-                        lineWidth: button.style.borderThickness.toCGFloat())
-        )
-        .disabled(!button.enabled)
-    }
-    
-    private func TextButton() -> some View {
-        Button(action: {
-            guard let actionId = button.actionId else { return }
-            tap(actionId)
-        }) {
-            BotsiTextBlockView(propertiesProvider: button.text,
-                               text: button.text.text,
-                               align: .center,
-                               opacity: Double(button.text.opacity ?? 100))
-                               .padding(.vertical, 2)
-                               .padding(.horizontal, 12)
-                               .fixedSize(horizontal: true, vertical: false)
+            buttonContent
         }
         .styledContainer(
             fillColor: button.style.fillColor,
@@ -101,6 +60,30 @@ struct TopButtonView: View {
             borderThickness: button.style.borderThickness.toCGFloat(),
             cornerRadius: button.style.radius.toCGFloat()
         )
+        .disabled(!button.enabled)
+    }
+    
+    @ViewBuilder
+    private var buttonContent: some View {
+        switch button.buttonType {
+        case .icon:
+            Image(systemName: systemIconName(for: button.icon.type))
+                .resizable()
+                .scaledToFit()
+                .frame(width: 8, height: 8)
+                .foregroundColor(button.icon.color.toColor().opacity(button.iconOpacity))
+                .padding(12)
+        case .text:
+            BotsiTextBlockView(propertiesProvider: button.text,
+                               text: button.text.text,
+                               align: .center,
+                               opacity: Double(button.text.opacity ?? 100))
+            .padding(.vertical, 4)
+            .padding(.horizontal, 14)
+            .fixedSize(horizontal: true, vertical: false)
+        default:
+            EmptyView()
+        }
     }
     
     private func systemIconName(for type: String) -> String {
@@ -110,48 +93,4 @@ struct TopButtonView: View {
         default: return "questionmark"
         }
     }
-    
-    private func shapeFill<S: Shape>(_ shape: S, fill: BotsiFillColor?) -> some View {
-        Group {
-            if let fill = fill {
-                switch fill {
-                case .solid(let color):
-                    shape.fill(color)
-                case .gradient(let gradient):
-                    shape.fill(gradient)
-                }
-            } else {
-                shape.fill(Color.clear)
-            }
-        }
-    }
 }
-
-#Preview {
-    Button(action: {
-        
-    }) {
-        Image(systemName: "xmark")
-            .resizable()
-            .scaledToFit()
-            .frame(width: 12, height: 12)
-            .foregroundColor(Color.red
-                .opacity(Double(100)))
-            .padding(12)
-    }
-    .frame(width: 45, height: 45)
-    .background(
-        Circle()
-            .fill(Color(red: 0/255, green: 207/255, blue: 131/255, opacity: 1))
-            .frame(width: 30)
-    )
-    .overlay(
-        Circle()
-            .stroke(
-                Color.red
-                    .opacity(Double(100)),
-                lineWidth: CGFloat(0)
-            )
-    )
-}
-

@@ -11,7 +11,7 @@ import Foundation
 public struct BotsiCardModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let style: BotsiStyleModel
-    public let backgroundImage: String
+    public let backgroundImage: String?
     public let padding: BotsiEdge
     public let verticalOffset: String?
     public let contentLayout: BotsiContentLayout

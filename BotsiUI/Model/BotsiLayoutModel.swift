@@ -96,7 +96,7 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let enabled: Bool
         public let actionId: BotsiActionType?
         public let buttonType: BotsiButtonType?
-        public let buttonAlign: BotsiAlign?
+        public let buttonAlign: BotsiAlign
         public let delay: Int
         public let style: BotsiButtonStyle
         public let text: ButtonText

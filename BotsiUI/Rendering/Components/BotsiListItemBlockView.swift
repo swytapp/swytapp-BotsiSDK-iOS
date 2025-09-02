@@ -18,8 +18,12 @@ public struct BotsiListItemView: View {
     public var body: some View {
         HStack(alignment: iconAlignment, spacing: 10) {
             VStack(spacing: 0) {
-                iconView
-                connectorViewIfNeeded()
+                if item.icon != nil && item.icon != "" {
+                    iconView
+                    connectorViewIfNeeded()
+                } else {
+                    connectorViewIfNeeded()
+                }
             }
             
             VStack(spacing: textSpacing) {

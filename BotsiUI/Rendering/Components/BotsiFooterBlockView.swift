@@ -10,6 +10,8 @@ import SwiftUI
 @available(iOS 15.0, *)
 public struct BotsiFooterBlockView: View {
     
+    @Environment(\.safeAreaInsets) private var safeAreaInsets
+
     private var footer: BotsiFooterHelper
     private let additionalPadding: BotsiEdge = .init(left: 8, top: 0, right: 8, bottom: 0)
     private let onHeightChange: ((CGFloat) -> Void)?
@@ -30,6 +32,7 @@ public struct BotsiFooterBlockView: View {
             }
         }
         .padding(.top, 15)
+        .padding(.bottom, safeAreaInsets.bottom)
         .background(
             GeometryReader { contentGeometry in
                 Color.clear
@@ -45,7 +48,7 @@ public struct BotsiFooterBlockView: View {
             fillColor: footer.model.style.fillColor,
             borderColor: footer.model.style.borderColor,
             borderThickness: footer.model.style.borderThickness ?? 0,
-            cornerRadius: footer.radius
+            cornerRadius: footer.radius,
         )
     }
 }

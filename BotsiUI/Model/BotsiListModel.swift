@@ -11,7 +11,7 @@ import Foundation
 public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let padding: BotsiEdge
-    public let verticalOffset: String?
+    public let verticalOffsetString: String?
     public let itemSpacingString: String?
     public let textSpacingString: String?
     public let width: String?
@@ -40,10 +40,14 @@ public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     public var itemSpacing: CGFloat {
         itemSpacingString?.toCGFloat() ?? 8
     }
+
+    public var verticalOffset: CGFloat {
+        verticalOffsetString?.toCGFloat() ?? 0
+    }
     
     private enum CodingKeys: String, CodingKey {
         case padding, width, height
-        case verticalOffset = "vertical_offset"
+        case verticalOffsetString = "vertical_offset"
         case itemSpacingString = "item_spacing"
         case textSpacingString = "text_spacing"
         case defaultIcon = "default_icon"
@@ -63,8 +67,10 @@ public struct BotsiListItemModel: Decodable, Sendable, Identifiable {
     
     public let id: String?
     
-    public var safeID: String {
-        id ?? UUID().uuidString
+    public var uniqueID: String {
+        // Create a stable unique identifier based on content
+        let contentHash = "\(icon ?? "")-\(titleText ?? "")-\(captionText ?? "")"
+        return id ?? String(contentHash.hash)
     }
     
     public let icon: String?

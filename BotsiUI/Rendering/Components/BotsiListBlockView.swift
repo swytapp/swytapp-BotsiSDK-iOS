@@ -30,7 +30,7 @@ public struct BotsiListBlockView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: model.itemSpacing) {
-            ForEach(Array(items.enumerated()), id: \.1.safeID) { _, item in
+            ForEach(items, id: \.uniqueID) { item in
                 BotsiListItemView(item: item,
                                   imageSize: model.imageSize,
                                   textSpacing: model.textSpacing,
@@ -38,5 +38,6 @@ public struct BotsiListBlockView: View {
             }
         }
         .frame(maxWidth: .infinity)
+        .offset(y: model.verticalOffset)
     }
 }

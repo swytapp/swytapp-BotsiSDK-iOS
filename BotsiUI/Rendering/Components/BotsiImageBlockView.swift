@@ -22,8 +22,8 @@ public struct BotsiImageBlockView: View {
     }
     
     public init(url: String,
-                size: CGSize,
-                aspect: BotsiImageAspect = .fit,
+                size: CGSize? = nil,
+                aspect: BotsiImageAspect = .fill,
                 imageModifier: ((Image) -> AnyView)? = nil) {
         self.model = BotsiImageModel(image: url, aspect: aspect)
         self.size = size
@@ -39,7 +39,7 @@ public struct BotsiImageBlockView: View {
                     case .success(let image):
                         imageView(from: image)
                     case .empty:
-                        ProgressView()
+                        Color.clear
                     case .failure, _:
                         Color.clear
                     }

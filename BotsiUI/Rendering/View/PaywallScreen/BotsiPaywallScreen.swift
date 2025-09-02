@@ -19,28 +19,35 @@ public struct BotsiPaywallScreen: View {
     }
     
     public var body: some View {
-        GeometryReader { proxy in
-            VStack {
-                ZStack {
-                    heroContent(proxy)
-                    scrollContent(proxy)
-                    topButtons
+        CustomGeometryReaderView { size in
+            GeometryReader { proxy in
+                VStack {
+                    ZStack {
+                        topButtons(with: proxy.safeAreaInsets.top)
+                        heroContent(proxy)
+                        scrollContent(proxy)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .navigationBarHidden(true)
+                    .navigationBarBackButtonHidden(true)
                 }
-                .frame(maxWidth: .infinity)
-                .navigationBarHidden(true)
-                .navigationBarBackButtonHidden(true)
+                .overlay(alignment: .top) {
+                    topButtons(with: proxy.safeAreaInsets.top)
+                }
+                .overlay(alignment: .bottom) {
+                    footerContent
+                }
+                .if(vm.heroImage?.style != .transparent, transform: {
+                    $0.backgroundFill(vm.layoutVM?.fillColor)
+                })
+                .withScreenSize(screenSize(for: proxy))
+                .withSafeArea(proxy.safeAreaInsets)
+                .ignoresSafeArea()
             }
-            .overlay(alignment: .bottom) {
-                footerContent
-            }
-            .if(vm.heroImage?.style != .transparent, transform: {
-                $0.backgroundFill(vm.layoutVM?.fillColor)
-            })
-            .withScreenSize(screenSize(for: proxy))
         }
     }
     
-    func screenSize(for proxy: GeometryProxy) -> CGSize {
+    private func screenSize(for proxy: GeometryProxy) -> CGSize {
         CGSize(width: proxy.size.width + proxy.safeAreaInsets.leading + proxy.safeAreaInsets.trailing,
                height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom)
     }
@@ -65,7 +72,7 @@ private extension BotsiPaywallScreen {
     }
     
     @ViewBuilder
-    private func overlayHeroContent(_ heroImage: BotsiHeroImageModel, proxy: GeometryProxy) -> some View {
+    func overlayHeroContent(_ heroImage: BotsiHeroImageModel, proxy: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             BotsiHeroImageView(model: heroImage)
                 .frame(height: proxy.size.height * heroImage.heightPercent)
@@ -84,7 +91,7 @@ private extension BotsiPaywallScreen {
             VStack {
                 BotsiHeroImageView(model: heroImage)
                     .frame(height: imageSize.height)
-                    .if(shouldConstrainToSquare(heroImage, size: imageSize)) {
+                    .if(shouldConstrainToCircle(heroImage, size: imageSize)) {
                         $0.frame(width: imageSize.height, height: imageSize.height)
                     }
                     .mask(with: heroImage.shape, size: imageSize)
@@ -94,14 +101,14 @@ private extension BotsiPaywallScreen {
         }
     }
     
-    private func calculateImageSize(for heroImage: BotsiHeroImageModel, proxy: GeometryProxy) -> CGSize {
+    func calculateImageSize(for heroImage: BotsiHeroImageModel, proxy: GeometryProxy) -> CGSize {
         let horizontalPadding = vm.heroHorizontalPadding
         let height = screenSize(for: proxy).height * heroImage.heightPercent
         let width = screenSize(for: proxy).width - horizontalPadding
         return CGSize(width: width, height: height)
     }
     
-    private func shouldConstrainToSquare(_ heroImage: BotsiHeroImageModel, size: CGSize) -> Bool {
+    func shouldConstrainToCircle(_ heroImage: BotsiHeroImageModel, size: CGSize) -> Bool {
         heroImage.shape == .circle && size.height <= size.width
     }
 }
@@ -115,14 +122,19 @@ private extension BotsiPaywallScreen {
             VStack(spacing: 0) {
                 overlaySpacerIfNeeded(proxy)
                 mainContent(proxy)
+                footerFiller
             }
         }
         .ignoresSafeArea()
-        .padding(.bottom, footerHeight)
+    }
+
+    @ViewBuilder
+    var footerFiller: some View {
+        FooterPaddingFillerView(height: footerHeight)
     }
     
     @ViewBuilder
-    private func mainContent(_ proxy: GeometryProxy) -> some View {
+    func mainContent(_ proxy: GeometryProxy) -> some View {
         VStack(spacing: vm.layoutVM?.spacing) {
             flatHeroImageIfNeeded(proxy)
             contentBlocks
@@ -137,7 +149,7 @@ private extension BotsiPaywallScreen {
     }
     
     @ViewBuilder
-    private var contentBlocks: some View {
+    var contentBlocks: some View {
         ForEach(vm.contentBlocks, id: \.meta.id) { block in
             BotsiBlockRendererView(block: block) { action in
                 print("KA: \(action)")
@@ -161,11 +173,12 @@ private extension BotsiPaywallScreen {
 private extension BotsiPaywallScreen {
     
     @ViewBuilder
-    var topButtons: some View {
+    func topButtons(with padding: CGFloat) -> some View {
         if let buttons = vm.layoutVM?.model.buttons, !buttons.isEmpty {
             TopButtonsOverlayView(buttons: buttons) { action in
                 dismiss()
             }
+            .padding(.top, padding)
         }
     }
 }

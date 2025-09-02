@@ -8,36 +8,46 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct BotsiCardBlockView: View {
+public struct BotsiCardBlockView: View {
     
-    @StateObject private var vm: BotsiCardViewModel
-    
-    init(viewModel: BotsiCardViewModel) {
-        _vm = StateObject(wrappedValue: viewModel)
+    private let helper: BotsiCardHelper
+
+    public init(helper: BotsiCardHelper) {
+        self.helper = helper
     }
-    
-    var body: some View {
-        VStack(spacing: 0) {
-            ForEach(vm.children ?? [], id: \.meta.id) { child in
+
+    public var body: some View {
+        VStack(spacing: helper.spacing + 6) {
+            ForEach(helper.children, id: \.meta.id) { child in
                 switch child.content {
                 case .text, .image, .button, .list, .timer:
                     BotsiBlockRendererView(block: child) { action in
                         print("KA: \(action)")
                     }
+                    .padding(child.content?.padding)
                 default:
                     EmptyView()
                 }
             }
         }
-        .padding(.leading, vm.padding.left)
-        .padding(.top, vm.padding.top)
-        .padding(.trailing, vm.padding.right)
-        .padding(.bottom, vm.padding.bottom)
-        .background(vm.backgroundColor)
-        .overlay(
-            RoundedRectangle(cornerRadius: vm.cornerRadius)
-                .stroke(vm.borderColor, lineWidth: vm.borderWidth)
-        )
-        .cornerRadius(vm.cornerRadius)
+        .padding(helper.padding)
+        .background(backgroundImageIfNeeded())
+        .styledContainer(fillColor: helper.hasBackgroundImage ? nil : helper.fillColor,
+                         borderColor: helper.borderColor,
+                         borderThickness: helper.borderWidth, 
+                         cornerRadius: helper.cornerRadius)
+        .offset(y: helper.verticalOffset)
+    }
+}
+
+@available(iOS 15.0, *)
+private extension BotsiCardBlockView {
+    @ViewBuilder
+    func backgroundImageIfNeeded() -> some View {
+        if let backgroundImage = helper.backgroundImage {
+            BotsiImageBlockView(url: backgroundImage)
+        } else {
+            Color.clear
+        }
     }
 }
