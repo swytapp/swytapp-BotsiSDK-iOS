@@ -8,14 +8,14 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-public protocol BotsiPropertiesProvider {
+public protocol BotsiTextPropertiesProvider {
     var font: BotsiLayoutModel.DefaultFont { get }
     var size: String { get }
     var color: BotsiFillColor { get }
 }
 
 @available(iOS 15.0, *)
-extension BotsiPropertiesProvider {
+extension BotsiTextPropertiesProvider {
     var textSize: CGFloat {
         CGFloat(Double(size) ?? 14)
     }

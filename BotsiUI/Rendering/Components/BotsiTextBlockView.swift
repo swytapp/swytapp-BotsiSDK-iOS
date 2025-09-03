@@ -8,7 +8,7 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct BotsiTextBlockView<T: BotsiPropertiesProvider>: View {
+struct BotsiTextBlockView<T: BotsiTextPropertiesProvider>: View {
     
     private let textProvider: T
     private let text: String
@@ -45,7 +45,7 @@ struct BotsiTextBlockView<T: BotsiPropertiesProvider>: View {
             .lineLimit(options.maxLines)
             .offset(y: options.verticalOffset)
             .if(options.onOverflow == .scale) {
-                $0.minimumScaleFactor(0.5)
+                $0.minimumScaleFactor(0.3)
             }
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: options.align.alignments.frame)

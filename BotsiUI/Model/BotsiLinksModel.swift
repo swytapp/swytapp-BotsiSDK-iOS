@@ -22,6 +22,10 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
     public let verticalOffset: String
     public let contentLayout: BotsiContentLayout
 
+    public var spacing: CGFloat {
+        contentLayout.spacing?.toCGFloat() ?? 0
+    }
+
     public struct LinkItem: Codable, Sendable {
         public let text: String
         public let url: String?
@@ -45,19 +49,21 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
         }
     }
 
-    public struct Style: Decodable, Sendable {
+    public struct Style: Decodable, Sendable, BotsiTextPropertiesProvider {
         public let font: BotsiLayoutModel.DefaultFont
         public let size: String
         public let color: BotsiFillColor
-        public let dividersColor: String?
-        public let dividersOpacity: String?
-        public let dividersThickness: String?
+        public let dividersColor: BotsiFillColor?
+        public let dividersThicknessString: String?
+
+        public var dividersThickness: CGFloat {
+            dividersThicknessString?.toCGFloat() ?? 0
+        }
 
         private enum CodingKeys: String, CodingKey {
             case font, size, color, opacity
             case dividersColor = "dividers_color"
-            case dividersOpacity = "dividers_opacity"
-            case dividersThickness = "dividers_thickness"
+            case dividersThicknessString = "dividers_thickness"
         }
 
         public init(from decoder: Decoder) throws {
@@ -65,14 +71,8 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
             font = try container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font)
             size = try container.decode(String.self, forKey: .size)
             color = try container.decode(BotsiFillColor.self, forKey: .color)
-            dividersColor = try container.decodeIfPresent(String.self, forKey: .dividersColor)
-            dividersThickness = try container.decodeIfPresent(String.self, forKey: .dividersThickness)
-
-            if let intValue = try? container.decode(Int.self, forKey: .dividersOpacity) {
-                dividersOpacity = String(intValue)
-            } else {
-                dividersOpacity = try container.decodeIfPresent(String.self, forKey: .dividersOpacity)
-            }
+            dividersColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .dividersColor)
+            dividersThicknessString = try container.decodeIfPresent(String.self, forKey: .dividersThicknessString)
         }
     }
 

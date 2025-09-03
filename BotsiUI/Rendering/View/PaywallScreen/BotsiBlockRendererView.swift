@@ -27,9 +27,7 @@ public struct BotsiBlockRendererView: View {
             
         case .links(let model):
             let vm = BotsiLinksViewModel(model)
-            BotsiLinksBlockView(model: model) { action in
-                print("KA: Links action: \(action)")
-            }
+            BotsiLinksBlockView(model: model)
             
         case .timer(let model):
             BotsiTimerBlockView(model: model)

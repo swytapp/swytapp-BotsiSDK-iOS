@@ -9,91 +9,121 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct BotsiLinksBlockView: View {
+    private enum ButtonType: String {
+        case termsOfService
+        case privacyPolicy
+        case restore
+        case login
+    }
     
     let model: BotsiLinksModel
-    let onLinkTap: (String) -> Void
     
     public var body: some View {
         layoutStack {
-            ForEach(linkButtons, id: \.id) { item in
-                item.view
-                if item.id != linkButtons.last?.id {
-                    dividerView
-                }
-            }
+            termsOfServiceIfNeeded
+            privacyPolicyIfNeeded
+            restoreButtonIfNeeded
+            loginButtonIfNeeded
         }
-        .padding(.leading, model.padding.left)
-        .padding(.top, model.padding.top)
-        .padding(.trailing, model.padding.right)
-        .padding(.bottom, model.padding.bottom)
-        .offset(y: CGFloat(Double(model.verticalOffset) ?? 0))
+        .padding(model.padding)
+        .offset(y: model.verticalOffset.toCGFloat())
     }
-
-    private var linkButtons: [(id: String, view: AnyView)] {
-        var items: [(String, AnyView)] = []
-        
-        if model.hasTermOfService, let tos = model.termOfService {
-            items.append((tos.text, AnyView(linkButton(for: tos))))
-        }
-        if model.hasPrivacyPolicy, let pp = model.privacyPolicy {
-            items.append((pp.text, AnyView(linkButton(for: pp))))
-        }
-        if model.hasRestoreButton, let restore = model.restoreButton {
-            items.append((restore.text, AnyView(actionButton(for: restore, type: "restore"))))
-        }
-        if model.hasLoginButton, let login = model.loginButton {
-            items.append((login.text, AnyView(actionButton(for: login, type: "login"))))
-        }
-        return items
-    }
-
+    
     @ViewBuilder
     private func layoutStack<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         if model.contentLayout.layout == .horizontal {
-            HStack(alignment: .center, spacing: model.contentLayout.spacing?.toCGFloat() ?? 8) {
+            HStack(alignment: .center, spacing: model.spacing) {
                 content()
             }
             .frame(maxWidth: .infinity, alignment: .center)
         } else {
-            VStack(spacing: model.contentLayout.spacing?.toCGFloat() ?? 8) {
+            VStack(spacing: model.spacing) {
                 content()
             }
             .frame(maxWidth: .infinity, alignment: .center)
         }
     }
+}
 
-    private func linkButton(for item: BotsiLinksModel.LinkItem) -> some View {
-        Button(action: {
-            onLinkTap(item.url ?? item.text)
-        }) {
-            Text(item.text)
-                .font(.system(size: model.style.size.toCGFloat() ?? 12))
-                .foregroundFill(model.style.color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
+// MARK: - Links
+@available(iOS 15.0, *)
+private extension BotsiLinksBlockView {
+    @ViewBuilder
+    private var termsOfServiceIfNeeded: some View {
+        if model.hasTermOfService, let tos = model.termOfService {
+            button(for: tos)
+            addDividerIfNeeded(after: .termsOfService)
         }
     }
-
-    private func actionButton(for item: BotsiLinksModel.LinkItem, type: String) -> some View {
-        Button(action: {
-            onLinkTap(type)
-        }) {
-            Text(item.text)
-                .font(.system(size: model.style.size.toCGFloat() ?? 12))
-                .foregroundFill(model.style.color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
+    
+    @ViewBuilder
+    private var privacyPolicyIfNeeded: some View {
+        if model.hasPrivacyPolicy, let pp = model.privacyPolicy {
+            button(for: pp)
+            addDividerIfNeeded(after: .privacyPolicy)
         }
     }
+    
+    @ViewBuilder
+    private var restoreButtonIfNeeded: some View {
+        if model.hasRestoreButton, let restore = model.restoreButton {
+            button(for: restore, type: .restore)
+            addDividerIfNeeded(after: .restore)
+        }
+    }
+    
+    @ViewBuilder
+    private var loginButtonIfNeeded: some View {
+        if model.hasLoginButton, let login = model.loginButton {
+            button(for: login, type: .login)
+        }
+    }
+    
+    private func button(for item: BotsiLinksModel.LinkItem, type: ButtonType? = nil) -> some View {
+        Button(action: {
+            
+        }) {
+            BotsiTextBlockView(
+                propertiesProvider: model.style,
+                text: item.text,
+                align: .center,
+                onOverflow: .scale
+            )
+            .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+    
+    private func addDividerIfNeeded(after buttonType: ButtonType) -> some View {
+        let shouldShow = shouldAddDivider(for: buttonType)
+        return Group {
+            if shouldShow { dividerView }
+        }
+    }
+    
+    private func shouldAddDivider(for buttonType: ButtonType) -> Bool {
+        // Don't show dividers for vertical layout
+        guard model.contentLayout.layout == .horizontal else { return false }
+        
+        switch buttonType {
+        case .termsOfService:
+            return model.hasPrivacyPolicy || model.hasRestoreButton || model.hasLoginButton
+        case .privacyPolicy:
+            return model.hasRestoreButton || model.hasLoginButton
+        case .restore:
+            return model.hasLoginButton
+        case .login:
+            return false
+        }
+    }
+}
 
+// MARK: - Divider
+@available(iOS 15.0, *)
+private extension BotsiLinksBlockView {
     @ViewBuilder
     private var dividerView: some View {
         Rectangle()
-            .fill(Color(hex: model.style.dividersColor ?? "#ffffff")
-                .opacity(Double(model.style.dividersOpacity?.toCGFloat() ?? 0) ?? 100 / 100))
-            .frame(width: model.contentLayout.layout == .horizontal ? 1 : nil,
-                   height: model.contentLayout.layout == .horizontal ? nil : 1)
-            .padding(.vertical, 4)
-            .padding(.horizontal, 4)
+            .fill(model.style.dividersColor?.toColor() ?? .clear)
+            .frame(width: model.style.dividersThickness)
     }
 }

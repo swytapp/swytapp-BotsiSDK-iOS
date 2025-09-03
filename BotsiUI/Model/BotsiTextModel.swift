@@ -17,7 +17,7 @@ public struct BotsiTextModel: Decodable, Sendable, BotsiPaddingProvider {
     public let padding: BotsiEdge
     public let verticalOffset: String?
     
-    public struct TextBlock: Decodable, Sendable, BotsiPropertiesProvider {
+    public struct TextBlock: Decodable, Sendable, BotsiTextPropertiesProvider {
         public let text: String
         public let textFallback: String?
         public let font: BotsiLayoutModel.DefaultFont

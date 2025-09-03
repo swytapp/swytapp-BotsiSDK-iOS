@@ -49,7 +49,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         }
     }
 
-    public struct ButtonText: Decodable, Sendable, BotsiPropertiesProvider {
+    public struct ButtonText: Decodable, Sendable, BotsiTextPropertiesProvider {
         public let text: String
         public let font: BotsiLayoutModel.DefaultFont
         public let size: String
