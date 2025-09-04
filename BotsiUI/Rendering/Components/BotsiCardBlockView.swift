@@ -11,20 +11,18 @@ import SwiftUI
 public struct BotsiCardBlockView: View {
     
     private let helper: BotsiCardHelper
-
+    
     public init(helper: BotsiCardHelper) {
         self.helper = helper
     }
-
+    
     public var body: some View {
         VStack(spacing: helper.spacing + 6) {
             ForEach(helper.children, id: \.meta.id) { child in
                 switch child.content {
                 case .text, .image, .button, .list, .timer:
-                    BotsiBlockRendererView(block: child) { action in
-                        print("KA: \(action)")
-                    }
-                    .padding(child.content?.padding)
+                    BotsiBlockRendererView(block: child)
+                        .padding(child.content?.padding)
                 default:
                     EmptyView()
                 }
@@ -34,7 +32,7 @@ public struct BotsiCardBlockView: View {
         .background(backgroundImageIfNeeded())
         .styledContainer(fillColor: helper.hasBackgroundImage ? nil : helper.fillColor,
                          borderColor: helper.borderColor,
-                         borderThickness: helper.borderWidth, 
+                         borderThickness: helper.borderWidth,
                          cornerRadius: helper.cornerRadius)
         .offset(y: helper.verticalOffset)
     }

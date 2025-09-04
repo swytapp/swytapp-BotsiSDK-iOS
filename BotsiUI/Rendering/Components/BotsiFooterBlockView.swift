@@ -15,6 +15,7 @@ public struct BotsiFooterBlockView: View {
     private var footer: BotsiFooterHelper
     private let additionalPadding: BotsiEdge = .init(left: 8, top: 0, right: 8, bottom: 0)
     private let onHeightChange: ((CGFloat) -> Void)?
+    @EnvironmentObject var actionHandler: PaywallActionHandler
     
     public init(model: BotsiFooterHelper, onHeightChange: ((CGFloat) -> Void)? = nil) {
         self.footer = model
@@ -24,11 +25,9 @@ public struct BotsiFooterBlockView: View {
     public var body: some View {
         VStack(spacing: footer.spacing) {
             ForEach(footer.childrens, id: \.meta.id) { child in
-                BotsiBlockRendererView(block: child) { action in
-                    print("KA: \(action)")
-                }
-                .padding(additionalPadding)
-                .padding(footer.padding)
+                BotsiBlockRendererView(block: child)
+                    .padding(additionalPadding)
+                    .padding(footer.padding)
             }
         }
         .padding(.top, 15)

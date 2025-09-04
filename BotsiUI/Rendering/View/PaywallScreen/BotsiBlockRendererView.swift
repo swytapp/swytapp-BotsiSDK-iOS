@@ -11,7 +11,7 @@ import SwiftUI
 public struct BotsiBlockRendererView: View {
     
     let block: BotsiPaywallBlock
-    let onAction: (BotsiActionType) -> Void
+    @EnvironmentObject var actionHandler: PaywallActionHandler
     
     public var body: some View {
         switch block.content {
@@ -43,7 +43,7 @@ public struct BotsiBlockRendererView: View {
             BotsiCardBlockView(helper: helper)
             
         case .products(let model):
-            BotsiProductRendererView(block: block, onAction: onAction)
+            BotsiProductRendererView(block: block) { _  in }
             
         case .layout, .productItem, .heroImage, .listItem, .toggleControl, .footer, .localization, .unknown:
             EmptyView()

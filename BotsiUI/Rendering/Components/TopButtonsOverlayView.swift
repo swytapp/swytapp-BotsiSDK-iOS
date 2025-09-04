@@ -11,7 +11,7 @@ import SwiftUI
 public struct TopButtonsOverlayView: View {
     
     let buttons: [BotsiLayoutModel.TopButton]
-    var tap: (BotsiActionType) -> Void
+    @EnvironmentObject var actionHandler: PaywallActionHandler
     
     public var body: some View {
         Color.clear
@@ -35,9 +35,7 @@ public struct TopButtonsOverlayView: View {
     }
     
     private func topButton(for button: BotsiLayoutModel.TopButton) -> some View {
-        TopButtonView(button: button) { action in
-            tap(action)
-        }
+        TopButtonView(button: button)
     }
 }
 
@@ -45,12 +43,12 @@ public struct TopButtonsOverlayView: View {
 public struct TopButtonView: View {
     
     let button: BotsiLayoutModel.TopButton
-    var tap: (BotsiActionType) -> Void
+    @EnvironmentObject var actionHandler: PaywallActionHandler
     
     public var body: some View {
         Button(action: {
             guard let actionId = button.actionId else { return }
-            tap(actionId)
+            actionHandler.handleAction(.action(actionId, customId: button.action))
         }) {
             buttonContent
         }

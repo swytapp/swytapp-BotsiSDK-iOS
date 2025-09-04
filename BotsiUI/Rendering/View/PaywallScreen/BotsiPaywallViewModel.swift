@@ -12,7 +12,8 @@ import SwiftUI
 public final class BotsiPaywallViewModel: ObservableObject {
     
     public weak var delegate: BotsiPaywallDelegate?
-
+    @Published public var shouldDismiss: Bool = false
+    
     public let contentBlocks: [BotsiPaywallBlock]
     public let layoutVM: BotsiLayoutViewModel?
     public let footerVM: BotsiFooterHelper?
@@ -24,7 +25,7 @@ public final class BotsiPaywallViewModel: ObservableObject {
         
         return left + right
     }
-
+    
     init(model: BotsiPaywallModel, delegate: BotsiPaywallDelegate?) {
         self.delegate = delegate
         self.layoutVM = BotsiLayoutViewModel(model.layout)
@@ -50,12 +51,35 @@ public final class BotsiPaywallViewModel: ObservableObject {
             self.footerVM = nil
         }
     }
-
+    
     func didClose() {
-        delegate?.botsiPaywallDidClose()
+        delegate?.botsiPaywallDidClose()        
+        shouldDismiss = true
     }
     
     func didTapPurchase(_ product: String?) {
         delegate?.botsiPaywallDidTapPurchase(product)
+    }
+    
+    func didTapRestore() {
+        delegate?.botsiPaywallDidTapRestore()
+    }
+    
+    func didTapLogin() {
+        delegate?.botsiPaywallDidTapLogin()
+    }
+    
+    func didTapCustom(id: String) {
+        delegate?.botsiPaywallDidTapCustom(id: id)
+    }
+
+    func openUrl(url: String) {
+        if let urlObject = URL(string: url) {
+            delegate?.botsiPaywallDidOpenURL(urlObject)
+            
+            Task { @MainActor in
+                await UIApplication.shared.open(urlObject)
+            }
+        }
     }
 }

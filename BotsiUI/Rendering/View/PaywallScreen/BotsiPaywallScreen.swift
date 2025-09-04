@@ -12,10 +12,12 @@ public struct BotsiPaywallScreen: View {
     
     @Environment(\.dismiss) var dismiss
     @StateObject var vm: BotsiPaywallViewModel
+    @StateObject private var actionHandler: PaywallActionHandler
     @State private var footerHeight: CGFloat = 0
     
     public init(viewModel: BotsiPaywallViewModel) {
         _vm = .init(wrappedValue: viewModel)
+        _actionHandler = .init(wrappedValue: PaywallActionHandler(paywall: viewModel))
     }
     
     public var body: some View {
@@ -44,6 +46,10 @@ public struct BotsiPaywallScreen: View {
                 .withSafeArea(proxy.safeAreaInsets)
                 .ignoresSafeArea()
             }
+        }
+        .environmentObject(actionHandler)
+        .onChange(of: vm.shouldDismiss) { shouldDismiss in
+            dismiss()
         }
     }
     
@@ -127,7 +133,7 @@ private extension BotsiPaywallScreen {
         }
         .ignoresSafeArea()
     }
-
+    
     @ViewBuilder
     var footerFiller: some View {
         FooterPaddingFillerView(height: footerHeight)
@@ -151,10 +157,8 @@ private extension BotsiPaywallScreen {
     @ViewBuilder
     var contentBlocks: some View {
         ForEach(vm.contentBlocks, id: \.meta.id) { block in
-            BotsiBlockRendererView(block: block) { action in
-                print("KA: \(action)")
-            }
-            .padding(block.content?.padding)
+            BotsiBlockRendererView(block: block)
+                .padding(block.content?.padding)
         }
     }
     
@@ -175,10 +179,8 @@ private extension BotsiPaywallScreen {
     @ViewBuilder
     func topButtons(with padding: CGFloat) -> some View {
         if let buttons = vm.layoutVM?.model.buttons, !buttons.isEmpty {
-            TopButtonsOverlayView(buttons: buttons) { action in
-                dismiss()
-            }
-            .padding(.top, padding)
+            TopButtonsOverlayView(buttons: buttons)
+                .padding(.top, padding)
         }
     }
 }

@@ -10,7 +10,7 @@ import Foundation
 @available(iOS 15.0, *)
 public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
     
-    public let action: String
+    public let action: BotsiActionType
     public let actionLabel: String?
     public let text: ButtonText?
     public let secondaryText: ButtonText?
@@ -30,7 +30,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.action = try container.decode(String.self, forKey: .action)
+        self.action = try container.decode(BotsiActionType.self, forKey: .action)
         self.actionLabel = try container.decodeIfPresent(String.self, forKey: .actionLabel)
         self.style = try container.decode(BotsiButtonStyle.self, forKey: .style)
         self.text = try container.decodeIfPresent(ButtonText.self, forKey: .text)

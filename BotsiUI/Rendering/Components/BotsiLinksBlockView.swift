@@ -17,6 +17,7 @@ public struct BotsiLinksBlockView: View {
     }
     
     let model: BotsiLinksModel
+    @EnvironmentObject var actionHandler: PaywallActionHandler
     
     public var body: some View {
         layoutStack {
@@ -51,7 +52,7 @@ private extension BotsiLinksBlockView {
     @ViewBuilder
     private var termsOfServiceIfNeeded: some View {
         if model.hasTermOfService, let tos = model.termOfService {
-            button(for: tos)
+            button(for: tos, type: .termsOfService)
             addDividerIfNeeded(after: .termsOfService)
         }
     }
@@ -59,7 +60,7 @@ private extension BotsiLinksBlockView {
     @ViewBuilder
     private var privacyPolicyIfNeeded: some View {
         if model.hasPrivacyPolicy, let pp = model.privacyPolicy {
-            button(for: pp)
+            button(for: pp, type: .privacyPolicy)
             addDividerIfNeeded(after: .privacyPolicy)
         }
     }
@@ -81,7 +82,18 @@ private extension BotsiLinksBlockView {
     
     private func button(for item: BotsiLinksModel.LinkItem, type: ButtonType? = nil) -> some View {
         Button(action: {
-            
+            if let type = type {
+                switch type {
+                case .restore:
+                    actionHandler.handleAction(.action(.restore, customId: nil))
+                case .login:
+                    actionHandler.handleAction(.action(.login, customId: nil))
+                case .termsOfService, .privacyPolicy:
+                    if let url = item.url {
+                        actionHandler.handleAction(.openURL(url))
+                    }
+                }
+            }
         }) {
             BotsiTextBlockView(
                 propertiesProvider: model.style,

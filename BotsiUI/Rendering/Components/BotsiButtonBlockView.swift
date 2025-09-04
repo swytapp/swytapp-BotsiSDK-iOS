@@ -11,12 +11,13 @@ import SwiftUI
 struct BotsiButtonBlockView: View {
     
     @StateObject private var vm: BotsiButtonViewModel
+    @EnvironmentObject var actionHandler: PaywallActionHandler
     
     init(viewModel: BotsiButtonViewModel) {
         _vm = StateObject(wrappedValue: viewModel)
     }
     
-    var body: some View {        
+    var body: some View {
         HStack {
             
             buttonContent
@@ -34,7 +35,7 @@ struct BotsiButtonBlockView: View {
     @ViewBuilder
     private var buttonContent: some View {
         Button {
-            vm.tap()
+            actionHandler.handleAction(.action(vm.model.action, customId: vm.model.actionLabel))
         } label: {
             VStack(spacing: 0) {
                 if let text = vm.model.text {

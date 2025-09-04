@@ -15,9 +15,7 @@ struct BotsiCarouselBlockView: View {
     var body: some View {
         TabView {
             ForEach(block.children ?? [], id: \.meta.id) { block in
-                BotsiBlockRendererView(block: block) { action in
-                    print("KA: Carousel action \(action)")
-                }
+                BotsiBlockRendererView(block: block)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .automatic))
