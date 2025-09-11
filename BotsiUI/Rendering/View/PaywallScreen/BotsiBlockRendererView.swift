@@ -32,8 +32,8 @@ public struct BotsiBlockRendererView: View {
         case .timer(let model):
             BotsiTimerBlockView(model: model)
             
-        case .carousel:
-            BotsiCarouselBlockView(block: block)
+        case .carousel(let model):
+            BotsiCarouselBlockView(block: block, model: model)
             
         case .list(let model):
             BotsiListBlockView(block: block)

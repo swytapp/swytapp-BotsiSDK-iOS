@@ -167,6 +167,14 @@ public struct BotsiEdge: Codable, Sendable {
     public let top: CGFloat
     public let right: CGFloat
     public let bottom: CGFloat
+
+    public var horizontal: CGFloat {
+        left + right
+    }
+
+    public var vertical: CGFloat {
+        top + bottom
+    }
     
     public static var defaultEdge: BotsiEdge {
         .init(left: 0, top: 0, right: 0, bottom: 0)

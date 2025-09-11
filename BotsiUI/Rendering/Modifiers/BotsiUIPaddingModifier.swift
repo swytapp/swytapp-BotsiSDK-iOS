@@ -1,8 +1,8 @@
 //
-//  File.swift
+//  BotsiUIPaddingModifier.swift
 //  Botsi
 //
-//  Created by Vladyslav Danyliak on 18.08.2025.
+//  Created by Vladyslav Danyliak on 29.08.2025.
 //
 
 import SwiftUI

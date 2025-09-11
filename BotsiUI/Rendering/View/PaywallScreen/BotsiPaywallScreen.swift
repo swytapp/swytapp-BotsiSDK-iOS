@@ -42,6 +42,7 @@ public struct BotsiPaywallScreen: View {
                 .if(vm.heroImage?.style != .transparent, transform: {
                     $0.backgroundFill(vm.layoutVM?.fillColor)
                 })
+                .withChildPadding(vm.layoutVM?.padding ?? .defaultEdge)
                 .withScreenSize(screenSize(for: proxy))
                 .withSafeArea(proxy.safeAreaInsets)
                 .ignoresSafeArea()
