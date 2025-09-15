@@ -12,6 +12,7 @@ import SwiftUI
 public final class BotsiPaywallViewModel: ObservableObject {
     
     public weak var delegate: BotsiPaywallDelegate?
+    public let timerProvider: BotsiTimerProvider?
     @Published public var shouldDismiss: Bool = false
     
     public let contentBlocks: [BotsiPaywallBlock]
@@ -26,8 +27,9 @@ public final class BotsiPaywallViewModel: ObservableObject {
         return left + right
     }
     
-    init(model: BotsiPaywallModel, delegate: BotsiPaywallDelegate?) {
+    init(model: BotsiPaywallModel, delegate: BotsiPaywallDelegate?, timerProvider: BotsiTimerProvider? = nil) {
         self.delegate = delegate
+        self.timerProvider = timerProvider
         self.layoutVM = BotsiLayoutViewModel(model.layout)
         self.contentBlocks = model.content
         if let heroBlock = model.hero {
@@ -81,5 +83,9 @@ public final class BotsiPaywallViewModel: ObservableObject {
                 await UIApplication.shared.open(urlObject)
             }
         }
+    }
+
+    func didEndTimer(id: String?) {
+        delegate?.botsiPaywallDidEndTimer(id: id)
     }
 }

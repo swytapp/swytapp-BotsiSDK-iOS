@@ -15,4 +15,5 @@ public protocol BotsiPaywallDelegate: AnyObject {
     func botsiPaywallDidTapLogin()
     func botsiPaywallDidTapCustom(id: String)
     func botsiPaywallDidOpenURL(_ url: URL)
+    func botsiPaywallDidEndTimer(id: String?)
 }

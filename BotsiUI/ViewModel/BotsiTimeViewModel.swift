@@ -7,47 +7,107 @@
 
 import SwiftUI
 
+// MARK: - Timer Provider Protocol
+public protocol BotsiTimerProvider: Sendable {
+    func timerEndDate(for timerId: String) -> Date
+}
+
+public final class BotsiTimerStorage {
+    private let storageKey: String
+    
+    public init(key: String) {
+        self.storageKey = key
+    }
+    
+    public func getEndDate() -> Date? {
+        if let timeInterval = UserDefaults.standard.value(forKey: storageKey) as? TimeInterval {
+            return Date(timeIntervalSince1970: timeInterval)
+        }
+        return nil
+    }
+    
+    public func saveEndDate(_ date: Date) {
+        UserDefaults.standard.set(date.timeIntervalSince1970, forKey: storageKey)
+    }
+    
+    public func clearData() {
+        UserDefaults.standard.removeObject(forKey: storageKey)
+    }
+    
+    public static func persistenceKey(for timerId: String) -> String {
+        return "BotsiTimer_Persistence_\(timerId)"
+    }
+}
+
 @available(iOS 15.0, *)
 @MainActor
 final class BotsiTimerViewModel: ObservableObject {
     
-    @Published var displayText: String = ""
-    @Published var textBefore: String = ""
-    @Published var textAfter: String = ""
-    
     @Published var fullText: String = ""
+    @Published private(set) var hasEnded: Bool = false
     
-    private let totalSeconds: Int
-    private let format: String
-    private let separator: BotsiTimerSeparator
-    private var startDate: Date
+    var style: BotsiTextStyleModel { model.style }
+    var verticalOffset: String { model.verticalOffset }
+    var triggerCustomAction: Bool { model.triggerCustomAction }
+    var customActionID: String? { model.customActionID }
+    
+    private let model: BotsiTimerModel
+    private let timerId: String
+    private var endDate = Date() 
     private var timer: Timer?
-    private let storageKey: String
+    private let persistentStorage: BotsiTimerStorage
+    private let timerProvider: BotsiTimerProvider?
     
-    init(model: BotsiTimerModel) {
-        self.format = model.format
-        self.separator = model.separator
-        self.totalSeconds = BotsiTimerViewModel.seconds(from: model.startText)
+    private static var globalTimers = [String: Date]()
+    
+    init(model: BotsiTimerModel, timerProvider: BotsiTimerProvider? = nil) {
+        self.model = model
+        self.timerId = "\(model.startText)-\(model.beforeText)-\(model.afterText)-\(model.timerMode.rawValue)"
+        self.timerProvider = timerProvider
         
-        let storageKey = "botsi.timer.\(model.startText)-\(model.beforeText)-\(model.afterText)"
-        self.storageKey = storageKey
+        let persistenceKey = BotsiTimerStorage.persistenceKey(for: timerId)
+        self.persistentStorage = BotsiTimerStorage(key: persistenceKey)
         
-        if let storedStartDate = UserDefaults.standard.object(forKey: storageKey) as? Date {
-            self.startDate = storedStartDate
-        } else {
-            self.startDate = Date()
-            UserDefaults.standard.set(startDate, forKey: storageKey)
-        }
-        
-        if !model.beforeText.isEmpty {
-            self.textBefore = "\(model.beforeText) "
-        }
-        
-        if !model.afterText.isEmpty {
-            self.textAfter = " \(model.afterText)"
-        }
+        self.endDate = initializeTimer(at: Date())
         
         startTimer()
+    }
+    
+    private func initializeTimer(at currentDate: Date) -> Date {
+        let totalSeconds = BotsiTimerViewModel.seconds(from: model.startText)
+        let duration = TimeInterval(totalSeconds)
+        
+        switch model.timerMode {
+        case .reset:
+            let endAt = Date(timeIntervalSince1970: currentDate.timeIntervalSince1970 + duration)
+            return endAt
+            
+        case .appLaunchReset:
+            if let globalEndAt = Self.globalTimers[timerId] {
+                return globalEndAt
+            } else {
+                let endAt = Date(timeIntervalSince1970: currentDate.timeIntervalSince1970 + duration)
+                Self.globalTimers[timerId] = endAt
+                return endAt
+            }
+            
+        case .keep:
+            if let persistedEndAt = persistentStorage.getEndDate() {
+                return persistedEndAt
+            } else {
+                let endAt = Date(timeIntervalSince1970: currentDate.timeIntervalSince1970 + duration)
+                persistentStorage.saveEndDate(endAt)
+                return endAt
+            }
+            
+        case .defined:
+            guard let provider = timerProvider else {
+                let endAt: Date = Date(timeIntervalSince1970: currentDate.timeIntervalSince1970 + duration)
+                return endAt
+            }
+            
+            return provider.timerEndDate(for: timerId)
+        }
     }
     
     private func startTimer() {
@@ -62,30 +122,33 @@ final class BotsiTimerViewModel: ObservableObject {
         }
     }
     
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    func triggerEndTimerAction(actionHandler: PaywallActionHandler?) {
+        actionHandler?.handleAction(.endTimer(id: customActionID))
+    }
+    
     private func updateDisplay() {
-        let elapsed = Int(Date().timeIntervalSince(startDate))
-        var remaining = max(totalSeconds - elapsed, 0)
+        let currentTime = Date()
+        let remaining = max(Int(endDate.timeIntervalSince(currentTime)), 0)
         
         if remaining == 0 {
-            startDate = Date()
-            UserDefaults.standard.set(startDate, forKey: storageKey)
-            remaining = totalSeconds
+            hasEnded = true
+            stopTimer()
         }
         
         let formatted = BotsiTimerViewModel.format(
             seconds: remaining,
-            using: format,
-            separator: separator
+            using: model.format,
+            separator: model.separator
         )
         
-        fullText = [
-            textBefore,
-            formatted,
-            textAfter
-        ]
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-        
+        let prefix = model.beforeText.isEmpty ? "" : "\(model.beforeText) "
+        let suffix = model.afterText.isEmpty ? "" : " \(model.afterText)"
+        fullText = "\(prefix)\(formatted)\(suffix)"
     }
     
     static func seconds(from timeString: String) -> Int {

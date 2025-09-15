@@ -22,15 +22,13 @@ public struct BotsiBlockRendererView: View {
             BotsiImageBlockView(model: model)
             
         case .button(let model):
-            let vm = BotsiButtonViewModel(model: model)
-            BotsiButtonBlockView(viewModel: vm)
+            BotsiViewFactory.makeButton(model: model)
             
         case .links(let model):
-            let vm = BotsiLinksViewModel(model)
             BotsiLinksBlockView(model: model)
             
         case .timer(let model):
-            BotsiTimerBlockView(model: model)
+            BotsiViewFactory.makeTimer(model: model, timerProvider: actionHandler.timerProvider)
             
         case .carousel(let model):
             BotsiCarouselBlockView(block: block, model: model)
@@ -39,8 +37,7 @@ public struct BotsiBlockRendererView: View {
             BotsiListBlockView(block: block)
             
         case .card(let model):
-            let helper = BotsiCardHelper(block: block, model: model)
-            BotsiCardBlockView(helper: helper)
+            BotsiCardBlockView(helper: BotsiCardHelper(block: block, model: model))
             
         case .products(let model):
             BotsiProductRendererView(block: block) { _  in }

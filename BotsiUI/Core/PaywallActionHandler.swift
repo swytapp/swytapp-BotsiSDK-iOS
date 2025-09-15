@@ -12,15 +12,18 @@ public enum PaywallAction: Sendable {
     case openURL(String)
     case action(BotsiActionType, customId: String?)
     case close
+    case endTimer(id: String?)
 }
 
 @available(iOS 15.0, *)
 @MainActor
 public class PaywallActionHandler: ObservableObject {
     private let paywall: BotsiPaywallViewModel
+    public let timerProvider: BotsiTimerProvider?
     
     public init(paywall: BotsiPaywallViewModel) {
         self.paywall = paywall
+        self.timerProvider = paywall.timerProvider
     }
     
     @MainActor
@@ -41,6 +44,8 @@ public class PaywallActionHandler: ObservableObject {
             }
         case .close:
             paywall.didClose()
+        case .endTimer(let id):
+            paywall.didEndTimer(id: id)
         }
     }
 } 

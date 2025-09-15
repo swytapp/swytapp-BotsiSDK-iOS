@@ -17,6 +17,9 @@ public struct BotsiTimerModel: Decodable, Sendable, BotsiPaddingProvider {
     public let padding: BotsiEdge
     public let verticalOffset: String
     public let style: BotsiTextStyleModel
+    public let timerMode: TimerMode
+    public let customActionID: String?
+    public let triggerCustomAction: Bool
     
     enum CodingKeys: String, CodingKey {
         case format, separator
@@ -26,6 +29,16 @@ public struct BotsiTimerModel: Decodable, Sendable, BotsiPaddingProvider {
         case padding
         case verticalOffset = "vertical_offset"
         case style
+        case timerMode = "timer_mode"
+        case customActionID = "custom_action_id"
+        case triggerCustomAction = "trigger_custom_action"
+    }
+
+    public enum TimerMode: String, Decodable, Sendable {
+        case reset = "Reset timer on every paywall view"
+        case appLaunchReset = "Reset timer on every app lunch"
+        case keep = "Keep timer across app lunches"
+        case defined = "Developer defined"
     }
 }
 

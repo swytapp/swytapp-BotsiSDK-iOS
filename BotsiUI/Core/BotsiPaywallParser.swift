@@ -51,7 +51,6 @@ public final class BotsiPaywallParser {
             case .timer:
                 return .timer(try decoder.decode(BotsiTimerModel.self, from: jsonData))
             case .carousel:
-                debugPrint(String(decoding: jsonData, as: UTF8.self))
                 return .carousel(try decoder.decode(BotsiCarouselModel.self, from: jsonData))
             case .links:
                 return .links(try decoder.decode(BotsiLinksModel.self, from: jsonData))

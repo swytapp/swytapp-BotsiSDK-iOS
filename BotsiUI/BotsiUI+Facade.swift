@@ -13,7 +13,8 @@ public enum BotsiUI {
     @MainActor
     public static func makePaywall(json data: Data,
                                    id: String = UUID().uuidString,
-                                   delegate: BotsiPaywallDelegate? = nil) throws -> some View {
+                                   delegate: BotsiPaywallDelegate? = nil,
+                                   timerProvider: BotsiTimerProvider? = nil) throws -> some View {
 
         let structure = try BotsiPaywallParser.parseStructure(from: data)
         
@@ -27,7 +28,7 @@ public enum BotsiUI {
                                       footer: structure.footer,
                                       hero: structure.heroImage)
 
-        let rootVM = BotsiPaywallViewModel(model: model, delegate: delegate)
+        let rootVM = BotsiPaywallViewModel(model: model, delegate: delegate, timerProvider: timerProvider)
 
         return BotsiPaywallScreen(viewModel: rootVM)
     }
