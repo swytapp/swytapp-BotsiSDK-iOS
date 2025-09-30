@@ -29,9 +29,11 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
         do {
             var request = RestorePurchaseRequest()
             request.headers = [
-                "Authorization": httpClient.sdkApiKey,
+                "Authorization": "sk_IRaISNg559BfU7uJ.OQVfZo887LpbvtGiMsXnwy1T9YE",
                 "Content-type": "application/json"
             ]
+            debugPrint("Restore Purchase Request profiledId: \(profileId)")
+            debugPrint("Restore Purchase Request URL: \(request.url?.absoluteString)")
             
             let requestParameters = (profileId, receipt)
             let body = try mapper.toDTO(from: requestParameters).toData()
@@ -40,6 +42,8 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
+
+            debugPrint("Restore Purchase Response: \(String(data: response.body, encoding: .utf8))")
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
             let responseDto: BotsiRestorePurchaseResponseDto = try wrapper.decode()

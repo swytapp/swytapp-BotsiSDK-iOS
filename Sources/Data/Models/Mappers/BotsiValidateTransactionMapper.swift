@@ -8,7 +8,7 @@
 import Foundation
 
 struct BotsiValidateTransactionMapper: DomainMapper {
-    typealias Parameters = (transaction: BotsiPaymentTransaction, profileId: String, source: String)
+    typealias Parameters = (transaction: BotsiPaymentTransaction, profileId: String, source: String, isExperiment: Bool, aiPricingModelId: Int)
     
     typealias DTOResponseModel = BotsiValidateTransactionResponseDto
     
@@ -45,7 +45,9 @@ struct BotsiValidateTransactionMapper: DomainMapper {
             paywallId: transaction.paywallId,
             abTestId: transaction.abTestId,
             isSubscription: transaction.isSubscription,
-            source: parameters.source
+            source: parameters.source,
+            isExperiment: parameters.isExperiment,
+            aiPricingModelId: parameters.aiPricingModelId
         )
     }
     

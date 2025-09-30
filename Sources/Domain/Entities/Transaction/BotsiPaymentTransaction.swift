@@ -8,24 +8,24 @@
 import StoreKit
 
 public struct BotsiPaymentTransaction: Sendable, CustomStringConvertible {
-    let transactionId: String
-    let originalTransactionId: String
-    let sourceProductId: String
-    let originalPrice: Decimal?
-    let priceLocale: String?
-    let storeCountry: String?
+    public let transactionId: String
+    public let originalTransactionId: String
+    public let sourceProductId: String
+    public let originalPrice: Decimal?
+    public let priceLocale: String?
+    public let storeCountry: String?
     
-    let offer: BotsiSubscriptionOffer?
+    public let offer: BotsiSubscriptionOffer?
     
-    let promotionalOfferId: String
-    let discountPrice: String
-    let productId: String
-    let environment: String
+    public let promotionalOfferId: String
+    public let discountPrice: String
+    public let productId: String
+    public let environment: String
     
-    let paywallId: Int?
-    let abTestId: Int?
-    let placementId: String?
-    let isSubscription: Bool
+    public let paywallId: Int?
+    public let abTestId: Int?
+    public let placementId: String?
+    public let isSubscription: Bool
     
     public var description: String {
         return """

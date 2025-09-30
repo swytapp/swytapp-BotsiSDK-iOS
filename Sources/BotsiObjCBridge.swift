@@ -215,7 +215,7 @@ public class BotsiObjCPaywall: NSObject {
     }
     
     convenience init(swift: BotsiPaywall) {
-        self.init(placementId: swift.placementId,
+        self.init(placementId: swift.placementId ?? "",
                   paywallId: swift.id,
                   name: swift.name,
                   remoteConfigs: swift.remoteConfigs,
@@ -318,7 +318,7 @@ public class BotsiObjCSDK: NSObject {
         Task {
             do {
                 let updatedProfile = try await Botsi.makePurchase(swiftProduct)
-                completion(BotsiObjCProfile(swift: updatedProfile), nil)
+                completion(BotsiObjCProfile(swift: updatedProfile.0), nil)
             } catch {
                 completion(nil, BotsiObjCError(swift: error))
             }

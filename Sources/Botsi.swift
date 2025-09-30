@@ -353,26 +353,32 @@ public extension Botsi {
     ///       print("Purchase failed: \(error)")
     ///   }
     ///   ```
-    nonisolated static func makePurchase(_ product: BotsiProduct) async throws -> BotsiProfile {
+    nonisolated static func makePurchase(_ product: BotsiProduct) async throws -> (BotsiProfile, BotsiPaymentTransaction?) {
         return try await lifecycle.withInitializedSDK { botsi in
             try await botsi.makePurchase(from: product)
         }
     }
+
+    nonisolated static func saveExperimentData(isExperiment: Bool, aiPricingModelId: Int, profileId: String?) {
+        UserDefaults.standard.set(isExperiment, forKey: "isExperiment")
+        UserDefaults.standard.set(aiPricingModelId, forKey: "aiPricingModelId")
+        UserDefaults.standard.set(profileId, forKey: "profileId")
+    }
     
-    func makePurchase(from product: BotsiProduct) async throws -> BotsiProfile {
+    func makePurchase(from product: BotsiProduct) async throws -> (BotsiProfile, BotsiPaymentTransaction?) {
         do {
             if #available(iOS 15.0, *), enableStoreKit2 {
                 guard let handler = storeKit2Handler else {
                     throw BotsiError.customError("SK2PurchaseError", "unable to unwrap Storekit 2 handler")
                 }
                 let profile = try await handler.purchaseSK2(product)
-                return profile
+                return (profile.0, profile.1)
             } else {
                 guard let handler = storeKit1Handler else {
                     throw BotsiError.customError("SK1PurchaseError", "unable to unwrap Storekit 1 handler")
                 }
                 let profile = try await handler.purchaseSK1(product)
-                return profile
+                return (profile, nil)
             }
         } catch let error as BotsiError {
             BotsiLog.error("Failed to purchase: \(error.localizedDescription)")
@@ -554,7 +560,7 @@ public extension Botsi {
             type: .userPaywallShown,
             name: "userPaywallPresentedLog",
             message: "Paywall presented.",
-            placementId: paywall.placementId
+            placementId: paywall.placementId ?? ""
         )
         try await loggerWithContext.logEvent(userActionEvent)
     }

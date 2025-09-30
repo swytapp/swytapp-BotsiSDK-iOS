@@ -375,14 +375,18 @@ public actor StoreKit1Handler {
         _ transaction: BotsiPaymentTransaction,
         source: StoreKitTransactionSource
     ) async throws -> BotsiProfile {
-        guard let storedProfile = await storage.getProfile() else {
+        guard let profileId = (await storage.getProfile())?.profileId ?? UserDefaults.standard.string(forKey: "profileId") else {
             
             throw BotsiError.customError("ValidateTransaction", "Unable to retrieve profile id")
         }
-        let repository = ValidateTransactionRepository(httpClient: client, profileId: storedProfile.profileId)
+        let repository = ValidateTransactionRepository(httpClient: client, profileId: profileId)
+        let isExperiment = UserDefaults.standard.bool(forKey: "isExperiment")
+        let aiPricingModelId = UserDefaults.standard.integer(forKey: "aiPricingModelId")
         let profileFetched = try await repository.validateTransaction(
             transaction: transaction,
-            source: source
+            source: source,
+            isExperiment: isExperiment,
+            aiPricingModelId: aiPricingModelId
         )
         await storage.setProfile(profileFetched)
         BotsiLog.info("Profile received after validating transaction: \(profileFetched.profileId) with access levels: \(profileFetched.accessLevels.first?.key ?? "empty")")
@@ -390,10 +394,10 @@ public actor StoreKit1Handler {
     }
     
     private func restoreTransactions() async throws -> BotsiProfile {
-        guard let storedProfile = await storage.getProfile() else {
+        guard let profileId = (await storage.getProfile())?.profileId ?? UserDefaults.standard.string(forKey: "profileId") else {
             throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
         }
-        let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
+        let repository = RestorePurchaseRepository(httpClient: client, profileId: profileId)
         
         let helper = ReceiptRefreshHelper()
         let receiptData = try await helper.refreshReceipt()

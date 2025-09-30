@@ -45,7 +45,7 @@ final class GetUserProfileRepository: BotsiGetProfileRepository {
                 }
             }
         } catch let error as BotsiError {
-            BotsiLog.error("Failed to fetch user profile: \(error.localizedDescription)")
+            BotsiLog.error("Failed to fetch user profile: \(error.localizedDescription) with id: \(identifier)")
             throw error
         } catch {
             throw BotsiError.userGetProfileFailed

@@ -25,7 +25,7 @@ public actor BotsiProfileStorage: Sendable {
             self.profile = storedProfile
             self.profileId = storedProfile.profileId
         } catch {
-            self.profileId = BotsiProfileStorage.generateProfileId()
+            self.profileId = UserDefaults.standard.string(forKey: "profileId") ?? BotsiProfileStorage.generateProfileId()
             self.profile = nil
         }
         

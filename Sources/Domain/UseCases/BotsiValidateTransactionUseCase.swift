@@ -14,8 +14,8 @@ struct BotsiValidateTransactionUseCase {
         self.repository = repository
     }
 
-    func validateTransaction(_ transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile {
-        return try await repository.validateTransaction(transaction: transaction, source: source)
+    func validateTransaction(_ transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource, isExperiment: Bool, aiPricingModelId: Int) async throws -> BotsiProfile {
+        return try await repository.validateTransaction(transaction: transaction, source: source, isExperiment: isExperiment, aiPricingModelId: aiPricingModelId)
     }
 }
 

@@ -55,7 +55,7 @@ extension BotsiPaymentTransaction {
                 case .production:
                     self.environment = "production"
                 default:
-                    self.environment = "unknown"
+                    self.environment = "sandbox"
                 }
             } else {
                 self.storeCountry = product.subscriptionPeriodFormatStyle.locale.identifier

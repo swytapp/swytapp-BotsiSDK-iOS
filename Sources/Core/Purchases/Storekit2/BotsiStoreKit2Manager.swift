@@ -52,7 +52,7 @@ public actor StoreKit2Handler {
     }
     
     @available(iOS 15.0, *)
-    public func purchaseSK2(_ product: BotsiProduct) async throws -> BotsiProfile {
+    public func purchaseSK2(_ product: BotsiProduct) async throws -> (BotsiProfile, BotsiPaymentTransaction) {
         guard let skProduct = product.sk2Product else {
             throw BotsiError.customError("SK2PurchaseError", "Unable to unwrap SK2 Product")
         }
@@ -115,7 +115,7 @@ public actor StoreKit2Handler {
                 BotsiLog.info("StoreKit 2. Transaction unverified. \(err.localizedDescription)")
                 throw BotsiError.transactionFailed
             case .verified(let transaction):
-                BotsiLog.info("Transaction is OK. \(transaction.id)")
+                BotsiLog.info("Transaction is OK. \(transaction.id) & \(transaction.originalID)")
                 let botsiTransaction = await mapper.completeTransaction(
                     with: transaction,
                     product: skProduct,
@@ -137,7 +137,7 @@ public actor StoreKit2Handler {
                     for: skProduct.id
                 )
                 await transaction.finish()
-                return profile
+                return (profile, botsiTransaction)
             }
         case .userCancelled:
             BotsiLog.info("StoreKit 2. User cancelled the purchase.")
@@ -182,7 +182,6 @@ public actor StoreKit2Handler {
                         abTestId: nil,
                         placementId: current?.placementId ?? cached?.placementId
                     )
-              
                     let updatedProfile = try await validateTransaction(
                         botsiTransaction,
                         source: .observing
@@ -227,16 +226,20 @@ public actor StoreKit2Handler {
     
     @discardableResult
     private func validateTransaction(_ transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile {
-        guard let storedProfile = await storage.getProfile() else {
+        guard let profileId = (await storage.getProfile())?.profileId ?? UserDefaults.standard.string(forKey: "profileId") else {
             throw BotsiError.customError("SK2.ValidateTransaction", "Unable to retrieve profile id")
         }
         let repository = ValidateTransactionRepository(
             httpClient: client,
-            profileId: storedProfile.profileId
+            profileId: profileId
         )
+        let isExperiment = UserDefaults.standard.bool(forKey: "isExperiment")
+        let aiPricingModelId = UserDefaults.standard.integer(forKey: "aiPricingModelId")
         let profileFetched = try await repository.validateTransaction(
             transaction: transaction,
-            source: source
+            source: source,
+            isExperiment: isExperiment,
+            aiPricingModelId: aiPricingModelId
         )
         await storage.setProfile(profileFetched)
         BotsiLog.info("StoreKit 2 Validate. Profile \(profileFetched.profileId) with access levels received: \(profileFetched.accessLevels.first?.key ?? "none")")
@@ -244,10 +247,10 @@ public actor StoreKit2Handler {
     }
     
     private func restoreTransactions() async throws -> BotsiProfile {
-        guard let storedProfile = await storage.getProfile() else {
+        guard let profileId = (await storage.getProfile())?.profileId ?? UserDefaults.standard.string(forKey: "profileId") else {
             throw BotsiError.customError("Restore transaction", "Unable to retrieve profile id")
         }
-        let repository = RestorePurchaseRepository(httpClient: client, profileId: storedProfile.profileId)
+        let repository = RestorePurchaseRepository(httpClient: client, profileId: profileId)
         let helper = ReceiptRefreshHelper()
         var receipt: Data
         

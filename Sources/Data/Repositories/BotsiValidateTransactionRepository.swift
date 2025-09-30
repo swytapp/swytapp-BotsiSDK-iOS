@@ -8,7 +8,7 @@
 import Foundation
 
 protocol BotsiValidateTransactionRepository {
-    func validateTransaction(transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile
+    func validateTransaction(transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource, isExperiment: Bool, aiPricingModelId: Int) async throws -> BotsiProfile
 }
 
 final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
@@ -22,20 +22,25 @@ final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
         self.profileId = profileId
     }
 
-    func validateTransaction(transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource) async throws -> BotsiProfile {
+    func validateTransaction(transaction: BotsiPaymentTransaction, source: StoreKitTransactionSource, isExperiment: Bool, aiPricingModelId: Int) async throws -> BotsiProfile {
         do {
             var request = ValidateTransactionRequest()
             request.headers = [
-                "Authorization": httpClient.sdkApiKey,
+                "Authorization": "sk_IRaISNg559BfU7uJ.OQVfZo887LpbvtGiMsXnwy1T9YE",
                 "Content-type": "application/json"
             ]
-            let requestParameters = (transaction, profileId, source.rawValue)
+            let requestParameters = (transaction, profileId, source.rawValue, isExperiment, aiPricingModelId)
             let body = try mapper.toDTO(from: requestParameters).toData()
             request.body = body
+
+            debugPrint("Validate Transaction Request: \(String(data: body, encoding: .utf8))")
 
             let response: BotsiHTTPResponse<Data> = try await httpClient.session.perform(request, withDecoder: { dataResponse in
                 return BotsiHTTPResponse(body: dataResponse.data)
             })
+            
+            debugPrint("Validate Transaction URL: \(request.url?.absoluteString)")
+            debugPrint("Validate Transaction Response: \(String(data: response.body, encoding: .utf8))")
 
             let wrapper = BotsiHTTPResponseWrapper(data: response.body)
             let responseDto: BotsiValidateTransactionResponseDto = try wrapper.decode()

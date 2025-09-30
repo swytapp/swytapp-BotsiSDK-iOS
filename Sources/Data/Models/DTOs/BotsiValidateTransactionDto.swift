@@ -27,6 +27,8 @@ struct BotsiValidateTransactionRequestDto: Encodable {
     let abTestId: Int?
     let isSubscription: Bool
     let source: String
+    let isExperiment: Bool
+    let aiPricingModelId: Int
 }
 
 struct BotsiValidateTransactionOfferDto: Encodable {

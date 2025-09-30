@@ -50,6 +50,7 @@ public struct BotsiHTTPSession: Sendable {
             if let signer = requestSigner {
                 urlRequest = try signer(urlRequest, endpoint)
             }
+            debugPrint("Request body: \(String(data: urlRequest.httpBody ?? Data(), encoding: .utf8))")
         } catch {
             throw handleError(.perform(endpoint, error: error))
         }
