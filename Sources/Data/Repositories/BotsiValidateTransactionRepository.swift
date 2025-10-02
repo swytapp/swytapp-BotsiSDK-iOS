@@ -26,7 +26,7 @@ final class ValidateTransactionRepository: BotsiValidateTransactionRepository {
         do {
             var request = ValidateTransactionRequest()
             request.headers = [
-                "Authorization": "sk_IRaISNg559BfU7uJ.OQVfZo887LpbvtGiMsXnwy1T9YE",
+                "Authorization": "sk_ElLDOD5E8Eq4v5y.XlJOTtEIqK9bL15J3C7ofuxag",
                 "Content-type": "application/json"
             ]
             let requestParameters = (transaction, profileId, source.rawValue, isExperiment, aiPricingModelId)

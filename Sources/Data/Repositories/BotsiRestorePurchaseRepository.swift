@@ -29,7 +29,7 @@ final class RestorePurchaseRepository: BotsiRestorePurchaseRepository {
         do {
             var request = RestorePurchaseRequest()
             request.headers = [
-                "Authorization": "sk_IRaISNg559BfU7uJ.OQVfZo887LpbvtGiMsXnwy1T9YE",
+                "Authorization": "sk_ElLDOD5E8Eq4v5y.XlJOTtEIqK9bL15J3C7ofuxag",
                 "Content-type": "application/json"
             ]
             debugPrint("Restore Purchase Request profiledId: \(profileId)")
