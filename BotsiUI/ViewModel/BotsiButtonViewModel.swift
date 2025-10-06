@@ -18,7 +18,7 @@ final class BotsiButtonViewModel: ObservableObject {
     }
     
     var textColor: Color {
-        model.text?.color.toColor() ?? .clear
+        model.text?.textStyle?.color?.toColor() ?? .white
     }
     
     var fillColor: BotsiFillColor? {
@@ -26,7 +26,7 @@ final class BotsiButtonViewModel: ObservableObject {
     }
     
     var secondaryTextColor: Color {
-        model.secondaryText?.color.toColor() ?? .clear
+        model.secondaryText?.textStyle?.color?.toColor() ?? .white
     }
 
     var borderColor: Color {

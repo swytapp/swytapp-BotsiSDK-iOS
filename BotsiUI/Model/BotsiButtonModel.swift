@@ -49,10 +49,19 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         }
     }
 
-    public struct ButtonText: Decodable, Sendable, BotsiTextPropertiesProvider {
+    public struct ButtonText: Decodable, Sendable {
         public let text: String
-        public let font: BotsiLayoutModel.DefaultFont
-        public let size: String
-        public let color: BotsiFillColor
+        public let textStyle: BotsiTextStyleModel?
+
+        private enum CodingKeys: String, CodingKey {
+            case text 
+            case textStyle = "text_style"
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            text = try container.decode(String.self, forKey: .text)
+            textStyle = try container.decodeIfPresent(BotsiTextStyleModel.self, forKey: .textStyle)
+        }
     }
 }

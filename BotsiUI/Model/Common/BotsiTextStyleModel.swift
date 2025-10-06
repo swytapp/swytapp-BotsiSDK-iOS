@@ -8,26 +8,27 @@ import Foundation
 
 @available(iOS 15.0, *)
 public struct BotsiTextStyleModel: Decodable, Sendable, BotsiTextPropertiesProvider {
-    public let font: BotsiLayoutModel.DefaultFont
-    public let size: String
+    public let font: BotsiLayoutModel.DefaultFont?
+    public let size: String?
     public let align: BotsiAlign?
-    public let color: BotsiFillColor
+    public let color: BotsiFillColor?
     public let opacity: Int?
-}
 
-@available(iOS 15.0, *)
-public struct BotsiFontModel: Decodable, Sendable {
-    public let id: String?
-    public let name: String?
-    public let isSelected: Bool?
-    public let types: [BotsiFontTypeModel]?
-}
-
-@available(iOS 15.0, *)
-public struct BotsiFontTypeModel: Decodable, Sendable {
-    public let name: String?
-    public let id: String?
-    public let fontWeight: Int?
-    public let fontStyle: String?
-    public let isSelected: Bool?
+    private enum CodingKeys: String, CodingKey {
+        case font
+        case size
+        case align
+        case color
+        case opacity
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        font = try container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font)
+        size = try container.decode(String.self, forKey: .size)
+        align = try container.decodeIfPresent(BotsiAlign.self, forKey: .align)
+        color = try container.decodeIfPresent(BotsiFillColor.self, forKey: .color) ?? .solid(.white)
+        opacity = try container.decodeIfPresent(Int.self, forKey: .opacity)
+    }
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-struct BotsiButtonBlockView: View {
+public struct BotsiButtonBlockView: View {
     
     @StateObject private var vm: BotsiButtonViewModel
     @EnvironmentObject var actionHandler: PaywallActionHandler
@@ -17,7 +17,7 @@ struct BotsiButtonBlockView: View {
         _vm = StateObject(wrappedValue: viewModel)
     }
     
-    var body: some View {
+    public var body: some View {
         HStack {
             
             buttonContent
@@ -39,14 +39,14 @@ struct BotsiButtonBlockView: View {
         } label: {
             VStack(spacing: 0) {
                 if let text = vm.model.text {
-                    BotsiTextBlockView(propertiesProvider: text,
+                    BotsiTextBlockView(propertiesProvider: text.textStyle,
                                        text: text.text,
                                        align: vm.align)
                     .frame(maxWidth: .infinity, alignment: vm.model.contentLayout?.align?.alignments.frame ?? .center)
                 }
                 
                 if let secondaryText = vm.model.secondaryText, !secondaryText.text.isEmpty {
-                    BotsiTextBlockView(propertiesProvider: secondaryText,
+                    BotsiTextBlockView(propertiesProvider: secondaryText.textStyle,
                                        text: secondaryText.text,
                                        align: vm.align)
                     .frame(maxWidth: .infinity, alignment: vm.model.contentLayout?.align?.alignments.frame ?? .center)

@@ -7,11 +7,9 @@
 
 @available(iOS 15.0, *)
 public struct BotsiToggleControlModel: Decodable, Sendable, BotsiPaddingProvider {
-    public let toggleState: String
+    public let toggleState: ToggleState
     public let toggleStyle: BotsiStyleModel
-    public let toggleColor: String
-    public let toggleOpacity: Int
-    public let state: String
+    public let toggleColor: BotsiFillColor
     public let activeState: BotsiToggleStateModel
     public let inactiveState: BotsiToggleStateModel
     public let padding: BotsiEdge
@@ -22,13 +20,16 @@ public struct BotsiToggleControlModel: Decodable, Sendable, BotsiPaddingProvider
         case toggleState = "toggle_state"
         case toggleStyle = "toggle_style"
         case toggleColor = "toggle_color"
-        case toggleOpacity = "toggle_opacity"
-        case state
         case activeState = "active_state"
         case inactiveState = "inactive_state"
         case padding
         case verticalOffset = "vertical_offset"
         case contentLayout = "content_layout"
+    }
+
+    public enum ToggleState: String, Decodable, Sendable {
+        case on = "On"
+        case off = "Off"
     }
 }
 

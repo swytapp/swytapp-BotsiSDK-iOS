@@ -13,9 +13,10 @@ public struct BotsiBlockMeta: Decodable, Sendable {
     public let icon: String?
     public let parentId: String?
     public let offerType: String?
+    public let productId: String?
 
     private enum CodingKeys: String, CodingKey {
         case blockName = "block_name"
-        case id, type, icon, parentId, offerType
+        case id, type, icon, parentId, offerType, productId
     }
 }

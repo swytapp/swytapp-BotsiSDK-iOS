@@ -22,10 +22,6 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
     public let verticalOffset: String
     public let contentLayout: BotsiContentLayout
 
-    public var spacing: CGFloat {
-        contentLayout.spacing?.toCGFloat() ?? 0
-    }
-
     public struct LinkItem: Codable, Sendable {
         public let text: String
         public let url: String?
@@ -50,9 +46,9 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
     }
 
     public struct Style: Decodable, Sendable, BotsiTextPropertiesProvider {
-        public let font: BotsiLayoutModel.DefaultFont
-        public let size: String
-        public let color: BotsiFillColor
+        public let font: BotsiLayoutModel.DefaultFont?
+        public let size: String?
+        public let color: BotsiFillColor?
         public let dividersColor: BotsiFillColor?
         public let dividersThicknessString: String?
 

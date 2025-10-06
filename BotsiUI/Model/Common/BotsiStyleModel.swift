@@ -15,7 +15,7 @@ public struct BotsiStyleModel: Decodable, Sendable {
     public let opacity: Int
     public let borderColor: BotsiFillColor
     public let borderOpacity: Int?
-    public let borderThickness: CGFloat?
+    public let borderWidth: CGFloat
     public let radius: CGFloat
 
     private enum CodingKeys: String, CodingKey {
@@ -25,7 +25,7 @@ public struct BotsiStyleModel: Decodable, Sendable {
         case fillColor = "fill_color"
         case borderColor = "border_color"
         case borderOpacity = "border_opacity"
-        case borderThickness = "border_thickness"
+        case borderWidth = "border_thickness"
     }
 
     public init(from decoder: Decoder) throws {
@@ -36,23 +36,7 @@ public struct BotsiStyleModel: Decodable, Sendable {
         self.opacity = try container.decodeIfPresent(Int.self, forKey: .opacity) ?? 100
         self.borderColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .borderColor) ?? .solid(.clear)
         self.borderOpacity = try container.decodeIfPresent(Int.self, forKey: .borderOpacity) ?? 100
-
-        if let doubleValue = try? container.decodeIfPresent(Double.self, forKey: .borderThickness) {
-            self.borderThickness = CGFloat(doubleValue)
-        } else if let stringValue = try? container.decodeIfPresent(String.self, forKey: .borderThickness),
-                  let doubleValue = Double(stringValue) {
-            self.borderThickness = CGFloat(doubleValue)
-        } else {
-            self.borderThickness = nil
-        }
-
-        if let doubleValue = try? container.decodeIfPresent(Double.self, forKey: .radius) {
-            self.radius = CGFloat(doubleValue)
-        } else if let stringValue = try? container.decodeIfPresent(String.self, forKey: .radius),
-                  let doubleValue = Double(stringValue) {
-            self.radius = CGFloat(doubleValue)
-        } else {
-            self.radius = 0
-        }
+        self.borderWidth = try container.decodeCGFloat(forKey: .borderWidth)
+        self.radius = try container.decodeCGFloat(forKey: .radius)
     }
 }

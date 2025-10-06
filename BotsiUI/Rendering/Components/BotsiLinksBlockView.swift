@@ -29,16 +29,20 @@ public struct BotsiLinksBlockView: View {
         .padding(model.padding)
         .offset(y: model.verticalOffset.toCGFloat())
     }
-    
+}
+
+// MARK: - Layout
+@available(iOS 15.0, *)
+private extension BotsiLinksBlockView {
     @ViewBuilder
-    private func layoutStack<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+    func layoutStack<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         if model.contentLayout.layout == .horizontal {
-            HStack(alignment: .center, spacing: model.spacing) {
+            HStack(alignment: .center, spacing: model.contentLayout.spacing) {
                 content()
             }
             .frame(maxWidth: .infinity, alignment: .center)
         } else {
-            VStack(spacing: model.spacing) {
+            VStack(spacing: model.contentLayout.spacing) {
                 content()
             }
             .frame(maxWidth: .infinity, alignment: .center)

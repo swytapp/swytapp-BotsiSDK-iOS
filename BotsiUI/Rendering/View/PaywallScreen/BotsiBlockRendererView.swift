@@ -40,7 +40,8 @@ public struct BotsiBlockRendererView: View {
             BotsiCardBlockView(helper: BotsiCardHelper(block: block, model: model))
             
         case .products(let model):
-            BotsiProductRendererView(block: block) { _  in }
+            BotsiProductsContainerView(model: model, block: block)
+//            BotsiProductRendererView(block: block) { _  in }
             
         case .layout, .productItem, .heroImage, .listItem, .toggleControl, .footer, .localization, .unknown:
             EmptyView()

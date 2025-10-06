@@ -8,22 +8,42 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiProductItemModel: Decodable, Sendable {
+public enum BotsiProductState: String, Decodable, Sendable {
+    case `default` = "default"
+    case selected = "selected"
+}
+
+@available(iOS 15.0, *)
+public enum BotsiProductOfferState: String, Decodable, Sendable {
+    case `default` = "default"
+    case freeTrial = "free_trial"
+    case payAsYouGo = "pay_as_you_go"
+    case payUpFront = "pay_up_front"
+}
+
+@available(iOS 15.0, *)
+public struct BotsiProductItemModel: Decodable, Sendable, Identifiable {
     
-    public let state: String
-    public let offerState: String
+    public var productId: String?
+    public let state: BotsiProductState
+    public let offerState: BotsiProductOfferState
     public let defaultText: BotsiProductItemTextBlock
     public let freeText: BotsiProductItemTextBlock
     public let paygText: BotsiProductItemTextBlock
     public let paufText: BotsiProductItemTextBlock
-    public let defaultState: BotsiProductItemTextState?
+    public let defaultState: BotsiProductItemTextState
     public let selectedState: BotsiProductItemTextState
     public let defaultStyle: BotsiStyleModel
     public let selectedStyle: BotsiStyleModel
     public let isBadge: Bool
     public let badge: BotsiProductItemBadge
 
+    public var id: String {
+        productId ?? UUID().uuidString
+    }
+
     private enum CodingKeys: String, CodingKey {
+        case productId
         case state
         case offerState = "offer_state"
         case defaultText = "default_text"
@@ -63,21 +83,11 @@ public struct BotsiProductItemTextBlock: Decodable, Sendable {
 }
 
 @available(iOS 15.0, *)
-public struct BotsiControlTextModel: Decodable, Sendable {
-    public let font: BotsiFontModel
-    public let size: String
-    public let color: BotsiFillColor?
-    public let opacity: Int?
-    public let selectedColor: String?
-    public let selectedOpacity: Int?
-}
-
-@available(iOS 15.0, *)
 public struct BotsiProductItemTextState: Decodable, Sendable {
-    public let text1: BotsiControlTextModel
-    public let text2: BotsiControlTextModel
-    public let text3: BotsiControlTextModel
-    public let text4: BotsiControlTextModel
+    public let text1: BotsiTextStyleModel
+    public let text2: BotsiTextStyleModel
+    public let text3: BotsiTextStyleModel
+    public let text4: BotsiTextStyleModel
 
     private enum CodingKeys: String, CodingKey {
         case text1 = "text_1"
@@ -88,14 +98,14 @@ public struct BotsiProductItemTextState: Decodable, Sendable {
 }
 
 @available(iOS 15.0, *)
-public struct BotsiProductItemBadge: Decodable, Sendable {
+public struct BotsiProductItemBadge: Decodable, Sendable, BotsiTextPropertiesProvider {
     public let badgeText: String
     public let badgeColor: BotsiFillColor
     public let badgeOpacity: Int?
     public let badgeRadius: String
-    public let badgeTextFont: BotsiFontModel
-    public let badgeTextSize: String
-    public let badgeTextColor: BotsiFillColor?
+    public let font: BotsiLayoutModel.DefaultFont?
+    public let size: String?
+    public let color: BotsiFillColor?
     public let badgeTextOpacity: Int?
 
     private enum CodingKeys: String, CodingKey {
@@ -103,9 +113,9 @@ public struct BotsiProductItemBadge: Decodable, Sendable {
         case badgeColor = "badge_color"
         case badgeOpacity = "badge_opacity"
         case badgeRadius = "badge_radius"
-        case badgeTextFont = "badge_text_font"
-        case badgeTextSize = "badge_text_size"
-        case badgeTextColor = "badge_text_color"
+        case font = "badge_text_font"
+        case size = "badge_text_size"
+        case color = "badge_text_color"
         case badgeTextOpacity = "badge_text_opacity"
     }
 }

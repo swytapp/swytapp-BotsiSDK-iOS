@@ -46,7 +46,7 @@ public struct BotsiFooterBlockView: View {
         .styledContainer(
             fillColor: footer.model.style.fillColor,
             borderColor: footer.model.style.borderColor,
-            borderThickness: footer.model.style.borderThickness ?? 0,
+            borderThickness: footer.model.style.borderWidth ?? 0,
             cornerRadius: footer.radius,
         )
     }

@@ -20,7 +20,7 @@ public struct BotsiProductsModel: Decodable, Sendable {
     public let text4: BotsiTextStyleModel
     public let padding: BotsiEdge
     public let verticalOffset: String
-    public let contentLayout: ProductContentLayoutModel
+    public let contentLayout: BotsiContentLayout
 
     enum CodingKeys: String, CodingKey {
         case grouping, state, padding
@@ -37,27 +37,12 @@ public struct BotsiProductsModel: Decodable, Sendable {
 }
 
 @available(iOS 15.0, *)
-public struct ProductContentLayoutModel: Decodable, Sendable {
-    public let layout: BotsiLayout
-    public let align: BotsiAlign
-    public let padding: BotsiEdge
-    public let spacing: String
-
-    enum CodingKeys: String, CodingKey {
-        case layout
-        case align
-        case padding
-        case spacing
-    }
-}
-
-@available(iOS 15.0, *)
 public enum BotsiProductGrouping: String, Decodable, Sendable {
     case noSwitch = "no switch"       // No switch (all products are visible)
-    case toggle = "Toggle"            // Toggle (for free trial and other offers)
-    case tabs = "Tabs"                // Tabs (for comparing plan groups)
-    case revealMore = "Buttons"       // Button that reveals more plans below
-    case bottomSheet = "Bottom sheet" // Bottom sheet with more plans
+    case toggle                       // Toggle (for free trial and other offers)
+    case tabs                         // Tabs (for comparing plan groups)
+    case revealMore = "buttons"       // Button that reveals more plans below
+    case bottomSheet = "bottom sheet" // Bottom sheet with more plans
     case unknown                      // fallback
 
     public init(from decoder: Decoder) throws {

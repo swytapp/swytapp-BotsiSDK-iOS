@@ -54,7 +54,6 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let isSelected: Bool
         public let types: [FontType]
 
-         /// Returns the selected font type from the font's types array
         public var selectedFontType: BotsiLayoutModel.FontType? {
             types.first { $0.isSelected }
         }
@@ -78,9 +77,9 @@ public struct BotsiLayoutModel: Decodable, Sendable {
     // top_buttons ------------------------------------------------------------
     public struct ButtonText: Decodable, Sendable, BotsiTextPropertiesProvider {
         public let text: String
-        public let font: DefaultFont
-        public let size: String
-        public let color: BotsiFillColor
+        public let font: DefaultFont?
+        public let size: String?
+        public let color: BotsiFillColor?
         public let opacity: Int?
     }
     
@@ -243,6 +242,7 @@ public enum BotsiAlign: String, Codable, Sendable {
     case right
     case bottom
     case top
+    case column
     
     public var alignments: (horizontal: HorizontalAlignment, vertical: VerticalAlignment, frame: Alignment, text: TextAlignment) {
         switch self {
@@ -256,6 +256,8 @@ public enum BotsiAlign: String, Codable, Sendable {
             return (.leading, .bottom, .bottom, .leading)
         case .top:
             return (.leading, .top, .top, .leading)
+        case .column:
+            return (.leading, .center, .center, .leading)
         }
     }
 }

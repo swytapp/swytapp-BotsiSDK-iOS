@@ -30,8 +30,26 @@ public struct BotsiContentLayout: Codable, Sendable {
     public let padding: BotsiEdge?
     public let verticalOffset: String?
     public let align: BotsiAlign?
-    public let spacing: String?
+    public let spacing: CGFloat
     public let layout: BotsiLayout?
+
+    private enum CodingKeys: String, CodingKey {
+        case padding
+        case verticalOffset = "vertical_offset"
+        case align
+        case spacing
+        case layout
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        padding = try container.decodeIfPresent(BotsiEdge.self, forKey: .padding)
+        verticalOffset = try container.decodeIfPresent(String.self, forKey: .verticalOffset)
+        align = try container.decodeIfPresent(BotsiAlign.self, forKey: .align)
+        spacing = try container.decodeCGFloat(forKey: .spacing)
+        layout = try container.decodeIfPresent(BotsiLayout.self, forKey: .layout)
+    }
 }
 
 @available(iOS 15.0, *)

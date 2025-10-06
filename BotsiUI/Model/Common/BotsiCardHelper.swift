@@ -42,7 +42,7 @@ public struct BotsiCardHelper {
     }
 
     public var borderWidth: CGFloat {
-        model.style.borderThickness ?? 0
+        model.style.borderWidth ?? 0
     }
 
     public var cornerRadius: CGFloat {
@@ -54,7 +54,7 @@ public struct BotsiCardHelper {
     }
 
     public var spacing: CGFloat {
-        model.contentLayout.spacing?.toCGFloat() ?? 0
+        model.contentLayout.spacing
     }
 
     public var verticalOffset: CGFloat {

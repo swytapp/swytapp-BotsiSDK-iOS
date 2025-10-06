@@ -20,10 +20,10 @@ public struct BotsiTextModel: Decodable, Sendable, BotsiPaddingProvider {
     public struct TextBlock: Decodable, Sendable, BotsiTextPropertiesProvider {
         public let text: String
         public let textFallback: String?
-        public let font: BotsiLayoutModel.DefaultFont
-        public let size: String
+        public let font: BotsiLayoutModel.DefaultFont?
+        public let size: String?
         public let align: BotsiAlign
-        public let color: BotsiFillColor
+        public let color: BotsiFillColor?
 
         private enum CodingKeys: String, CodingKey {
             case text, size, align, color, font
