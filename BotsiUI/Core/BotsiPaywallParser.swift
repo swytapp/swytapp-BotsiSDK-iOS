@@ -80,6 +80,10 @@ public final class BotsiPaywallParser {
                 return .toggleOn(try decoder.decode(BotsiToggleOnModel.self, from: jsonData))
             case .toggleOff:
                 return .toggleOff(try decoder.decode(BotsiToggleOffModel.self, from: jsonData))
+            case .tabControl:
+                return .tabControl(try decoder.decode(BotsiTabControlModel.self, from: jsonData))
+            case .tab:
+                return .tab(try decoder.decode(BotsiTabModel.self, from: jsonData))
             case .unknown:
                 return .unknown(nil)
             }

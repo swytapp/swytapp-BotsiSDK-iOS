@@ -31,7 +31,7 @@ public struct BotsiProductView: View {
                          cornerRadius: viewModel.style(actionHandler: actionHandler).radius)
         .overlay(alignment: .top) {
             if viewModel.product.isBadge {
-                    badgeView
+                badgeView
             }
         }
         .onTapGesture {
@@ -79,12 +79,12 @@ private extension BotsiProductView {
                                        text: text,
                                        align: viewModel.textAlignment(for: index),
                                        height: .infinity)
-                                       .frame(maxHeight: .infinity)
+                    .frame(maxHeight: .infinity)
                 }
             }
         }
     }
-
+    
     @ViewBuilder
     func textViewGroup(_ texts: [(Int, BotsiTextStyleModel, String)]) -> some View {
         ForEach(texts, id: \.0) { index, textStyle, text in
@@ -92,7 +92,7 @@ private extension BotsiProductView {
                                text: text,
                                align: viewModel.textAlignment(for: index),
                                height: .infinity)
-                               .frame(maxHeight: .infinity)
+            .frame(maxHeight: .infinity)
         }
     }
 }

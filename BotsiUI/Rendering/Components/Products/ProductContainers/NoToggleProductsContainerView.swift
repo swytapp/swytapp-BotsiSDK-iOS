@@ -14,21 +14,24 @@ struct NoToggleProductsContainerView: View {
     let contentLayout: BotsiContentLayout
     let padding: BotsiEdge
     let offset: CGFloat
+    let tabId: String
     
-    init(model: BotsiProductsModel, products: [BotsiProductItemModel]) {
+    init(model: BotsiProductsModel, products: [BotsiProductItemModel], tabId: String = "") {
         self.model = model
         self.products = products
         self.contentLayout = model.contentLayout
         self.padding = model.padding
         self.offset = model.verticalOffset.toCGFloat()
+        self.tabId = tabId
     }
     
-    init(model: BotsiProductsModel, products: [BotsiProductItemModel], layout: BotsiContentLayout, padding: BotsiEdge, offset: CGFloat) {
+    init(model: BotsiProductsModel, products: [BotsiProductItemModel], layout: BotsiContentLayout, padding: BotsiEdge, offset: CGFloat, tabId: String = "") {
         self.model = model
         self.products = products
         self.contentLayout = layout
         self.padding = padding
         self.offset = offset
+        self.tabId = tabId
     }
     
     var body: some View {
@@ -57,10 +60,11 @@ struct NoToggleProductsContainerView: View {
     
     @ViewBuilder
     private var productViews: some View {
-        ForEach(products, id: \.id) { product in
+        ForEach(products) { product in
             let viewModel = BotsiProductViewModel(product: product, productStyle: model, layout: contentLayout)
             BotsiProductView(viewModel: viewModel)
                 .frame(maxHeight: .infinity)
+                .id("\(tabId)-\(product.id)")
         }
     }
 }

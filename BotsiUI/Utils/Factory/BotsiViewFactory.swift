@@ -30,6 +30,12 @@ public enum BotsiViewFactory {
         let viewModel = BotsiProductViewModel(product: product, productStyle: productStyle)
         return BotsiProductView(viewModel: viewModel)
     }
+
+     static func makeNoToggleProducts(model: BotsiProductsModel,
+                                   block: BotsiPaywallBlock) -> AnyView {
+        let products = extractProducts(from: block.children ?? [])
+        return AnyView(NoToggleProductsContainerView(model: model, products: products))
+    }
     
     static func makeToggleProducts(model: BotsiProductsModel,
                                   block: BotsiPaywallBlock) -> AnyView {
@@ -49,11 +55,20 @@ public enum BotsiViewFactory {
                                                    toggleOffModel: toggleOffModel,
                                                    toggleModel: toggleModel))
     }
-    
-    static func makeNoToggleProducts(model: BotsiProductsModel,
-                                   block: BotsiPaywallBlock) -> AnyView {
-        let products = extractProducts(from: block.children ?? [])
-        return AnyView(NoToggleProductsContainerView(model: model, products: products))
+
+    static func makeTabProducts(model: BotsiProductsModel,
+                                block: BotsiPaywallBlock) -> AnyView {
+        guard let tabControlModel: BotsiTabControlModel = findModel(.tabControl, in: block) else {
+            return AnyView(makeNoToggleProducts(model: model, block: block))
+        }
+        
+        let tabGroups = block.children?.filter { $0.meta.type == .tab } ?? []
+        let tabProducts: [(String, BotsiTabModel, [BotsiProductItemModel])] = tabGroups.compactMap { tabGroup in
+            guard case .tab(let tabModel) = tabGroup.content else { return nil }
+            let products = extractProducts(from: tabGroup.children ?? [])
+            return (tabGroup.meta.id, tabModel, products)
+        }
+        return AnyView(TabProductsContainerView(model: model, tabControlModel: tabControlModel, tabModels: tabProducts))
     }
 }
 
@@ -64,17 +79,8 @@ private extension BotsiViewFactory {
     static func findModel<T>(_ type: BotsiBlockType, in block: BotsiPaywallBlock) -> T? {
         guard let content = block.children?.first(where: { $0.meta.type == type })?.content else { return nil }
         
-        switch type {
-        case .toggleControl:
-            if case .toggleControl(let model) = content { return model as? T }
-        case .toggleOn:
-            if case .toggleOn(let model) = content { return model as? T }
-        case .toggleOff:
-            if case .toggleOff(let model) = content { return model as? T }
-        default:
-            break
-        }
-        return nil
+        let mirror = Mirror(reflecting: content)
+        return mirror.children.first?.value as? T
     }
     
     static func findBlock(_ type: BotsiBlockType, in block: BotsiPaywallBlock) -> BotsiPaywallBlock? {

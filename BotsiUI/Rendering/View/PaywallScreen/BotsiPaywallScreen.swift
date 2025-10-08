@@ -125,13 +125,16 @@ private extension BotsiPaywallScreen {
 private extension BotsiPaywallScreen {
     
     func scrollContent(_ proxy: GeometryProxy) -> some View {
-        NonBouncingScrollView {
+        ScrollView {
             VStack(spacing: 0) {
                 overlaySpacerIfNeeded(proxy)
                 mainContent(proxy)
                 footerFiller
+                
+                Spacer(minLength: 0)
             }
         }
+        .scrollBounceBehavior()
         .ignoresSafeArea()
     }
     

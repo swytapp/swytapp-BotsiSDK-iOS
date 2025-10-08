@@ -48,9 +48,4 @@ final class BotsiButtonViewModel: ObservableObject {
     var align: BotsiAlign {
         model.contentLayout?.align ?? .center
     }
-
-    func tap() {
-        // TODO: - Setup action event
-        print("KA: \(model.action)")
-    }
 }

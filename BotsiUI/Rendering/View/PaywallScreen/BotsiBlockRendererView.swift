@@ -41,10 +41,6 @@ public struct BotsiBlockRendererView: View {
             
         case .products(let model):
             BotsiProductsContainerView(model: model, block: block)
-//            BotsiProductRendererView(block: block) { _  in }
-            
-        case .layout, .productItem, .heroImage, .listItem, .toggleControl, .footer, .localization, .unknown:
-            EmptyView()
             
         default:
             EmptyView()

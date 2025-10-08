@@ -37,7 +37,7 @@ struct ToggleProductsContainerView: View {
         isOn ? toggleModel.activeState.secondaryTextStyle : toggleModel.inactiveState.secondaryTextStyle
     }
     
-    private var onToggleProperties: (contentLayout: BotsiContentLayout, padding: BotsiEdge, offset: CGFloat) {
+    private var toggleProperties: (contentLayout: BotsiContentLayout, padding: BotsiEdge, offset: CGFloat) {
         if isOn {
             return (toggleOnModel.contentLayout, toggleOnModel.padding, toggleOnModel.verticalOffset.toCGFloat())
         } else {
@@ -73,9 +73,9 @@ struct ToggleProductsContainerView: View {
             
             NoToggleProductsContainerView(model: model,
                                           products: isOn ? toggleOnProducts : toggleOffProducts,
-                                          layout: onToggleProperties.contentLayout,
-                                          padding: onToggleProperties.padding,
-                                          offset: onToggleProperties.offset)
+                                          layout: toggleProperties.contentLayout,
+                                          padding: toggleProperties.padding,
+                                          offset: toggleProperties.offset)
         }
         .onAppear {
             isOn = toggleModel.toggleState == .on
