@@ -5,7 +5,7 @@
 //  Created by Kostiantyn Antoniuk on 18.06.2025.
 //
 
-import Foundation
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
@@ -16,7 +16,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
     public let secondaryText: ButtonText?
     public let style: BotsiButtonStyle
     public let padding: BotsiEdge
-    public let verticalOffset: String?
+    public let verticalOffsetString: String?
     public let contentLayout: BotsiContentLayout?
 
     private enum CodingKeys: String, CodingKey {
@@ -24,7 +24,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         case padding = "margin"
         case actionLabel = "action_label"
         case secondaryText = "secondary_text"
-        case verticalOffset = "vertical_offset"
+        case verticalOffsetString = "vertical_offset"
         case contentLayout = "content_layout"
     }
     
@@ -38,14 +38,14 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         self.padding = try container.decodeIfPresent(BotsiEdge.self, forKey: .padding) ?? .defaultEdge
         self.contentLayout = try container.decodeIfPresent(BotsiContentLayout.self, forKey: .contentLayout)
         
-        if let string = try? container.decodeIfPresent(String.self, forKey: .verticalOffset) {
-            self.verticalOffset = string
-        } else if let int = try? container.decodeIfPresent(Int.self, forKey: .verticalOffset) {
-            self.verticalOffset = String(int)
-        } else if let double = try? container.decodeIfPresent(Double.self, forKey: .verticalOffset) {
-            self.verticalOffset = String(double)
+        if let string = try? container.decodeIfPresent(String.self, forKey: .verticalOffsetString) {
+            self.verticalOffsetString = string
+        } else if let int = try? container.decodeIfPresent(Int.self, forKey: .verticalOffsetString) {
+            self.verticalOffsetString = String(int)
+        } else if let double = try? container.decodeIfPresent(Double.self, forKey: .verticalOffsetString) {
+            self.verticalOffsetString = String(double)
         } else {
-            self.verticalOffset = nil
+            self.verticalOffsetString = nil
         }
     }
 
@@ -63,5 +63,37 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
             text = try container.decode(String.self, forKey: .text)
             textStyle = try container.decodeIfPresent(BotsiTextStyleModel.self, forKey: .textStyle)
         }
+    }
+
+    public var textColor: Color {
+        text?.textStyle?.color?.toColor() ?? .white
+    }
+    
+    public var fillColor: BotsiFillColor? {
+        style.fillColor
+    }
+    
+    public var secondaryTextColor: Color {
+        secondaryText?.textStyle?.color?.toColor() ?? .white
+    }
+
+    public var borderColor: Color {
+        style.borderColor.toColor() ?? .clear
+    }
+    
+    public var borderWidth: CGFloat {
+        style.borderThickness.toCGFloat()
+    }
+    
+    public var cornerRadius: CGFloat {
+        style.radius.toCGFloat() ?? 0
+    }
+    
+    public var verticalOffset: CGFloat {
+        verticalOffsetString?.toCGFloat() ?? 0
+    }
+    
+    public var align: BotsiAlign {
+        contentLayout?.align ?? .center
     }
 }

@@ -10,46 +10,46 @@ import SwiftUI
 @available(iOS 15.0, *)
 public struct BotsiButtonBlockView: View {
     
-    @StateObject private var vm: BotsiButtonViewModel
     @EnvironmentObject var actionHandler: PaywallActionHandler
-    
-    init(viewModel: BotsiButtonViewModel) {
-        _vm = StateObject(wrappedValue: viewModel)
+    private let model: BotsiButtonModel
+
+    init(model: BotsiButtonModel) {
+        self.model = model
     }
     
     public var body: some View {
         HStack {
             
             buttonContent
-                .padding(vm.model.contentLayout?.padding)
+                .padding(model.contentLayout?.padding)
                 .styledContainer(
-                    fillColor: vm.fillColor,
-                    borderColor: vm.model.style.borderColor,
-                    borderThickness: vm.borderWidth,
-                    cornerRadius: vm.cornerRadius
+                    fillColor: model.fillColor,
+                    borderColor: model.style.borderColor,
+                    borderThickness: model.borderWidth,
+                    cornerRadius: model.cornerRadius
                 )
         }
-        .offset(y: vm.verticalOffset)
+        .offset(y: model.verticalOffset)
     }
     
     @ViewBuilder
     private var buttonContent: some View {
         Button {
-            actionHandler.handleAction(.action(vm.model.action, customId: vm.model.actionLabel))
+            actionHandler.handleAction(.action(model.action, customId: model.actionLabel))
         } label: {
             VStack(spacing: 0) {
-                if let text = vm.model.text {
+                if let text = model.text {
                     BotsiTextBlockView(propertiesProvider: text.textStyle,
                                        text: text.text,
-                                       align: vm.align)
-                    .frame(maxWidth: .infinity, alignment: vm.model.contentLayout?.align?.alignments.frame ?? .center)
+                                       align: model.align)
+                    .frame(maxWidth: .infinity, alignment: model.contentLayout?.align?.alignments.frame ?? .center)
                 }
                 
-                if let secondaryText = vm.model.secondaryText, !secondaryText.text.isEmpty {
+                if let secondaryText = model.secondaryText, !secondaryText.text.isEmpty {
                     BotsiTextBlockView(propertiesProvider: secondaryText.textStyle,
                                        text: secondaryText.text,
-                                       align: vm.align)
-                    .frame(maxWidth: .infinity, alignment: vm.model.contentLayout?.align?.alignments.frame ?? .center)
+                                       align: model.align)
+                    .frame(maxWidth: .infinity, alignment: model.contentLayout?.align?.alignments.frame ?? .center)
                 }
             }
             

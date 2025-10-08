@@ -22,7 +22,7 @@ public struct BotsiBlockRendererView: View {
             BotsiImageBlockView(model: model)
             
         case .button(let model):
-            BotsiViewFactory.makeButton(model: model)
+            BotsiButtonBlockView(model: model)
             
         case .links(let model):
             BotsiLinksBlockView(model: model)

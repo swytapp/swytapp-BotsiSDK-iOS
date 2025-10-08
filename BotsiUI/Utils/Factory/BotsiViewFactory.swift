@@ -18,11 +18,6 @@ public enum BotsiViewFactory {
         let viewModel = BotsiTimerViewModel(model: model, timerProvider: timerProvider)
         return BotsiTimerBlockView(viewModel: viewModel)
     }
-    
-    static func makeButton(model: BotsiButtonModel) -> BotsiButtonBlockView {
-        let viewModel = BotsiButtonViewModel(model: model)
-        return BotsiButtonBlockView(viewModel: viewModel)
-    }
 
     // MARK: - Products
     static func makeProduct(product: BotsiProductItemModel,
