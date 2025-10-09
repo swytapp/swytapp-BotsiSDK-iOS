@@ -37,32 +37,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         self.secondaryText = try container.decodeIfPresent(ButtonText.self, forKey: .secondaryText)
         self.padding = try container.decodeIfPresent(BotsiEdge.self, forKey: .padding) ?? .defaultEdge
         self.contentLayout = try container.decodeIfPresent(BotsiContentLayout.self, forKey: .contentLayout)
-        
-        if let string = try? container.decodeIfPresent(String.self, forKey: .verticalOffsetString) {
-            self.verticalOffsetString = string
-        } else if let int = try? container.decodeIfPresent(Int.self, forKey: .verticalOffsetString) {
-            self.verticalOffsetString = String(int)
-        } else if let double = try? container.decodeIfPresent(Double.self, forKey: .verticalOffsetString) {
-            self.verticalOffsetString = String(double)
-        } else {
-            self.verticalOffsetString = nil
-        }
-    }
-
-    public struct ButtonText: Decodable, Sendable {
-        public let text: String
-        public let textStyle: BotsiTextStyleModel?
-
-        private enum CodingKeys: String, CodingKey {
-            case text 
-            case textStyle = "text_style"
-        }
-
-        public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            text = try container.decode(String.self, forKey: .text)
-            textStyle = try container.decodeIfPresent(BotsiTextStyleModel.self, forKey: .textStyle)
-        }
+        self.verticalOffsetString = try container.decodeIfPresent(String.self, forKey: .verticalOffsetString)
     }
 
     public var textColor: Color {
@@ -80,20 +55,29 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
     public var borderColor: Color {
         style.borderColor.toColor() ?? .clear
     }
-    
-    public var borderWidth: CGFloat {
-        style.borderThickness.toCGFloat()
-    }
-    
-    public var cornerRadius: CGFloat {
-        style.radius.toCGFloat() ?? 0
-    }
-    
+ 
     public var verticalOffset: CGFloat {
         verticalOffsetString?.toCGFloat() ?? 0
     }
     
     public var align: BotsiAlign {
         contentLayout?.align ?? .center
+    }
+}
+
+@available(iOS 15.0, *)
+public struct ButtonText: Decodable, Sendable {
+    public let text: String
+    public let textStyle: BotsiTextStyleModel?
+
+    private enum CodingKeys: String, CodingKey {
+        case text
+        case textStyle = "text_style"
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        text = try container.decode(String.self, forKey: .text)
+        textStyle = try container.decodeIfPresent(BotsiTextStyleModel.self, forKey: .textStyle)
     }
 }

@@ -9,9 +9,9 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct TabProductsContainerView: View {
-    let model: BotsiProductsModel
-    let tabControlModel: BotsiTabControlModel
-    let tabModels: [(id: String, tabModel: BotsiTabModel, products: [BotsiProductItemModel])]
+    private let model: BotsiProductsModel
+    private let tabControlModel: BotsiTabControlModel
+    private let tabModels: [(id: String, tabModel: BotsiTabModel, products: [BotsiProductItemModel])]
     
     @State private var selectedTabId: String
 

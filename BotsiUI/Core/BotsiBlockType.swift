@@ -26,6 +26,9 @@ public enum BotsiBlockType: String, Decodable, Sendable {
     case toggleOff     = "toggle_off"
     case tabControl    = "tab_control"
     case tab           = "tab_group"
+    case basePlans     = "main_plans"
+    case morePlans     = "more_plans"
+    case moreButton    = "plans_control"
     case unknown
     
     public init(from decoder: Decoder) throws {

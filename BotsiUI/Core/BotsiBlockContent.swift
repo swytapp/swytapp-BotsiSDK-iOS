@@ -30,6 +30,9 @@ public enum BotsiBlockContent: Decodable, Sendable {
     case toggleOff(BotsiToggleOffModel)
     case tabControl(BotsiTabControlModel)
     case tab(BotsiTabModel)
+    case basePlans(BotsiMorePlansModel)
+    case morePlans(BotsiMorePlansModel)
+    case moreButton(BotsiMoreButtonModel)
     
     case unknown(EmptyContent?)
 
@@ -80,6 +83,12 @@ public enum BotsiBlockContent: Decodable, Sendable {
             self = .tabControl(try container.decode(BotsiTabControlModel.self, forKey: .content))
         case .tab:
             self = .tab(try container.decode(BotsiTabModel.self, forKey: .content))
+        case .basePlans:
+            self = .basePlans(try container.decode(BotsiMorePlansModel.self, forKey: .content))
+        case .morePlans:
+            self = .morePlans(try container.decode(BotsiMorePlansModel.self, forKey: .content))
+        case .moreButton:
+            self = .moreButton(try container.decode(BotsiMoreButtonModel.self, forKey: .content))
         default:
             self = .unknown(nil)
         }

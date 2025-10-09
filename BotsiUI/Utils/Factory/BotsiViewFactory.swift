@@ -65,6 +65,20 @@ public enum BotsiViewFactory {
         }
         return AnyView(TabProductsContainerView(model: model, tabControlModel: tabControlModel, tabModels: tabProducts))
     }
+    
+    static func makeMorePlans(model: BotsiProductsModel,
+                             block: BotsiPaywallBlock) -> AnyView {
+        guard let basePlans: BotsiMorePlansModel = findModel(.basePlans, in: block),
+              let morePlans: BotsiMorePlansModel = findModel(.morePlans, in: block),
+              let buttonModel: BotsiMoreButtonModel = findModel(.moreButton, in: block) else {
+            return AnyView(makeNoToggleProducts(model: model, block: block))
+        }
+
+        let baseProducts = extractProducts(from: findBlock(.basePlans, in: block)?.children ?? [])
+        let moreProducts = extractProducts(from: findBlock(.morePlans, in: block)?.children ?? [])
+        
+        return AnyView(MorePlansContainerView(model: model, basePlans: basePlans, morePlans: morePlans, buttonModel: buttonModel, baseProducts: baseProducts, moreProducts: moreProducts))
+    }
 }
 
 // MARK: - Private Helpers

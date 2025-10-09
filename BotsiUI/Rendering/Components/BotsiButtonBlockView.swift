@@ -25,8 +25,8 @@ public struct BotsiButtonBlockView: View {
                 .styledContainer(
                     fillColor: model.fillColor,
                     borderColor: model.style.borderColor,
-                    borderThickness: model.borderWidth,
-                    cornerRadius: model.cornerRadius
+                    borderThickness: model.style.borderWidth,
+                    cornerRadius: model.style.cornerRadius
                 )
         }
         .offset(y: model.verticalOffset)
@@ -38,7 +38,7 @@ public struct BotsiButtonBlockView: View {
             actionHandler.handleAction(.action(model.action, customId: model.actionLabel))
         } label: {
             VStack(spacing: 0) {
-                if let text = model.text {
+                if let text = model.text, !text.text.isEmpty {
                     BotsiTextBlockView(propertiesProvider: text.textStyle,
                                        text: text.text,
                                        align: model.align)
@@ -52,7 +52,6 @@ public struct BotsiButtonBlockView: View {
                     .frame(maxWidth: .infinity, alignment: model.contentLayout?.align?.alignments.frame ?? .center)
                 }
             }
-            
         }
     }
 }

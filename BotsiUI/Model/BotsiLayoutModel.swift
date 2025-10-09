@@ -133,6 +133,14 @@ public struct BotsiButtonStyle: Decodable, Sendable {
     public let borderOpacity: Int?
     public let borderThickness: String
     public let radius: String
+    
+    public var borderWidth: CGFloat {
+        borderThickness.toCGFloat() ?? 0
+    }
+
+    public var cornerRadius: CGFloat {
+        radius.toCGFloat() ?? 0
+    }
 
     private enum CodingKeys: String, CodingKey {
         case color, opacity, radius
