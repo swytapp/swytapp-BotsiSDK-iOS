@@ -9,6 +9,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 struct ToggleProductsContainerView: View {
+    @EnvironmentObject private var actionHandler: PaywallActionHandler
     let model: BotsiProductsModel
     
     let toggleOnProducts: [BotsiProductItemModel]
@@ -77,8 +78,22 @@ struct ToggleProductsContainerView: View {
                                           padding: toggleProperties.padding,
                                           offset: toggleProperties.offset)
         }
+        .padding(model.padding)
         .onAppear {
             isOn = toggleModel.toggleState == .on
         }
+        .onChange(of: isOn) { _ in
+            updateSelectedProduct()
+        }
+    }
+    
+    private func updateSelectedProduct() {
+        let selectedId: String?
+        if isOn {
+            selectedId = toggleOnProducts.first(where: { $0.state == .selected })?.productId
+        } else {
+            selectedId = toggleOffProducts.first(where: { $0.state == .selected })?.productId
+        }
+        actionHandler.handleAction(.selectProduct(selectedId ?? ""))
     }
 }

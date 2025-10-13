@@ -85,11 +85,13 @@ public final class BotsiPaywallParser {
             case .tab:
                 return .tab(try decoder.decode(BotsiTabModel.self, from: jsonData))
             case .basePlans:
-                return .basePlans(try decoder.decode(BotsiMorePlansModel.self, from: jsonData))
+                return .basePlans(try decoder.decode(BotsiPlansModel.self, from: jsonData))
             case .morePlans:
-                return .morePlans(try decoder.decode(BotsiMorePlansModel.self, from: jsonData))
+                return .morePlans(try decoder.decode(BotsiPlansModel.self, from: jsonData))
             case .moreButton:
                 return .moreButton(try decoder.decode(BotsiMoreButtonModel.self, from: jsonData))
+            case .bottomSheet:
+                return .bottomSheet(try decoder.decode(BotsiBottomSheetModel.self, from: jsonData))
             case .unknown:
                 return .unknown(nil)
             }

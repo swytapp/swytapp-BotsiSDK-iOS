@@ -39,6 +39,9 @@ public struct BotsiPaywallScreen: View {
                 .overlay(alignment: .bottom) {
                     footerContent
                 }
+                .overlay {
+                    bottomSheetOverlay
+                }
                 .if(vm.heroImage?.style != .transparent, transform: {
                     $0.backgroundFill(vm.layoutVM?.fillColor)
                 })
@@ -198,6 +201,22 @@ private extension BotsiPaywallScreen {
             BotsiFooterBlockView(model: footerVM) { height in
                 footerHeight = height
             }
+        }
+    }
+}
+
+// MARK: - Bottom Sheet
+@available(iOS 15.0, *)
+private extension BotsiPaywallScreen {
+    
+    @ViewBuilder
+    var bottomSheetOverlay: some View {
+        if actionHandler.isBottomSheetPresented,
+           let productBlock = vm.contentBlocks.first(where: { $0.meta.type == .products }),
+           case .products(let model) = productBlock.content,
+           let sheet = BotsiViewFactory.makeBottomSheet(model: model, block: productBlock) {
+            sheet
+                .transition(.move(edge: .bottom))
         }
     }
 }

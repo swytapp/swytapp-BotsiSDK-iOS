@@ -29,20 +29,11 @@ public struct BotsiProductsContainerView: View {
             case .revealMore:
                 BotsiViewFactory.makeMorePlans(model: model, block: block)
             case .bottomSheet:
-                BottomSheetProductsView(model: model)
+                BotsiViewFactory.makeMorePlans(model: model, block: block)
             case .unknown:
                 BotsiViewFactory.makeNoToggleProducts(model: model, block: block)
             }
         }
-    }
-}
-
-@available(iOS 15.0, *)
-private struct BottomSheetProductsView: View {
-    let model: BotsiProductsModel
-    
-    var body: some View {
-        EmptyView() // TODO: Implement UI
     }
 }
 

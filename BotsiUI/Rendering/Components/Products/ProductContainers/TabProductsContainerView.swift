@@ -37,6 +37,7 @@ public struct TabProductsContainerView: View {
                 )
             }
         }
+        .padding(model.padding)
     }
 }
 
@@ -75,6 +76,7 @@ private extension TabProductsContainerView {
                     italic: tabControlModel.tabFont.isItalic
                 ))
                 .padding(tabStyle.padding)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .styledContainer(fillColor: tabStyle.style.fillColor,
                          borderColor: tabStyle.style.borderColor,

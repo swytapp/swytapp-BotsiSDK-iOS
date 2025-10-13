@@ -18,22 +18,22 @@ public enum BotsiViewFactory {
         let viewModel = BotsiTimerViewModel(model: model, timerProvider: timerProvider)
         return BotsiTimerBlockView(viewModel: viewModel)
     }
-
+    
     // MARK: - Products
     static func makeProduct(product: BotsiProductItemModel,
                             productStyle: BotsiProductsModel) -> BotsiProductView {
         let viewModel = BotsiProductViewModel(product: product, productStyle: productStyle)
         return BotsiProductView(viewModel: viewModel)
     }
-
-     static func makeNoToggleProducts(model: BotsiProductsModel,
-                                   block: BotsiPaywallBlock) -> AnyView {
+    
+    static func makeNoToggleProducts(model: BotsiProductsModel,
+                                     block: BotsiPaywallBlock) -> AnyView {
         let products = extractProducts(from: block.children ?? [])
         return AnyView(NoToggleProductsContainerView(model: model, products: products))
     }
     
     static func makeToggleProducts(model: BotsiProductsModel,
-                                  block: BotsiPaywallBlock) -> AnyView {
+                                   block: BotsiPaywallBlock) -> AnyView {
         guard let toggleModel: BotsiToggleControlModel = findModel(.toggleControl, in: block),
               let toggleOnModel: BotsiToggleOnModel = findModel(.toggleOn, in: block),
               let toggleOffModel: BotsiToggleOffModel = findModel(.toggleOff, in: block) else {
@@ -44,13 +44,13 @@ public enum BotsiViewFactory {
         let toggleOffProducts = extractProducts(from: findBlock(.toggleOff, in: block)?.children ?? [])
         
         return AnyView(ToggleProductsContainerView(model: model,
-                                                   toggleOnProducts: toggleOnProducts, 
+                                                   toggleOnProducts: toggleOnProducts,
                                                    toggleOffProducts: toggleOffProducts,
-                                                   toggleOnModel: toggleOnModel, 
+                                                   toggleOnModel: toggleOnModel,
                                                    toggleOffModel: toggleOffModel,
                                                    toggleModel: toggleModel))
     }
-
+    
     static func makeTabProducts(model: BotsiProductsModel,
                                 block: BotsiPaywallBlock) -> AnyView {
         guard let tabControlModel: BotsiTabControlModel = findModel(.tabControl, in: block) else {
@@ -67,17 +67,34 @@ public enum BotsiViewFactory {
     }
     
     static func makeMorePlans(model: BotsiProductsModel,
-                             block: BotsiPaywallBlock) -> AnyView {
-        guard let basePlans: BotsiMorePlansModel = findModel(.basePlans, in: block),
-              let morePlans: BotsiMorePlansModel = findModel(.morePlans, in: block),
+                              block: BotsiPaywallBlock) -> AnyView {
+        guard let basePlans: BotsiPlansModel = findModel(.basePlans, in: block),
               let buttonModel: BotsiMoreButtonModel = findModel(.moreButton, in: block) else {
             return AnyView(makeNoToggleProducts(model: model, block: block))
         }
-
-        let baseProducts = extractProducts(from: findBlock(.basePlans, in: block)?.children ?? [])
-        let moreProducts = extractProducts(from: findBlock(.morePlans, in: block)?.children ?? [])
         
-        return AnyView(MorePlansContainerView(model: model, basePlans: basePlans, morePlans: morePlans, buttonModel: buttonModel, baseProducts: baseProducts, moreProducts: moreProducts))
+        let morePlans: BotsiPlansModel? = findModel(.morePlans, in: block)
+        let baseProducts = extractProducts(from: findBlock(.basePlans, in: block)?.children ?? [])
+        let moreProducts: [BotsiProductItemModel] = extractProducts(from: findBlock(.morePlans, in: block)?.children ?? [])
+        
+        return AnyView(MorePlansContainerView(
+            model: model,
+            basePlans: basePlans,
+            morePlans: morePlans,
+            buttonModel: buttonModel,
+            baseProducts: baseProducts,
+            moreProducts: moreProducts
+        ))
+    }
+
+    static func makeBottomSheet(model: BotsiProductsModel, block: BotsiPaywallBlock) -> AnyView? {
+        guard let bottomSheetModel: BotsiBottomSheetModel = findModel(.bottomSheet, in: block),
+              let buttonModel: BotsiMoreButtonModel = findModel(.moreButton, in: block) else {
+            return nil
+        }
+        let moreProducts: [BotsiProductItemModel] = extractProducts(from: findBlock(.bottomSheet, in: block)?.children ?? [])
+        
+        return AnyView(BottomSheetContainerView(model: model, bottomSheetModel: bottomSheetModel, products: moreProducts))
     }
 }
 

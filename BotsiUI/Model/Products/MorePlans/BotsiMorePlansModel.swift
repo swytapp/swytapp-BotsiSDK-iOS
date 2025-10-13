@@ -8,7 +8,7 @@
 import Foundation
 
 @available(iOS 15.0, *)
-public struct BotsiMorePlansModel: Decodable, Sendable {
+public struct BotsiPlansModel: Decodable, Sendable {
     public let padding: BotsiEdge
     public let verticalOffset: String
     public let contentLayout: BotsiContentLayout

@@ -14,6 +14,7 @@ public enum PaywallAction: Sendable {
     case close
     case endTimer(id: String?)
     case selectProduct(String)
+    case bottomSheet(show: Bool)
 }
 
 @available(iOS 15.0, *)
@@ -22,6 +23,7 @@ public class PaywallActionHandler: ObservableObject {
     private let paywall: BotsiPaywallViewModel
     public let timerProvider: BotsiTimerProvider?
     @Published public var selectedProductId: String?
+    @Published public var isBottomSheetPresented: Bool = false
     
     public init(paywall: BotsiPaywallViewModel) {
         self.paywall = paywall
@@ -50,6 +52,8 @@ public class PaywallActionHandler: ObservableObject {
             paywall.didEndTimer(id: id)
         case .selectProduct(let productId):
             selectedProductId = productId
+        case .bottomSheet(let show):
+            isBottomSheetPresented = show
         }
     }
 } 
