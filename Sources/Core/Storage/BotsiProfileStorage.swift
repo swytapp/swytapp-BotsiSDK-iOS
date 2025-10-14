@@ -77,7 +77,8 @@ public actor BotsiProfileStorage: Sendable {
         do {
             try await storageManager.save(newProfile, forKey: UserDefaultKeys.User.userProfile)
             profile = newProfile
-            BotsiLog.debug("Profile updated successfully.")
+            profileId = newProfile.profileId
+            BotsiLog.debug("Profile updated successfully with ID: \(newProfile.profileId)")
         } catch {
             BotsiLog.error("Failed to save profile. \(error.localizedDescription)")
         }
@@ -97,6 +98,13 @@ public actor BotsiProfileStorage: Sendable {
         
         await storageManager.delete(forKey: UserDefaultKeys.User.userProfile)
         await storageManager.delete(forKey: UserDefaultKeys.User.syncedTransactions)
+        await storageManager.delete(forKey: UserDefaultKeys.User.lastSyncedTransactionId)
+        await storageManager.delete(forKey: UserDefaultKeys.User.asaToken)
+       
+        profile = nil
+        profileId = BotsiProfileStorage.generateProfileId()
+        asaTokenUpdated = false
+        syncedTransactions = false
        
         BackendIntroductoryOfferEligibilityStorage.clear()
         PaywallsStorage.clear()

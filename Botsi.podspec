@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "Botsi"
-    s.version          = "1.0.4"
+    s.version          = "1.0.7"
     s.summary          = "Botsi SDK for iOS."
     s.description      = "Seamless integration of in-app-purchases in your iOS application."
     s.homepage         = "https://www.botsi.com/"
@@ -13,7 +13,8 @@ Pod::Spec.new do |s|
     s.swift_version = '5.9'
 
     s.source_files = 'Sources/**/*.swift'
-    s.resource_bundles = {"Botsi" => ["Sources/PrivacyInfo.xcprivacy"]}
-
+    
+    s.resources = ['Sources/PrivacyInfo.xcprivacy']
+    
     s.frameworks = 'StoreKit'
 end

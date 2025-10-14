@@ -60,7 +60,7 @@ public struct BotsiLogEvent: Sendable {
 }
 
 public protocol EventLoggerPort: Sendable {
-    func logEvent(_ event: BotsiLogEvent) async
+    func logEvent(_ event: BotsiLogEvent) async throws
 }
 
 public protocol BotsiEventSenderPort: Sendable {
@@ -81,22 +81,18 @@ public final class BotsiEventLogger: EventLoggerPort {
         self.globalContext = initialContext
     }
     
-    public func logEvent(_ event: BotsiLogEvent) async {
-        do {
-            try await withCheckedThrowingContinuation { continuation in
-                eventQueue.async {
-                    Task {
-                        do {
-                            try await self.eventSender.sendEvent(event)
-                            continuation.resume(returning: ())
-                        } catch {
-                            continuation.resume(throwing: error)
-                        }
+    public func logEvent(_ event: BotsiLogEvent) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            eventQueue.async {
+                Task {
+                    do {
+                        try await self.eventSender.sendEvent(event)
+                        continuation.resume(returning: ())
+                    } catch {
+                        continuation.resume(throwing: error)
                     }
                 }
             }
-        } catch {
-            BotsiLog.error("Failed to send event: \(error.localizedDescription)")
         }
     }
 }

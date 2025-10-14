@@ -1,5 +1,5 @@
 //
-//  BotsiUpdateProfileDto.swift
+//  BotsiProfileUpdate.swift
 //  Botsi
 //
 //  Created by Vladyslav on 27.05.2025.
@@ -7,21 +7,19 @@
 
 import Foundation
 
-
-// MARK: - Request model
-struct BotsiUpdateProfileRequestDto: Encodable {
-    let birthday: String?
-    let email: String?
-    let username: String?
-    let gender: BotsiGender?
-    let phone: String?
-    let custom: [BotsiProfile.BotsiCustomEntry]?
-    let idfa: String?
-    let advertisingId: String?
-    let ip: String?
+public struct BotsiUserProfileInformation: Sendable {
+    public let birthday: Date?
+    public let email: String?
+    public let username: String?
+    public let gender: BotsiGender?
+    public let phone: String?
+    public let custom: [BotsiProfile.BotsiCustomEntry]?
+    public let idfa: String?
+    public let advertisingId: String?
+    internal let ip: String?
     
-    init(
-        birthday: String? = nil,
+    public init(
+        birthday: Date? = nil,
         email: String? = nil,
         username: String? = nil,
         gender: BotsiGender? = nil,
@@ -41,16 +39,4 @@ struct BotsiUpdateProfileRequestDto: Encodable {
         self.advertisingId = advertisingId
         self.ip = ip
     }
-}
-
-// MARK: - Response model
-struct UpdateProfileDtoResponse: Codable {
-    let ok: Bool
-    let data: BotsiProfile
-}
-
-struct UpdateProfileErrorDtoResponse: Codable {
-    let ok: Bool
-    let message: String
-    let status: Int
-}
+} 

@@ -14,8 +14,8 @@ struct BotsiUpdateProfileUseCase {
         self.repository = repository
     }
 
-    func execute(identifier: String, ip: String) async throws -> BotsiProfile {
-        return try await repository.updateUserProfile(identifier: identifier, ip: ip)
+    func execute(identifier: String, profileUpdate: BotsiUserProfileInformation) async throws -> BotsiProfile {
+        return try await repository.updateUserProfile(identifier: identifier, profileUpdate: profileUpdate)
     }
 }
 

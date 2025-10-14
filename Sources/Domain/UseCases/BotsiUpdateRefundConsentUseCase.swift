@@ -1,36 +1,40 @@
 //
-//  BotsiFetchProductIDsUseCase.swift
+//  BotsiUpdateRefundConsentUseCase.swift
 //  Botsi
 //
-//  Created by Vladyslav on 23.02.2025.
+//  Created by Vladyslav on 19.07.2025.
 //
 
 import Foundation
 
-struct BotsiFetchProductIDsUseCase {
-    private let repository: BotsiGetProfileRepository
+struct BotsiUpdateRefundConsentUseCase {
+    private let repository: BotsiUpdateRefundConsentRepository
 
-    init(repository: BotsiGetProfileRepository) {
+    init(repository: BotsiUpdateRefundConsentRepository) {
         self.repository = repository
     }
 
-    func execute(identifier: String) async throws -> BotsiProfile {
-        return try await repository.getUserProfile(identifier: identifier)
+    func execute(profileId: String, consent: Bool) async throws {
+        return try await repository.updateRefundConsent(for: profileId, consent: consent)
     }
 }
 
-struct FetchProductIDsRequest: BotsiHTTPRequest {
+struct UpdateRefundConsentRequest: BotsiHTTPRequest {
     static let serverHostURL: URL = BotsiHttpClient.URLConstants.backendHost
     
-    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.fetchProductIds)
+    var endpoint: BotsiHTTPRequestPath = .init(identifier: BotsiRequestIdentifier.createProfile)
     
-    var method: BotsiHTTPMethod = .get
+    var method: BotsiHTTPMethod = .patch
     
     var headers: [String: String] = [:]
     
     var body: Data? = nil
     
-    init() {}
+    private let profileId: String
+    
+    init(profileId: String) {
+        self.profileId = profileId
+    }
     
     func convertToURLRequest(configuration: HTTPCodableConfiguration, additional: (any HTTPRequestAdditional)?) throws -> URLRequest {
 
@@ -39,7 +43,7 @@ struct FetchProductIDsRequest: BotsiHTTPRequest {
         }
         
         var urlComponents = URLComponents(string: url.absoluteString)
-        urlComponents?.path += "products/products-ids/app_store"
+        urlComponents?.path += "/\(profileId)/apple-consumption-consent"
         
         guard let finalUrl = urlComponents?.url else {
             throw BotsiError.networkError("Unable to build final url request")
