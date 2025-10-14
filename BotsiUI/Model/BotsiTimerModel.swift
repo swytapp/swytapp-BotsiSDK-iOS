@@ -19,6 +19,7 @@ public struct BotsiTimerModel: Decodable, Sendable, BotsiPaddingProvider {
     public let style: BotsiTextStyleModel
     public let timerMode: TimerMode
     public let customActionID: String?
+    public let timerId: String?
     public let triggerCustomAction: Bool
     
     enum CodingKeys: String, CodingKey {
@@ -31,6 +32,7 @@ public struct BotsiTimerModel: Decodable, Sendable, BotsiPaddingProvider {
         case style
         case timerMode = "timer_mode"
         case customActionID = "custom_action_id"
+        case timerId = "timer_id"
         case triggerCustomAction = "trigger_custom_action"
     }
 

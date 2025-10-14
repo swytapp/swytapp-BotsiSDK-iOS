@@ -17,7 +17,7 @@ public struct BotsiPaywallScreen: View {
     
     public init(viewModel: BotsiPaywallViewModel) {
         _vm = .init(wrappedValue: viewModel)
-        _actionHandler = .init(wrappedValue: PaywallActionHandler(paywall: viewModel))
+        _actionHandler = .init(wrappedValue: PaywallActionHandler(onAction: viewModel.handleAction, timerProvider: viewModel.timerProvider))
     }
     
     public var body: some View {
@@ -52,6 +52,9 @@ public struct BotsiPaywallScreen: View {
             }
         }
         .environmentObject(actionHandler)
+        .onAppear {
+            actionHandler.handleAction(.didOpen)
+        }
         .onChange(of: vm.shouldDismiss) { shouldDismiss in
             dismiss()
         }

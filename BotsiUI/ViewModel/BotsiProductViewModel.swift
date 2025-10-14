@@ -30,7 +30,7 @@ final class BotsiProductViewModel: ObservableObject {
         guard let selectedProductId = actionHandler.selectedProductId else {
             return product.state == .selected
         }
-        return selectedProductId == product.productId
+        return String(selectedProductId) == product.productId
     }
     
     func textStyle(actionHandler: PaywallActionHandler) -> BotsiProductItemTextState {

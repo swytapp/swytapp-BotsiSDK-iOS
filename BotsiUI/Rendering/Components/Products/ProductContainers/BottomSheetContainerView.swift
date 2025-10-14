@@ -57,12 +57,12 @@ private extension BottomSheetContainerView {
     }
     
     var blurBackground: some View {
-        Color.black
+            Color.black
             .opacity(0.5)
             .onTapGesture {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     isHidden = true
-                    actionHandler.handleAction(.bottomSheet(show: false))
+                    actionHandler.setBottomSheetPresented(false)
                 }
             }
     }
@@ -139,7 +139,7 @@ private extension BottomSheetContainerView {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 isHidden = true
-                actionHandler.handleAction(.bottomSheet(show: false))
+                actionHandler.setBottomSheetPresented(false)
             }
         }) {
             Image(systemName: "xmark")
@@ -167,7 +167,8 @@ private extension BottomSheetContainerView {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 isHidden = true
-                actionHandler.handleAction(.bottomSheet(show: false))
+                actionHandler.setBottomSheetPresented(false)
+                actionHandler.handleAction(.purchaseSelected)
             }
         }) {
             BotsiTextBlockView(

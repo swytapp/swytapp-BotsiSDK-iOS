@@ -11,7 +11,7 @@ import SwiftUI
 @MainActor
 public final class BotsiPaywallViewModel: ObservableObject {
     
-    public weak var delegate: BotsiPaywallDelegate?
+    public let onAction: BotsiActionCallback?
     public let timerProvider: BotsiTimerProvider?
     @Published public var shouldDismiss: Bool = false
     
@@ -27,8 +27,8 @@ public final class BotsiPaywallViewModel: ObservableObject {
         return left + right
     }
     
-    init(model: BotsiPaywallModel, delegate: BotsiPaywallDelegate?, timerProvider: BotsiTimerProvider? = nil) {
-        self.delegate = delegate
+    init(model: BotsiPaywallModel, onAction: BotsiActionCallback? = nil, timerProvider: BotsiTimerProvider? = nil) {
+        self.onAction = onAction
         self.timerProvider = timerProvider
         self.layoutVM = BotsiLayoutViewModel(model.layout)
         self.contentBlocks = model.content
@@ -54,38 +54,20 @@ public final class BotsiPaywallViewModel: ObservableObject {
         }
     }
     
-    func didClose() {
-        delegate?.botsiPaywallDidClose()        
-        shouldDismiss = true
-    }
-    
-    func didTapPurchase(_ product: String?) {
-        delegate?.botsiPaywallDidTapPurchase(product)
-    }
-    
-    func didTapRestore() {
-        delegate?.botsiPaywallDidTapRestore()
-    }
-    
-    func didTapLogin() {
-        delegate?.botsiPaywallDidTapLogin()
-    }
-    
-    func didTapCustom(id: String) {
-        delegate?.botsiPaywallDidTapCustom(id: id)
-    }
-
-    func openUrl(url: String) {
-        if let urlObject = URL(string: url) {
-            delegate?.botsiPaywallDidOpenURL(urlObject)
-            
-            Task { @MainActor in
-                await UIApplication.shared.open(urlObject)
+    func handleAction(_ action: BotsiAction) {
+        switch action {
+        case .didClose:
+            shouldDismiss = true
+        case .didOpenURL(let urlString):
+            if let urlObject = URL(string: urlString) {
+                Task { @MainActor in
+                    await UIApplication.shared.open(urlObject)
+                }
             }
+        default:
+            break
         }
-    }
-
-    func didEndTimer(id: String?) {
-        delegate?.botsiPaywallDidEndTimer(id: id)
+        
+        onAction?(action)
     }
 }

@@ -35,7 +35,12 @@ public struct BotsiButtonBlockView: View {
     @ViewBuilder
     private var buttonContent: some View {
         Button {
-            actionHandler.handleAction(.action(model.action, customId: model.actionLabel))
+            switch model.action {
+            case .purchaseProduct:
+                actionHandler.handleAction(.didPurchase(model.purchaseProduct?.id ?? 0))
+            default:
+                actionHandler.handleAction(model.action, customId: model.actionLabel)
+            }
         } label: {
             VStack(spacing: 0) {
                 if let text = model.text, !text.text.isEmpty {

@@ -89,12 +89,12 @@ private extension BotsiLinksBlockView {
             if let type = type {
                 switch type {
                 case .restore:
-                    actionHandler.handleAction(.action(.restore, customId: nil))
+                    actionHandler.handleAction(.didRestorePurchase)
                 case .login:
-                    actionHandler.handleAction(.action(.login, customId: nil))
+                    actionHandler.handleAction(.didLogin)
                 case .termsOfService, .privacyPolicy:
                     if let url = item.url {
-                        actionHandler.handleAction(.openURL(url))
+                        actionHandler.handleAction(.didOpenURL(url))
                     }
                 }
             }

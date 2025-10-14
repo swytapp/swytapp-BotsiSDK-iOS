@@ -105,7 +105,7 @@ final class BotsiTimerViewModel: ObservableObject {
                 return endAt
             }
             
-            return provider.timerEndDate(for: timerId)
+            return provider.timerEndDate(for: model.timerId ?? "")
         }
     }
     
@@ -127,7 +127,7 @@ final class BotsiTimerViewModel: ObservableObject {
     }
     
     func triggerEndTimerAction(actionHandler: PaywallActionHandler?) {
-        actionHandler?.handleAction(.endTimer(id: customActionID))
+        actionHandler?.handleAction(.didEndTimer(id: customActionID))
     }
     
     private func updateDisplay() {

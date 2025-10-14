@@ -35,7 +35,10 @@ public struct BotsiProductView: View {
             }
         }
         .onTapGesture {
-            actionHandler.handleAction(.selectProduct(viewModel.product.productId ?? ""))
+            guard let productId = Int(viewModel.product.productId ?? "") else {
+                return
+            }
+            actionHandler.handleAction(.didSelectProduct(productId))
         }
     }
 }

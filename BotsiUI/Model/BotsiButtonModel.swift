@@ -12,6 +12,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let action: BotsiActionType
     public let actionLabel: String?
+    public let purchaseProduct: BotsiPurchaseProduct?
     public let text: ButtonText?
     public let secondaryText: ButtonText?
     public let style: BotsiButtonStyle
@@ -23,6 +24,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         case style, text, action
         case padding = "margin"
         case actionLabel = "action_label"
+        case purchaseProduct = "purchase_product"
         case secondaryText = "secondary_text"
         case verticalOffsetString = "vertical_offset"
         case contentLayout = "content_layout"
@@ -32,6 +34,7 @@ public struct BotsiButtonModel: Decodable, Sendable, BotsiPaddingProvider {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.action = try container.decode(BotsiActionType.self, forKey: .action)
         self.actionLabel = try container.decodeIfPresent(String.self, forKey: .actionLabel)
+        self.purchaseProduct = try container.decodeIfPresent(BotsiPurchaseProduct.self, forKey: .purchaseProduct)
         self.style = try container.decode(BotsiButtonStyle.self, forKey: .style)
         self.text = try container.decodeIfPresent(ButtonText.self, forKey: .text)
         self.secondaryText = try container.decodeIfPresent(ButtonText.self, forKey: .secondaryText)

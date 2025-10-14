@@ -124,6 +124,14 @@ public enum BotsiActionType: String, Codable, Sendable {
     case restore = "Restore"
     case login = "Login"
     case custom = "Custom"
+    case purchaseSelected = "Purchase Selected Action"
+    case purchaseProduct = "Purchase Specific Product"
+}
+
+@available(iOS 15.0, *)
+public struct BotsiPurchaseProduct: Decodable, Sendable {
+    public let id: Int
+    public let name: String
 }
 
 @available(iOS 15.0, *)

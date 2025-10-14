@@ -48,7 +48,7 @@ public struct TopButtonView: View {
     public var body: some View {
         Button(action: {
             guard let actionId = button.actionId else { return }
-            actionHandler.handleAction(.action(actionId, customId: button.action))
+            actionHandler.handleAction(actionId, customId: button.action)
         }) {
             buttonContent
         }

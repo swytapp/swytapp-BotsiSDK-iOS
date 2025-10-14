@@ -78,7 +78,7 @@ private extension MorePlansContainerView {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 if model.grouping == .bottomSheet {
-                    actionHandler.handleAction(.bottomSheet(show: true))
+                    actionHandler.setBottomSheetPresented(true)
                 } else {
                     localMorePlansShown.toggle()
                 }

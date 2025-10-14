@@ -94,6 +94,9 @@ struct ToggleProductsContainerView: View {
         } else {
             selectedId = toggleOffProducts.first(where: { $0.state == .selected })?.productId
         }
-        actionHandler.handleAction(.selectProduct(selectedId ?? ""))
+        guard let selectedId = Int(selectedId ?? "") else {
+            return
+        }
+        actionHandler.handleAction(.didSelectProduct(selectedId))
     }
 }
