@@ -6,18 +6,22 @@
 //
 
 import SwiftUI
+import Botsi
 
 @available(iOS 15.0, *)
 public struct BotsiPaywallScreen: View {
     
     @Environment(\.dismiss) var dismiss
-    @StateObject var vm: BotsiPaywallViewModel
+    @StateObject private var paywallViewModel: BotsiPaywallViewModel
+    @StateObject private var productViewModel: BotsiProductViewModel
     @StateObject private var actionHandler: PaywallActionHandler
     @State private var footerHeight: CGFloat = 0
     
-    public init(viewModel: BotsiPaywallViewModel) {
-        _vm = .init(wrappedValue: viewModel)
-        _actionHandler = .init(wrappedValue: PaywallActionHandler(onAction: viewModel.handleAction, timerProvider: viewModel.timerProvider))
+    public init(viewModel: BotsiPaywallViewModel, paywall: BotsiPaywall) {
+        let actionHandler = PaywallActionHandler(onAction: viewModel.handleAction, timerProvider: viewModel.timerProvider)
+        _paywallViewModel = .init(wrappedValue: viewModel)
+        _actionHandler = .init(wrappedValue: actionHandler)
+        _productViewModel = .init(wrappedValue: BotsiProductViewModel(actionHandler: actionHandler, paywall: paywall))
     }
     
     public var body: some View {
@@ -42,22 +46,23 @@ public struct BotsiPaywallScreen: View {
                 .overlay {
                     bottomSheetOverlay
                 }
-                .if(vm.heroImage?.style != .transparent, transform: {
-                    $0.backgroundFill(vm.layoutVM?.fillColor)
+                .if(paywallViewModel.heroImage?.style != .transparent, transform: {
+                    $0.backgroundFill(paywallViewModel.layoutVM?.fillColor)
                 })
-                .withChildPadding(vm.layoutVM?.padding ?? .defaultEdge)
+                .withChildPadding(paywallViewModel.layoutVM?.padding ?? .defaultEdge)
                 .withScreenSize(screenSize(for: proxy))
                 .withSafeArea(proxy.safeAreaInsets)
                 .ignoresSafeArea()
             }
         }
-        .environmentObject(actionHandler)
         .onAppear {
             actionHandler.handleAction(.didOpen)
         }
-        .onChange(of: vm.shouldDismiss) { shouldDismiss in
+        .onChange(of: paywallViewModel.shouldDismiss) { shouldDismiss in
             dismiss()
         }
+        .environmentObject(actionHandler)
+        .environmentObject(productViewModel)
     }
     
     private func screenSize(for proxy: GeometryProxy) -> CGSize {
@@ -72,7 +77,7 @@ private extension BotsiPaywallScreen {
     
     @ViewBuilder
     func heroContent(_ proxy: GeometryProxy) -> some View {
-        if let heroImage = vm.heroImage {
+        if let heroImage = paywallViewModel.heroImage {
             switch heroImage.style {
             case .transparent:
                 BotsiHeroImageView(model: heroImage)
@@ -92,13 +97,13 @@ private extension BotsiPaywallScreen {
             Spacer()
         }
         .frame(maxHeight: .infinity)
-        .backgroundFill(vm.layoutVM?.fillColor)
+        .backgroundFill(paywallViewModel.layoutVM?.fillColor)
         .ignoresSafeArea()
     }
     
     @ViewBuilder
     func flatHeroImageIfNeeded(_ proxy: GeometryProxy) -> some View {
-        if let heroImage = vm.heroImage, heroImage.style == .flat {
+        if let heroImage = paywallViewModel.heroImage, heroImage.style == .flat {
             let imageSize = calculateImageSize(for: heroImage, proxy: proxy)
             
             VStack {
@@ -115,7 +120,7 @@ private extension BotsiPaywallScreen {
     }
     
     func calculateImageSize(for heroImage: BotsiHeroImageModel, proxy: GeometryProxy) -> CGSize {
-        let horizontalPadding = vm.heroHorizontalPadding
+        let horizontalPadding = paywallViewModel.heroHorizontalPadding
         let height = screenSize(for: proxy).height * heroImage.heightPercent
         let width = screenSize(for: proxy).width - horizontalPadding
         return CGSize(width: width, height: height)
@@ -131,7 +136,7 @@ private extension BotsiPaywallScreen {
 private extension BotsiPaywallScreen {
     
     func scrollContent(_ proxy: GeometryProxy) -> some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 overlaySpacerIfNeeded(proxy)
                 mainContent(proxy)
@@ -151,22 +156,22 @@ private extension BotsiPaywallScreen {
     
     @ViewBuilder
     func mainContent(_ proxy: GeometryProxy) -> some View {
-        VStack(spacing: vm.layoutVM?.spacing) {
+        VStack(spacing: paywallViewModel.layoutVM?.spacing) {
             flatHeroImageIfNeeded(proxy)
             contentBlocks
         }
-        .padding(vm.layoutVM?.padding)
-        .if(vm.heroImage?.style != .transparent) {
-            $0.backgroundFill(vm.layoutVM?.fillColor)
+        .padding(paywallViewModel.layoutVM?.padding)
+        .if(paywallViewModel.heroImage?.style != .transparent) {
+            $0.backgroundFill(paywallViewModel.layoutVM?.fillColor)
         }
-        .if(vm.heroImage?.style == .overlay) {
-            $0.mask(with: vm.heroImage?.shape, isContainer: true)
+        .if(paywallViewModel.heroImage?.style == .overlay) {
+            $0.mask(with: paywallViewModel.heroImage?.shape, isContainer: true)
         }
     }
     
     @ViewBuilder
     var contentBlocks: some View {
-        ForEach(vm.contentBlocks, id: \.meta.id) { block in
+        ForEach(paywallViewModel.contentBlocks, id: \.meta.id) { block in
             BotsiBlockRendererView(block: block)
                 .padding(block.content?.padding)
         }
@@ -174,10 +179,10 @@ private extension BotsiPaywallScreen {
     
     @ViewBuilder
     func overlaySpacerIfNeeded(_ proxy: GeometryProxy) -> some View {
-        if vm.heroImage?.style == .overlay {
+        if paywallViewModel.heroImage?.style == .overlay {
             Rectangle()
                 .fill(.clear)
-                .frame(height: screenSize(for: proxy).height * (vm.heroImage?.heightPercent ?? 0.3))
+                .frame(height: screenSize(for: proxy).height * (paywallViewModel.heroImage?.heightPercent ?? 0.3))
         }
     }
 }
@@ -188,7 +193,7 @@ private extension BotsiPaywallScreen {
     
     @ViewBuilder
     func topButtons(with padding: CGFloat) -> some View {
-        if let buttons = vm.layoutVM?.model.buttons, !buttons.isEmpty {
+        if let buttons = paywallViewModel.layoutVM?.model.buttons, !buttons.isEmpty {
             TopButtonsOverlayView(buttons: buttons)
                 .padding(.top, padding)
         }
@@ -200,7 +205,7 @@ private extension BotsiPaywallScreen {
 private extension BotsiPaywallScreen {
     
     var footerContent: some View {
-        vm.footerVM.map { footerVM in
+        paywallViewModel.footerVM.map { footerVM in
             BotsiFooterBlockView(model: footerVM) { height in
                 footerHeight = height
             }
@@ -215,7 +220,7 @@ private extension BotsiPaywallScreen {
     @ViewBuilder
     var bottomSheetOverlay: some View {
         if actionHandler.isBottomSheetPresented,
-           let productBlock = vm.contentBlocks.first(where: { $0.meta.type == .products }),
+           let productBlock = paywallViewModel.contentBlocks.first(where: { $0.meta.type == .products }),
            case .products(let model) = productBlock.content,
            let sheet = BotsiViewFactory.makeBottomSheet(model: model, block: productBlock) {
             sheet

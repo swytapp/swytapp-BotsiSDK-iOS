@@ -6,15 +6,20 @@
 //
 
 import SwiftUI
+import Botsi
 
 @available(iOS 15.0, *)
-public enum BotsiUI {
+enum BotsiUI {
 
     @MainActor
-    public static func makePaywall(json data: Data,
-                                   id: String = UUID().uuidString,
-                                   onAction: BotsiActionCallback? = nil,
+    static func makePaywall(paywall: BotsiPaywall?,
+                                   builder data: Botsi.BotsiBuilder?,
+                                   onAction: ((BotsiAction) -> Void)? = nil,
                                    timerProvider: BotsiTimerProvider? = nil) throws -> some View {
+
+        guard let data = data, let paywall = paywall else {
+            throw BotsiUIError.paywallNotFound
+        }
 
         let structure = try BotsiPaywallParser.parseStructure(from: data)
         
@@ -22,14 +27,13 @@ public enum BotsiUI {
             throw BotsiUIError.contentParsingError
         }
 
-        let model = BotsiPaywallModel(id: id,
-                                      layout: layout,
+        let model = BotsiPaywallModel(layout: layout,
                                       content: content,
                                       footer: structure.footer,
                                       hero: structure.heroImage)
 
         let rootVM = BotsiPaywallViewModel(model: model, onAction: onAction, timerProvider: timerProvider)
 
-        return BotsiPaywallScreen(viewModel: rootVM)
+        return BotsiPaywallScreen(viewModel: rootVM, paywall: paywall)
     }
 }

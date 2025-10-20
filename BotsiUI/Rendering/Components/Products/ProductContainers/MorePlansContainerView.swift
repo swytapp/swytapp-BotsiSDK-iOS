@@ -10,6 +10,7 @@ import SwiftUI
 @available(iOS 15.0, *)
 public struct MorePlansContainerView: View {
     @EnvironmentObject var actionHandler: PaywallActionHandler
+    @EnvironmentObject private var productViewModel: BotsiProductViewModel
     
     private let model: BotsiProductsModel
     private let basePlans: BotsiPlansModel
@@ -17,6 +18,7 @@ public struct MorePlansContainerView: View {
     private let buttonModel: BotsiMoreButtonModel
     private let baseProducts: [BotsiProductItemModel]
     private let moreProducts: [BotsiProductItemModel]
+    private let bottomSheetProducts: [BotsiProductItemModel]
     
     @State private var localMorePlansShown: Bool
     
@@ -34,7 +36,8 @@ public struct MorePlansContainerView: View {
         morePlans: BotsiPlansModel? = nil,
         buttonModel: BotsiMoreButtonModel,
         baseProducts: [BotsiProductItemModel],
-        moreProducts: [BotsiProductItemModel]
+        moreProducts: [BotsiProductItemModel],
+        bottomSheetProducts: [BotsiProductItemModel]
     ) {
         self.model = model
         self.basePlans = basePlans
@@ -43,6 +46,7 @@ public struct MorePlansContainerView: View {
         self.baseProducts = baseProducts
         self.moreProducts = moreProducts
         self._localMorePlansShown = State(initialValue: buttonModel.state == .morePlansShown)
+        self.bottomSheetProducts = bottomSheetProducts
     }
     
     public var body: some View {
@@ -68,6 +72,35 @@ public struct MorePlansContainerView: View {
             }
         }
         .padding(model.padding)
+        .task {
+            selectBaseProducts()
+        }
+        .onChange(of: morePlansShown) { _ in
+            if !morePlansShown {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                selectBaseProducts()
+                }
+            }
+        }
+    }
+
+    private func selectBaseProducts() {
+        if baseProducts.contains(where: { Int($0.productId ?? "") == productViewModel.selectedProductId }) {
+            return
+        }
+        let selectedProductId: String? = baseProducts.first(where: { $0.state == .selected })?.productId
+        guard let selectedProductId = Int(selectedProductId ?? "") else {
+            return
+        }
+        productViewModel.selectProduct(productId: selectedProductId)
+    }
+
+    private func selectBottomSheetProducts() {
+        let selectedProductId: String? = bottomSheetProducts.first(where: { $0.state == .selected })?.productId
+        guard let selectedProductId = Int(selectedProductId ?? "") else {
+            return
+        }
+        productViewModel.selectProduct(productId: selectedProductId)
     }
 }
 
@@ -79,6 +112,7 @@ private extension MorePlansContainerView {
             withAnimation(.easeInOut(duration: 0.3)) {
                 if model.grouping == .bottomSheet {
                     actionHandler.setBottomSheetPresented(true)
+                    selectBottomSheetProducts()
                 } else {
                     localMorePlansShown.toggle()
                 }

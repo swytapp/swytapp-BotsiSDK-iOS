@@ -7,7 +7,6 @@
 
 @available(iOS 15.0, *)
 public struct BotsiPaywallModel: Sendable {
-    public let id: String
     public let layout: BotsiPaywallBlock
     public let content: [BotsiPaywallBlock]
     public let footer: BotsiPaywallBlock?

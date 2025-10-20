@@ -9,6 +9,7 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct TabProductsContainerView: View {
+    @EnvironmentObject private var productViewModel: BotsiProductViewModel
     private let model: BotsiProductsModel
     private let tabControlModel: BotsiTabControlModel
     private let tabModels: [(id: String, tabModel: BotsiTabModel, products: [BotsiProductItemModel])]
@@ -39,6 +40,17 @@ public struct TabProductsContainerView: View {
         }
         .padding(model.padding)
     }
+
+    private func updateSelectedProduct() {
+        let selectedId: String?
+        let selectedTab = tabModels.first(where: { $0.id == selectedTabId })
+        selectedId = selectedTab?.products.first(where: { $0.state == .selected })?.productId
+
+        guard let selectedId = Int(selectedId ?? "") else {
+            return
+        }
+        productViewModel.selectProduct(productId: selectedId)
+    }
 }
 
 @available(iOS 15.0, *)
@@ -65,6 +77,7 @@ private extension TabProductsContainerView {
         
         Button(action: {
             selectedTabId = id
+            updateSelectedProduct()
         }) {
             Text(tabModel.title)
                 .frame(maxWidth: .infinity)

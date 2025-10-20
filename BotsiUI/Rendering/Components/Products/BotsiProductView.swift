@@ -9,37 +9,45 @@ import SwiftUI
 
 @available(iOS 15.0, *)
 public struct BotsiProductView: View {
-    @StateObject private var viewModel: BotsiProductViewModel
+    private var styleHelper: BotsiProductStyleHelper
     @EnvironmentObject private var actionHandler: PaywallActionHandler
+    @EnvironmentObject private var productViewModel: BotsiProductViewModel
     
-    init(viewModel: BotsiProductViewModel) {
-        _viewModel = StateObject(wrappedValue: viewModel)
+    init(styleHelper: BotsiProductStyleHelper) {
+        self.styleHelper = styleHelper
     }
     
     public var body: some View {
         Group {
-            if viewModel.alignment == .column {
+            if styleHelper.alignment == .column {
                 columnLayout
             } else {
                 rowLayout
             }
         }
-        .padding(viewModel.layout.padding)
-        .styledContainer(fillColor: viewModel.style(actionHandler: actionHandler).fillColor,
-                         borderColor: viewModel.style(actionHandler: actionHandler).borderColor,
-                         borderThickness: viewModel.style(actionHandler: actionHandler).borderWidth,
-                         cornerRadius: viewModel.style(actionHandler: actionHandler).radius)
+        .padding(styleHelper.layout.padding)
+        .styledContainer(fillColor: styleHelper.style(isSelected: isSelected).fillColor,
+                         borderColor: styleHelper.style(isSelected: isSelected).borderColor,
+                         borderThickness: styleHelper.style(isSelected: isSelected).borderWidth,
+                         cornerRadius: styleHelper.style(isSelected: isSelected).radius)
         .overlay(alignment: .top) {
-            if viewModel.product.isBadge {
+            if styleHelper.product.isBadge {
                 badgeView
             }
         }
         .onTapGesture {
-            guard let productId = Int(viewModel.product.productId ?? "") else {
+            guard let productId = Int(styleHelper.product.productId ?? "") else {
                 return
             }
-            actionHandler.handleAction(.didSelectProduct(productId))
+            productViewModel.selectProduct(productId: productId)
         }
+    }
+
+    private var isSelected: Bool {
+        guard let selectedProductId = productViewModel.selectedProductId else {
+            return styleHelper.product.state == .selected
+        }
+        return String(selectedProductId) == styleHelper.product.productId
     }
 }
 
@@ -47,7 +55,7 @@ public struct BotsiProductView: View {
 private extension BotsiProductView {
     
     var badgeView: some View {
-        let badge = viewModel.product.badge
+        let badge = styleHelper.product.badge
         return BotsiTextBlockView(
             propertiesProvider: badge,
             text: badge.badgeText,
@@ -60,27 +68,27 @@ private extension BotsiProductView {
             RoundedRectangle(cornerRadius: badge.badgeRadius.toCGFloat())
                 .fill(badge.badgeColor.toColor())
         )
-        .offset(y: (badge.size?.toCGFloat() ?? 0) * -0.7 )
+        .offset(y: (badge.size?.toCGFloat() ?? 0) * -0.7)
     }
     
     var columnLayout: some View {
         HStack {
             VStack(spacing: 6) {
-                textViewGroup(viewModel.texts(actionHandler: actionHandler).filter { $0.0 == 0 || $0.0 == 1 })
+                textViewGroup(styleHelper.texts(isSelected: isSelected).filter { $0.index == 0 || $0.index == 1 })
             }
             VStack(spacing: 6) {
-                textViewGroup(viewModel.texts(actionHandler: actionHandler).filter { $0.0 == 2 || $0.0 == 3 })
+                textViewGroup(styleHelper.texts(isSelected: isSelected).filter { $0.index == 2 || $0.index == 3 })
             }
         }
     }
     
     var rowLayout: some View {
         VStack(spacing: 6) {
-            ForEach(viewModel.texts(actionHandler: actionHandler), id: \.0) { index, textStyle, text in
+            ForEach(styleHelper.texts(isSelected: isSelected), id: \.index) { index, textStyle, text in
                 if !text.isEmpty {
                     BotsiTextBlockView(propertiesProvider: textStyle,
                                        text: text,
-                                       align: viewModel.textAlignment(for: index),
+                                       align: styleHelper.textAlignment(for: index),
                                        height: .infinity)
                     .frame(maxHeight: .infinity)
                 }
@@ -93,7 +101,7 @@ private extension BotsiProductView {
         ForEach(texts, id: \.0) { index, textStyle, text in
             BotsiTextBlockView(propertiesProvider: textStyle,
                                text: text,
-                               align: viewModel.textAlignment(for: index),
+                               align: styleHelper.textAlignment(for: index),
                                height: .infinity)
             .frame(maxHeight: .infinity)
         }

@@ -34,7 +34,7 @@ public struct BotsiImageBlockView: View {
         let padding = model.padding
         Color.clear
             .overlay (
-                AsyncImage(url: URL(string: model.image)) { phase in
+                AsyncImage(url: URL(string: model.image), transaction: Transaction(animation: .none)) { phase in
                     switch phase {
                     case .success(let image):
                         imageView(from: image)
@@ -44,6 +44,7 @@ public struct BotsiImageBlockView: View {
                         Color.clear
                     }
                 }
+                .drawingGroup()
             )
             .frame(width: size?.width, height: size?.height ?? model.height?.toCGFloat(default: 150))
             .padding(model.padding)

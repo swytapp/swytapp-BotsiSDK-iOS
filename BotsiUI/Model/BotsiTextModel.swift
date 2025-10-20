@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftUICore
+import SwiftUI
 
 @available(iOS 15.0, *)
 public struct BotsiTextModel: Decodable, Sendable, BotsiPaddingProvider {

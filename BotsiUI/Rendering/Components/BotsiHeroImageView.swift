@@ -41,13 +41,21 @@ private struct BotsiHeroImage: View {
 
     var body: some View {
         if let imageURL, let url = URL(string: imageURL) {
-            AsyncImage(url: url) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-            } placeholder: {
-                Color.gray.opacity(0.2)
+            AsyncImage(url: url, transaction: Transaction(animation: .none)) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure(_):
+                    Color.gray.opacity(0.2)
+                case .empty:
+                    Color.gray.opacity(0.2)
+                @unknown default:
+                    Color.gray.opacity(0.2)
+                }
             }
+            .drawingGroup()
         } else {
             Color.gray.opacity(0.2)
         }

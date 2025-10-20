@@ -44,11 +44,16 @@ public struct TopButtonView: View {
     
     let button: BotsiLayoutModel.TopButton
     @EnvironmentObject var actionHandler: PaywallActionHandler
+    @EnvironmentObject var productViewModel: BotsiProductViewModel
     
     public var body: some View {
         Button(action: {
-            guard let actionId = button.actionId else { return }
-            actionHandler.handleAction(actionId, customId: button.action)
+            switch button.action {
+            case .restore:
+                productViewModel.restorePurchases()
+            default:
+                actionHandler.handleAction(button.action, customId: button.actionId)
+            }
         }) {
             buttonContent
         }

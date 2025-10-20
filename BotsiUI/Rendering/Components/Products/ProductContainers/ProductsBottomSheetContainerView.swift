@@ -1,5 +1,5 @@
 //
-//  BottomSheetContainerView.swift
+//  ProductsBottomSheetContainerView.swift
 //  Botsi
 //
 //  Created by Vladyslav Danyliak on 09.10.2025.
@@ -8,13 +8,14 @@
 import SwiftUI
 
 @available(iOS 15.0, *)
-public struct BottomSheetContainerView: View {
+public struct ProductsBottomSheetContainerView: View {
+    @EnvironmentObject var productViewModel: BotsiProductViewModel
     @EnvironmentObject var actionHandler: PaywallActionHandler
     
     private let model: BotsiProductsModel
     private let bottomSheetModel: BotsiBottomSheetModel
     private let products: [BotsiProductItemModel]
-
+    
     @State private var isHidden = true
     
     public init(
@@ -38,11 +39,18 @@ public struct BottomSheetContainerView: View {
             }
         }
     }
+    
+    private func close() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            isHidden = true
+            actionHandler.setBottomSheetPresented(false)
+        }
+    }
 }
 
 // MARK: - Bottom Sheet Overlay
 @available(iOS 15.0, *)
-private extension BottomSheetContainerView {
+private extension ProductsBottomSheetContainerView {
     var bottomSheetOverlay: some View {
         ZStack {
             if !isHidden {
@@ -57,13 +65,10 @@ private extension BottomSheetContainerView {
     }
     
     var blurBackground: some View {
-            Color.black
-            .opacity(0.5)
+        Color.black
+            .opacity(0.6)
             .onTapGesture {
-                withAnimation(.easeInOut(duration: 0.3)) {
-                    isHidden = true
-                    actionHandler.setBottomSheetPresented(false)
-                }
+                close()
             }
     }
     
@@ -80,7 +85,7 @@ private extension BottomSheetContainerView {
             )
             
             purchaseButton
-                 .padding(bottomSheetModel.purchaseButton.padding)
+                .padding(bottomSheetModel.purchaseButton.padding)
         }
         .padding(16)
         .styledContainer(
@@ -94,7 +99,7 @@ private extension BottomSheetContainerView {
 
 // MARK: - Sheet Header
 @available(iOS 15.0, *)
-private extension BottomSheetContainerView {
+private extension ProductsBottomSheetContainerView {
     var sheetHeader: some View {
         HStack(alignment: .top, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
@@ -106,7 +111,7 @@ private extension BottomSheetContainerView {
             closeButton
         }
     }
-
+    
     @ViewBuilder
     func titleIfNeeded() -> some View {
         if !bottomSheetModel.titleText.isEmpty {
@@ -120,7 +125,7 @@ private extension BottomSheetContainerView {
             EmptyView()
         }
     }
-
+    
     @ViewBuilder
     func secondaryTextIfNeeded() -> some View {
         if !bottomSheetModel.secondaryText.isEmpty {
@@ -137,10 +142,7 @@ private extension BottomSheetContainerView {
     
     var closeButton: some View {
         Button(action: {
-            withAnimation(.easeInOut(duration: 0.3)) {
-                isHidden = true
-                actionHandler.setBottomSheetPresented(false)
-            }
+            close()
         }) {
             Image(systemName: "xmark")
                 .resizable()
@@ -162,13 +164,11 @@ private extension BottomSheetContainerView {
 
 // MARK: - Purchase Button
 @available(iOS 15.0, *)
-private extension BottomSheetContainerView {
+private extension ProductsBottomSheetContainerView {
     var purchaseButton: some View {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
-                isHidden = true
-                actionHandler.setBottomSheetPresented(false)
-                actionHandler.handleAction(.purchaseSelected)
+                productViewModel.makeSelectedPurchase()
             }
         }) {
             BotsiTextBlockView(

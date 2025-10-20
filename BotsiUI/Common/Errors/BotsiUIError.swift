@@ -8,11 +8,14 @@
 public enum BotsiUIError: Error, Sendable {
     
     case contentParsingError
+    case paywallNotFound
 
     public var localizedDescription: String {
         switch self {
         case .contentParsingError:
             return "UI Error: Failed to retrieve content"
+        case .paywallNotFound:
+            return "UI Error: Paywall not found"
         }
     }
 }

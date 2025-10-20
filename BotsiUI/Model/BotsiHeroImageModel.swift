@@ -177,7 +177,7 @@ public extension View {
     func mask(with shape: BotsiHeroShapeType?, size: CGSize = .zero, isContainer: Bool = false) -> some View {
         switch shape {
         case .rectangle:
-            self
+            self.clipShape(.rect)
         case .roundedRectangle:
             if isContainer {
                 if #available(iOS 16.0, *) {

@@ -2,72 +2,90 @@
 //  BotsiProductViewModel.swift
 //  Botsi
 //
-//  Created by Kostiantyn Antoniuk on 17.06.2025.
+//  Created by Vladyslav Danyliak on 15.10.2025.
 //
 
-import SwiftUI
+import Foundation
+import Botsi
 
 @MainActor
 @available(iOS 15.0, *)
 final class BotsiProductViewModel: ObservableObject {
-    
-    public let product: BotsiProductItemModel
-    private let productStyle: BotsiProductsModel
+    private let actionHandler: PaywallActionHandler
+    private let paywall: BotsiPaywall
+    @Published var selectedProductId: Int?
 
-    let alignment: BotsiAlign
-    let layout: BotsiContentLayout
-    let selectedProductId: String?
-    
-    func texts(actionHandler: PaywallActionHandler) -> [(Int, BotsiTextStyleModel, String)] {
-        let currentTextStyle = textStyle(actionHandler: actionHandler)
-        return [(0, currentTextStyle.text1, text.text1),
-                (1, currentTextStyle.text2, text.text2),
-                (2, currentTextStyle.text3, text.text3),
-                (3, currentTextStyle.text4, text.text4)]
+    init(actionHandler: PaywallActionHandler, paywall: BotsiPaywall) {
+        self.actionHandler = actionHandler
+        self.paywall = paywall
     }
-    
-    func isSelected(actionHandler: PaywallActionHandler) -> Bool {
-        guard let selectedProductId = actionHandler.selectedProductId else {
-            return product.state == .selected
-        }
-        return String(selectedProductId) == product.productId
-    }
-    
-    func textStyle(actionHandler: PaywallActionHandler) -> BotsiProductItemTextState {
-        isSelected(actionHandler: actionHandler) ? product.selectedState : product.defaultState
-    }
-    
-    func style(actionHandler: PaywallActionHandler) -> BotsiStyleModel {
-        isSelected(actionHandler: actionHandler) ? product.selectedStyle : product.defaultStyle
-    }
-    
-    var text: BotsiProductItemTextBlock {
-        switch product.offerState {
-        case .default:
-            return product.defaultText
-        case .freeTrial:
-            return product.freeText
-        case .payAsYouGo:
-            return product.paygText
-        case .payUpFront:
-            return product.paufText
+
+    func makeSelectedPurchase() {
+        Task {
+            guard let selectedProductId = selectedProductId else {
+                return
+            }
+
+            await handlePurchase(id: selectedProductId)
         }
     }
-    
-    init(product: BotsiProductItemModel, productStyle: BotsiProductsModel, layout: BotsiContentLayout? = nil, selectedProductId: String? = nil) {
-        self.product = product
-        self.productStyle = productStyle
-        self.alignment = layout?.align ?? productStyle.contentLayout.align ?? .center
-        self.layout = layout ?? productStyle.contentLayout
-        self.selectedProductId = selectedProductId ?? productStyle.selectedProduct
-    }
-    
-    func textAlignment(for index: Int) -> BotsiAlign {
-        if alignment == .column {
-            return index < 2 ? .left : .right
-        } else {
-            return alignment
+
+    func makePurchase(productId: Int?) {
+        Task {
+            guard let id = productId else {
+                return
+            }
+
+            await handlePurchase(id: id)
         }
+    }
+
+    func restorePurchases() {
+        Task {
+            do {
+                let profile = try await Botsi.restorePurchases()
+                actionHandler.handleAction(.didRestorePurchase(profile))
+            } catch {
+                actionHandler.handleAction(.didFailRestorePurchases(BotsiError.restoreFailed))
+            }
+        }
+    }
+
+    func selectProduct(productId: Int?) {
+        selectedProductId = productId
+
+        Task {
+            guard let productId, let product = await getProduct(byId: productId) else {
+                return
+            }
+             actionHandler.handleAction(.didSelectProduct(product))
+        }
+    }
+
+     private func handlePurchase(id: Int?) async {
+        guard let id, let product = await getProduct(byId: id) else {
+            return
+        }
+
+        do {
+            let profile = try await Botsi.makePurchase(product)
+            actionHandler.handleAction(.didPurchase(profile))
+        } catch {
+            actionHandler.handleAction(.didFailPurchase(nil, BotsiError.purchaseFailed(error.localizedDescription)))
+        }
+     }
+
+    private func getProduct(byId id: Int) async -> BotsiProduct? {
+        guard let appleProductId = paywall.sourceProducts.first(where: { $0.botsiProductId == id })?.sourcePoductId else {
+            return nil
+        }
+
+        let products = try? await Botsi.getPaywallProducts(from: paywall)
+
+        guard let product = products?.first(where: { $0.productId == appleProductId }) else {
+            return nil
+        }
+
+        return product
     }
 }
-

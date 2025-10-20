@@ -61,8 +61,7 @@ struct NoToggleProductsContainerView: View {
     @ViewBuilder
     private var productViews: some View {
         ForEach(products) { product in
-            let viewModel = BotsiProductViewModel(product: product, productStyle: model, layout: contentLayout)
-            BotsiProductView(viewModel: viewModel)
+            BotsiViewFactory.makeProduct(product: product, productStyle: model, layout: contentLayout)
                 .frame(maxHeight: .infinity)
                 .id("\(tabId)-\(product.id)")
         }

@@ -10,6 +10,8 @@ import SwiftUI
 @available(iOS 15.0, *)
 struct ToggleProductsContainerView: View {
     @EnvironmentObject private var actionHandler: PaywallActionHandler
+    @EnvironmentObject private var productViewModel: BotsiProductViewModel
+
     let model: BotsiProductsModel
     
     let toggleOnProducts: [BotsiProductItemModel]
@@ -97,6 +99,6 @@ struct ToggleProductsContainerView: View {
         guard let selectedId = Int(selectedId ?? "") else {
             return
         }
-        actionHandler.handleAction(.didSelectProduct(selectedId))
+        productViewModel.selectProduct(productId: selectedId)
     }
 }

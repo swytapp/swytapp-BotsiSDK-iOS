@@ -21,9 +21,11 @@ public enum BotsiViewFactory {
     
     // MARK: - Products
     static func makeProduct(product: BotsiProductItemModel,
-                            productStyle: BotsiProductsModel) -> BotsiProductView {
-        let viewModel = BotsiProductViewModel(product: product, productStyle: productStyle)
-        return BotsiProductView(viewModel: viewModel)
+                            productStyle: BotsiProductsModel,
+                            layout: BotsiContentLayout? = nil,
+                            selectedProductId: String? = nil) -> BotsiProductView {
+        let styleHelper = BotsiProductStyleHelper(product: product, productStyle: productStyle, layout: layout, selectedProductId: selectedProductId)
+        return BotsiProductView(styleHelper: styleHelper)
     }
     
     static func makeNoToggleProducts(model: BotsiProductsModel,
@@ -76,6 +78,7 @@ public enum BotsiViewFactory {
         let morePlans: BotsiPlansModel? = findModel(.morePlans, in: block)
         let baseProducts = extractProducts(from: findBlock(.basePlans, in: block)?.children ?? [])
         let moreProducts: [BotsiProductItemModel] = extractProducts(from: findBlock(.morePlans, in: block)?.children ?? [])
+        let bottomSheetProducts: [BotsiProductItemModel] = extractProducts(from: findBlock(.bottomSheet, in: block)?.children ?? [])
         
         return AnyView(MorePlansContainerView(
             model: model,
@@ -83,7 +86,8 @@ public enum BotsiViewFactory {
             morePlans: morePlans,
             buttonModel: buttonModel,
             baseProducts: baseProducts,
-            moreProducts: moreProducts
+            moreProducts: moreProducts,
+            bottomSheetProducts: bottomSheetProducts
         ))
     }
 
@@ -94,7 +98,7 @@ public enum BotsiViewFactory {
         }
         let moreProducts: [BotsiProductItemModel] = extractProducts(from: findBlock(.bottomSheet, in: block)?.children ?? [])
         
-        return AnyView(BottomSheetContainerView(model: model, bottomSheetModel: bottomSheetModel, products: moreProducts))
+        return AnyView(ProductsBottomSheetContainerView(model: model, bottomSheetModel: bottomSheetModel, products: moreProducts))
     }
 }
 

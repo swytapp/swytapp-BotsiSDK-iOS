@@ -17,6 +17,7 @@ public struct BotsiLinksBlockView: View {
     }
     
     let model: BotsiLinksModel
+    @EnvironmentObject var productViewModel: BotsiProductViewModel
     @EnvironmentObject var actionHandler: PaywallActionHandler
     
     public var body: some View {
@@ -89,7 +90,7 @@ private extension BotsiLinksBlockView {
             if let type = type {
                 switch type {
                 case .restore:
-                    actionHandler.handleAction(.didRestorePurchase)
+                    productViewModel.restorePurchases()
                 case .login:
                     actionHandler.handleAction(.didLogin)
                 case .termsOfService, .privacyPolicy:

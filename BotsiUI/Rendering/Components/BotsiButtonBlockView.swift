@@ -10,9 +10,10 @@ import SwiftUI
 @available(iOS 15.0, *)
 public struct BotsiButtonBlockView: View {
     
+    @EnvironmentObject var productViewModel: BotsiProductViewModel
     @EnvironmentObject var actionHandler: PaywallActionHandler
     private let model: BotsiButtonModel
-
+    
     init(model: BotsiButtonModel) {
         self.model = model
     }
@@ -37,7 +38,11 @@ public struct BotsiButtonBlockView: View {
         Button {
             switch model.action {
             case .purchaseProduct:
-                actionHandler.handleAction(.didPurchase(model.purchaseProduct?.id ?? 0))
+                productViewModel.makePurchase(productId: model.purchaseProduct?.id)
+            case .purchaseSelected:
+                productViewModel.makeSelectedPurchase()
+            case .restore:
+                productViewModel.restorePurchases()
             default:
                 actionHandler.handleAction(model.action, customId: model.actionLabel)
             }

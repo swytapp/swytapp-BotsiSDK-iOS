@@ -11,11 +11,12 @@ let package = Package(
     products: [
         .library(
             name: "Botsi",
-            targets: ["Botsi"]),
+            targets: ["Botsi"]
+        ),
         .library(
             name: "BotsiUI",
             targets: ["BotsiUI"]
-        ),
+        )
     ],
     targets: [
         .target(
@@ -31,6 +32,6 @@ let package = Package(
             name: "BotsiSDK-iOSTests",
             dependencies: ["Botsi"],
             path: "Tests"
-        ),
+        )
     ]
 )

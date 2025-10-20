@@ -91,9 +91,9 @@ public struct BotsiLayoutModel: Decodable, Sendable {
     
     public struct TopButton: Decodable, Identifiable, Sendable {
         public let id = UUID()
-        public let action: String
+        public let action: BotsiActionType
         public let enabled: Bool
-        public let actionId: BotsiActionType?
+        public let actionId: String?
         public let buttonType: BotsiButtonType?
         public let buttonAlign: BotsiAlign
         public let delay: Int
@@ -114,6 +114,19 @@ public struct BotsiLayoutModel: Decodable, Sendable {
             case buttonType  = "button_type"
             case buttonAlign = "button_align"
             case delay, style, text, icon
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.action = try container.decode(BotsiActionType.self.self, forKey: .action)
+            self.enabled = try container.decode(Bool.self, forKey: .enabled)
+            self.actionId = try container.decodeIfPresent(String.self, forKey: .actionId)
+            self.buttonType = try container.decodeIfPresent(BotsiButtonType.self, forKey: .buttonType)
+            self.buttonAlign = try container.decode(BotsiAlign.self, forKey: .buttonAlign)
+            self.delay = try container.decode(Int.self, forKey: .delay)
+            self.style = try container.decode(BotsiButtonStyle.self, forKey: .style)
+            self.text = try container.decode(ButtonText.self, forKey: .text)
+            self.icon = try container.decode(ButtonIcon.self, forKey: .icon)
         }
     }
 }
