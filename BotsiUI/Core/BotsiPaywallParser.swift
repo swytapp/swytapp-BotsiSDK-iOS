@@ -68,8 +68,6 @@ public final class BotsiPaywallParser {
                 return .listItem(try decoder.decode(BotsiListItemModel.self, from: jsonData))
             case .button:
                 return .button(try decoder.decode(BotsiButtonModel.self, from: jsonData))
-            case .localization:
-                return .localization(try decoder.decode(BotsiLocalizationModel.self, from: jsonData))
             case .products:
                 return .products(try decoder.decode(BotsiProductsModel.self, from: jsonData))
             case .productItem:

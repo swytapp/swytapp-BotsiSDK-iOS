@@ -17,9 +17,9 @@ public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     public let width: String?
     public let height: String?
     
-    public let defaultIcon: String?
+    public let defaultIcon: BotsiListModel.DefaultIcon
     public let iconPlacement: BotsiAlign
-    public let defaultColor: String?
+    public let defaultColor: BotsiFillColor?
     public let defaultOpacity: Int?
     
     public let connectorThickness: String?
@@ -28,19 +28,19 @@ public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
     
     public let titleTextStyle: BotsiTextStyleModel?
     public let captionTextStyle: BotsiTextStyleModel?
-
+    
     public var imageSize: CGSize {
         CGSize(width: width?.toCGFloat() ?? 30, height: height?.toCGFloat() ?? 30)
     }
-
+    
     public var textSpacing: CGFloat {
         textSpacingString?.toCGFloat() ?? 0
     }
-
+    
     public var itemSpacing: CGFloat {
         itemSpacingString?.toCGFloat() ?? 8
     }
-
+    
     public var verticalOffset: CGFloat {
         verticalOffsetString?.toCGFloat() ?? 0
     }
@@ -60,19 +60,30 @@ public struct BotsiListModel: Decodable, Sendable, BotsiPaddingProvider {
         case titleTextStyle = "title_text_style"
         case captionTextStyle = "caption_text_style"
     }
+    
+    public enum DefaultIcon: String, Decodable, Sendable {
+        case tick
+        case checkmark
+        case dot
+        
+        var icon: String {
+            switch self {
+            case .tick:
+                return "checkmark.circle.fill"
+            case .checkmark:
+                return "checkmark"
+            case .dot:
+                return "circle.fill"
+            }
+        }
+    }
 }
 
 @available(iOS 15.0, *)
 public struct BotsiListItemModel: Decodable, Sendable, Identifiable {
     
-    public let id: String?
-    
-    public var uniqueID: String {
-        // Create a stable unique identifier based on content
-        let contentHash = "\(icon ?? "")-\(titleText ?? "")-\(captionText ?? "")"
-        return id ?? String(contentHash.hash)
-    }
-    
+    public var id: String?
+
     public let icon: String?
     public let connectorThickness: String?
     public let connectorColor: BotsiFillColor?

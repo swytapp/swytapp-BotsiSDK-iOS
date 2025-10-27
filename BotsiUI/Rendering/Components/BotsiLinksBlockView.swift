@@ -29,6 +29,7 @@ public struct BotsiLinksBlockView: View {
         }
         .padding(model.padding)
         .offset(y: model.verticalOffset.toCGFloat())
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 

@@ -20,12 +20,19 @@ public final class BotsiPaywallViewModel: ObservableObject {
     public let layoutVM: BotsiLayoutViewModel?
     public let footerVM: BotsiFooterHelper?
     public let heroImage: BotsiHeroImageModel?
-        
+    
     public var heroHorizontalPadding: CGFloat {
         let left = (heroImage?.layout.padding.left ?? 0) + (layoutVM?.padding.left ?? 0)
         let right = (heroImage?.layout.padding.right ?? 0) + (layoutVM?.padding.right ?? 0)
         
         return left + right
+    }
+    
+    public var containsTopButtons: Bool {
+        if let buttons = layoutVM?.model.buttons, !buttons.isEmpty {
+            return true
+        }
+        return false
     }
     
     init(model: BotsiPaywallModel, onAction: ((BotsiAction) -> Void)? = nil, timerProvider: BotsiTimerProvider? = nil) {

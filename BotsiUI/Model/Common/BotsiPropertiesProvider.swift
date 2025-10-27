@@ -12,6 +12,7 @@ public protocol BotsiTextPropertiesProvider {
     var font: BotsiLayoutModel.DefaultFont? { get }
     var size: String? { get }
     var color: BotsiFillColor? { get }
+    var customFont: BotsiCustomFont? { get }
 }
 
 @available(iOS 15.0, *)

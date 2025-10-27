@@ -47,6 +47,7 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
 
     public struct Style: Decodable, Sendable, BotsiTextPropertiesProvider {
         public let font: BotsiLayoutModel.DefaultFont?
+        public let customFont: BotsiCustomFont?
         public let size: String?
         public let color: BotsiFillColor?
         public let dividersColor: BotsiFillColor?
@@ -64,11 +65,22 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
 
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            font = try container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font)
+            
             size = try container.decode(String.self, forKey: .size)
             color = try container.decode(BotsiFillColor.self, forKey: .color)
             dividersColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .dividersColor)
             dividersThicknessString = try container.decodeIfPresent(String.self, forKey: .dividersThicknessString)
+            
+            if let defaultFont = try? container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font) {
+                self.font = defaultFont
+                self.customFont = nil
+            } else if let customFont = try? container.decode(BotsiCustomFont.self, forKey: .font) {
+                self.font = nil
+                self.customFont = customFont
+            } else {
+                self.font = nil
+                self.customFont = nil
+            }
         }
     }
 

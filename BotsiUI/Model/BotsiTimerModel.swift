@@ -38,8 +38,8 @@ public struct BotsiTimerModel: Decodable, Sendable, BotsiPaddingProvider {
 
     public enum TimerMode: String, Decodable, Sendable {
         case reset = "Reset timer on every paywall view"
-        case appLaunchReset = "Reset timer on every app lunch"
-        case keep = "Keep timer across app lunches"
+        case appLaunchReset = "Reset timer on every app launch"
+        case keep = "Keep timer across app launches"
         case defined = "Developer defined"
     }
 }

@@ -20,7 +20,8 @@ public struct BotsiListBlockView: View {
         self.model = listModel
 
         self.items = block.children?.compactMap {
-            if case let .listItem(itemModel) = $0.content {
+            if case var .listItem(itemModel) = $0.content {
+                itemModel.id = $0.meta.id
                 return itemModel
             } else {
                 return nil
@@ -30,11 +31,13 @@ public struct BotsiListBlockView: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: model.itemSpacing) {
-            ForEach(items, id: \.uniqueID) { item in
+            ForEach(items) { item in
                 BotsiListItemView(item: item,
                                   imageSize: model.imageSize,
                                   textSpacing: model.textSpacing,
-                                  iconAlignment: model.iconPlacement.alignments.vertical)
+                                  iconAlignment: model.iconPlacement.alignments.vertical,
+                                  defaultIcon: model.defaultIcon,
+                                  defaultIconColor: model.defaultColor)
             }
         }
         .frame(maxWidth: .infinity)

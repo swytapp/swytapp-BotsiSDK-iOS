@@ -21,7 +21,6 @@ public enum BotsiBlockContent: Decodable, Sendable {
     case card(BotsiCardModel)
     case footer(BotsiFooterModel)
     case button(BotsiButtonModel)
-    case localization(BotsiLocalizationModel)
     
     case products(BotsiProductsModel)
     case productItem(BotsiProductItemModel)
@@ -68,8 +67,6 @@ public enum BotsiBlockContent: Decodable, Sendable {
             self = .footer(try container.decode(BotsiFooterModel.self, forKey: .content))
         case .button:
             self = .button(try container.decode(BotsiButtonModel.self, forKey: .content))
-        case .localization:
-            self = .localization(try container.decode(BotsiLocalizationModel.self, forKey: .content))
         case .products:
             self = .products(try container.decode(BotsiProductsModel.self, forKey: .content))
         case .productItem:

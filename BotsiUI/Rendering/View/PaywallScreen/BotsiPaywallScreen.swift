@@ -16,6 +16,7 @@ public struct BotsiPaywallScreen: View {
     @StateObject private var productViewModel: BotsiProductViewModel
     @StateObject private var actionHandler: PaywallActionHandler
     @State private var footerHeight: CGFloat = 0
+    @State private var areImagesLoaded = false
     
     public init(viewModel: BotsiPaywallViewModel, paywall: BotsiPaywall) {
         let actionHandler = PaywallActionHandler(onAction: viewModel.handleAction, timerProvider: viewModel.timerProvider)
@@ -25,6 +26,30 @@ public struct BotsiPaywallScreen: View {
     }
     
     public var body: some View {
+        ZStack {
+            ImageLoadingWrapperView(
+                content: paywallContent,
+                onImagesLoaded: {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        areImagesLoaded = true
+                    }
+                }
+            )
+            
+            Group {
+                if !areImagesLoaded {
+                    BotsiUILoadingView()
+                        .background(Color(uiColor: .systemBackground))
+                        .ignoresSafeArea()
+                }
+            }
+            .transition(.move(edge: .bottom))
+            .zIndex(1)
+        }
+    }
+    
+    @ViewBuilder
+    private var paywallContent: some View {
         CustomGeometryReaderView { size in
             GeometryReader { proxy in
                 VStack {
@@ -53,6 +78,10 @@ public struct BotsiPaywallScreen: View {
                 .withScreenSize(screenSize(for: proxy))
                 .withSafeArea(proxy.safeAreaInsets)
                 .ignoresSafeArea()
+            }
+            
+            if productViewModel.isLoading {
+                BotsiUILoadingView()
             }
         }
         .onAppear {
@@ -161,6 +190,9 @@ private extension BotsiPaywallScreen {
             contentBlocks
         }
         .padding(paywallViewModel.layoutVM?.padding)
+        .if(paywallViewModel.containsTopButtons) {
+            $0.padding(.top, 30)
+        }
         .if(paywallViewModel.heroImage?.style != .transparent) {
             $0.backgroundFill(paywallViewModel.layoutVM?.fillColor)
         }
@@ -219,7 +251,7 @@ private extension BotsiPaywallScreen {
     
     @ViewBuilder
     var bottomSheetOverlay: some View {
-        if actionHandler.isBottomSheetPresented,
+        if productViewModel.isBottomProductSheetPresented,
            let productBlock = paywallViewModel.contentBlocks.first(where: { $0.meta.type == .products }),
            case .products(let model) = productBlock.content,
            let sheet = BotsiViewFactory.makeBottomSheet(model: model, block: productBlock) {

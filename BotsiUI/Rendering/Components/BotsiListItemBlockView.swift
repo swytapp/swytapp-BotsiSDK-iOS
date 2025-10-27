@@ -14,16 +14,14 @@ public struct BotsiListItemView: View {
     let imageSize: CGSize
     let textSpacing: CGFloat
     let iconAlignment: VerticalAlignment
+    let defaultIcon: BotsiListModel.DefaultIcon
+    let defaultIconColor: BotsiFillColor?
     
     public var body: some View {
-        HStack(alignment: iconAlignment, spacing: 10) {
-            VStack(spacing: 0) {
-                if item.icon != nil && item.icon != "" {
-                    iconView
-                    connectorViewIfNeeded()
-                } else {
-                    connectorViewIfNeeded()
-                }
+        HStack(spacing: 10) {
+            ZStack {
+                connectorViewIfNeeded()
+                iconVStack
             }
             
             VStack(spacing: textSpacing) {
@@ -31,6 +29,7 @@ public struct BotsiListItemView: View {
                 captionView
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -38,13 +37,36 @@ public struct BotsiListItemView: View {
 @available(iOS 15.0, *)
 private extension BotsiListItemView {
     @ViewBuilder
-    var iconView: some View {
-        if let iconURL = item.icon {
-            BotsiImageBlockView(url: iconURL,
-                                size: imageSize,
-                                aspect: .fit)
-            .padding(-5)
+    var iconVStack: some View {
+        VStack(spacing: 0) {
+            if iconAlignment == .bottom || iconAlignment == .center {
+                Spacer()
+            }
+            
+            iconView
+            
+            if iconAlignment == .top || iconAlignment == .center {
+                Spacer()
+            }
         }
+    }
+    
+    @ViewBuilder
+    var iconView: some View {
+        BotsiImageBlockView(url: item.icon ?? "",
+                            size: imageSize,
+                            aspect: .fit,
+                            fallbackImage: defaultIcon.icon,
+                            imageModifier: { image -> AnyView in
+            if item.icon == nil || item.icon == "" {
+                return AnyView(image
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(defaultIconColor?.toColor() ?? .white)
+                )
+            } else {
+                return AnyView(image)
+            }
+        })
     }
 }
 
@@ -84,3 +106,4 @@ private extension BotsiListItemView {
         }
     }
 }
+

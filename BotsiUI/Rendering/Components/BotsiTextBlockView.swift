@@ -37,7 +37,7 @@ struct BotsiTextBlockView<T: BotsiTextPropertiesProvider>: View {
         Text(text)
             .font(.customFont(
                 ofSize: textProvider?.textSize ?? 14,
-                name: textProvider?.font?.name ?? "System",
+                name: textProvider?.customFont?.name ?? textProvider?.font?.name ?? "System",
                 weight: textProvider?.font?.fontWeight ?? 400,
                 italic: textProvider?.font?.isItalic ?? false
             ))

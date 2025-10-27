@@ -104,6 +104,7 @@ public struct BotsiProductItemBadge: Decodable, Sendable, BotsiTextPropertiesPro
     public let badgeOpacity: Int?
     public let badgeRadius: String
     public let font: BotsiLayoutModel.DefaultFont?
+    public let customFont: BotsiCustomFont?
     public let size: String?
     public let color: BotsiFillColor?
     public let badgeTextOpacity: Int?
@@ -117,5 +118,28 @@ public struct BotsiProductItemBadge: Decodable, Sendable, BotsiTextPropertiesPro
         case size = "badge_text_size"
         case color = "badge_text_color"
         case badgeTextOpacity = "badge_text_opacity"
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        badgeText = try container.decode(String.self, forKey: .badgeText)
+        badgeColor = try container.decode(BotsiFillColor.self, forKey: .badgeColor)
+        badgeOpacity = try container.decodeIfPresent(Int.self, forKey: .badgeOpacity)
+        badgeRadius = try container.decode(String.self, forKey: .badgeRadius)
+        size = try container.decodeIfPresent(String.self, forKey: .size)
+        color = try container.decodeIfPresent(BotsiFillColor.self, forKey: .color)
+        badgeTextOpacity = try container.decodeIfPresent(Int.self, forKey: .badgeTextOpacity)
+        
+        if let defaultFont = try? container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font) {
+            self.font = defaultFont
+            self.customFont = nil
+        } else if let customFont = try? container.decode(BotsiCustomFont.self, forKey: .font) {
+            self.font = nil
+            self.customFont = customFont
+        } else {
+            self.font = nil
+            self.customFont = nil
+        }
     }
 }

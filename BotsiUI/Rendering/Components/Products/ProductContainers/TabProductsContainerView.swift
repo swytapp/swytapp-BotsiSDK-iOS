@@ -84,9 +84,9 @@ private extension TabProductsContainerView {
                 .foregroundColor(tabStyle.fontColor.toColor())
                 .font(.customFont(
                     ofSize: tabControlModel.textSize.toCGFloat(),
-                    name: tabControlModel.tabFont.name,
-                    weight: tabControlModel.tabFont.fontWeight,
-                    italic: tabControlModel.tabFont.isItalic
+                    name: tabControlModel.customTabFont?.name ?? tabControlModel.tabFont?.name ?? "",
+                    weight: tabControlModel.tabFont?.fontWeight ?? 2000,
+                    italic: tabControlModel.tabFont?.isItalic ?? false
                 ))
                 .padding(tabStyle.padding)
                 .fixedSize(horizontal: false, vertical: true)

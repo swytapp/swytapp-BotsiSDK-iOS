@@ -23,7 +23,7 @@ public struct MorePlansContainerView: View {
     @State private var localMorePlansShown: Bool
     
     private var morePlansShown: Bool {
-        model.grouping == .bottomSheet ? actionHandler.isBottomSheetPresented : localMorePlansShown
+        model.grouping == .bottomSheet ? productViewModel.isBottomProductSheetPresented : localMorePlansShown
     }
     
     private var buttonText: MoreButtonText {
@@ -111,7 +111,7 @@ private extension MorePlansContainerView {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.3)) {
                 if model.grouping == .bottomSheet {
-                    actionHandler.setBottomSheetPresented(true)
+                    productViewModel.isBottomProductSheetPresented = true
                     selectBottomSheetProducts()
                 } else {
                     localMorePlansShown.toggle()

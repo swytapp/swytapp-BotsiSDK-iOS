@@ -29,7 +29,6 @@ public enum BotsiAction: Sendable {
 public final class PaywallActionHandler: ObservableObject {
     private let onAction: ((BotsiAction) -> Void)?
     public let timerProvider: BotsiTimerProvider?
-    @Published public var isBottomSheetPresented: Bool = false
     
     public init(onAction: ((BotsiAction) -> Void)? = nil, timerProvider: BotsiTimerProvider? = nil) {
         self.onAction = onAction
@@ -53,10 +52,5 @@ public final class PaywallActionHandler: ObservableObject {
         default:
             break
         }
-    }
-    
-    @MainActor
-    public func setBottomSheetPresented(_ show: Bool) {
-        isBottomSheetPresented = show
     }
 } 

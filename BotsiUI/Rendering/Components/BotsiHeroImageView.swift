@@ -27,7 +27,6 @@ public struct BotsiHeroImageView: View {
 
         case .overlay:
             BotsiHeroImage(imageURL: model.backgroundImage)
-
         case .flat:
             BotsiHeroImage(imageURL: model.backgroundImage)
         }
@@ -38,6 +37,7 @@ public struct BotsiHeroImageView: View {
 private struct BotsiHeroImage: View {
     
     let imageURL: String?
+    @Environment(\.imageLoadingTracker) private var imageLoadingTracker
 
     var body: some View {
         if let imageURL, let url = URL(string: imageURL) {
@@ -47,12 +47,24 @@ private struct BotsiHeroImage: View {
                     image
                         .resizable()
                         .scaledToFill()
+                        .onAppear {
+                            imageLoadingTracker.onImageComplete(imageURL)
+                        }
                 case .failure(_):
                     Color.gray.opacity(0.2)
+                        .onAppear {
+                            imageLoadingTracker.onImageComplete(imageURL)
+                        }
                 case .empty:
                     Color.gray.opacity(0.2)
+                    .onAppear {
+                        imageLoadingTracker.onImageStart(imageURL)
+                    }
                 @unknown default:
                     Color.gray.opacity(0.2)
+                        .onAppear {
+                            imageLoadingTracker.onImageComplete(imageURL)
+                        }
                 }
             }
             .drawingGroup()

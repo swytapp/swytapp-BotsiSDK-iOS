@@ -195,9 +195,9 @@ public extension View {
         case .leafSape:
             self.clipShape(LeafMaskShape(radius: size.height * 0.25, corners: [.topLeft, .bottomRight]))
         case .convexMask:
-            self.clipShape(ConvexMaskShape(curveHeight: 10))
+            self.clipShape(ConvexMaskShape(curveHeight: 30))
         case .concaveMask:
-            self.clipShape(ConcaveMaskShape(curveHeight: 30))
+            self.clipShape(ConcaveMaskShape(curveHeight: 55))
         default:
             self
         }

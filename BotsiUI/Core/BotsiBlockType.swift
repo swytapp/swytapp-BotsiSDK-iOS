@@ -18,7 +18,6 @@ public enum BotsiBlockType: String, Decodable, Sendable {
     case links         = "links"
     case carousel      = "carousel"
     case timer         = "timer"
-    case localization  = "localization"
     case products      = "products"
     case productItem   = "product_item"
     case toggleControl = "toggle_control"
@@ -26,10 +25,10 @@ public enum BotsiBlockType: String, Decodable, Sendable {
     case toggleOff     = "toggle_off"
     case tabControl    = "tab_control"
     case tab           = "tab_group"
-    case basePlans            = "main_plans"
-    case morePlans            = "more_plans"
-    case moreButton           = "plans_control"
-    case bottomSheet          = "more_plans_sheet"
+    case basePlans     = "main_plans"
+    case morePlans     = "more_plans"
+    case moreButton    = "plans_control"
+    case bottomSheet   = "more_plans_sheet"
     case unknown
     
     public init(from decoder: Decoder) throws {
@@ -40,7 +39,6 @@ public enum BotsiBlockType: String, Decodable, Sendable {
     }
 }
 
-
 // MARK: - Unified block
 @available(iOS 15.0, *)
 public struct BotsiPaywallBlock: Decodable, Sendable {
@@ -50,7 +48,6 @@ public struct BotsiPaywallBlock: Decodable, Sendable {
 
     private enum CodingKeys: String, CodingKey { case meta, content, children }
 }
-
 
 @available(iOS 15.0, *)
 public struct BotsiPaywallContentStructure: Sendable {

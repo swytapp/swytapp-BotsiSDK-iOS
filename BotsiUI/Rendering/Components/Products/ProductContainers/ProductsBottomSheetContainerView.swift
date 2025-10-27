@@ -43,7 +43,7 @@ public struct ProductsBottomSheetContainerView: View {
     private func close() {
         withAnimation(.easeInOut(duration: 0.3)) {
             isHidden = true
-            actionHandler.setBottomSheetPresented(false)
+            productViewModel.isBottomProductSheetPresented = false
         }
     }
 }

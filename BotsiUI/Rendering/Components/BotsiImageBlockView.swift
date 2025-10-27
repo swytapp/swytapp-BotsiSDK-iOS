@@ -13,21 +13,26 @@ public struct BotsiImageBlockView: View {
     private let model: BotsiImageModel
     private let size: CGSize?
     private let imageModifier: ((Image) -> AnyView)?
+    private let fallbackImage: String?
     
     public init(model: BotsiImageModel,
+                fallbackImage: String? = nil,
                 imageModifier: ((Image) -> AnyView)? = nil) {
         self.model = model
         self.size = nil
         self.imageModifier = imageModifier
+        self.fallbackImage = fallbackImage
     }
     
     public init(url: String,
                 size: CGSize? = nil,
                 aspect: BotsiImageAspect = .fill,
+                fallbackImage: String? = nil,
                 imageModifier: ((Image) -> AnyView)? = nil) {
         self.model = BotsiImageModel(image: url, aspect: aspect)
         self.size = size
         self.imageModifier = imageModifier
+        self.fallbackImage = fallbackImage
     }
     
     public var body: some View {
@@ -39,9 +44,9 @@ public struct BotsiImageBlockView: View {
                     case .success(let image):
                         imageView(from: image)
                     case .empty:
-                        Color.clear
+                        imageView(from: Image(systemName: fallbackImage ?? ""))
                     case .failure, _:
-                        Color.clear
+                        imageView(from: Image(systemName: fallbackImage ?? ""))
                     }
                 }
                 .drawingGroup()

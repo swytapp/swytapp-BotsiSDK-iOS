@@ -8,18 +8,6 @@
 import SwiftUI
 import Botsi
 
-@available(iOS 15.0, *)
-@MainActor
-public struct BotsiLoadingPlaceholderView: View {
-    public init() {}
-    
-    public var body: some View {
-        ProgressView()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(uiColor: .systemBackground))
-    }
-}
-
 @MainActor
 @available(iOS 15.0, *)
 struct BotsiPaywallViewModifier: ViewModifier {
@@ -53,7 +41,7 @@ struct BotsiPaywallViewModifier: ViewModifier {
         if let paywallView = paywallView {
             paywallView
         } else {
-            BotsiLoadingPlaceholderView()
+            BotsiUILoadingView()
         }
     }
     

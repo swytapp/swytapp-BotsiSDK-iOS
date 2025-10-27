@@ -45,6 +45,7 @@ public struct TopButtonView: View {
     let button: BotsiLayoutModel.TopButton
     @EnvironmentObject var actionHandler: PaywallActionHandler
     @EnvironmentObject var productViewModel: BotsiProductViewModel
+    @State private var isVisible = false
     
     public var body: some View {
         Button(action: {
@@ -63,22 +64,31 @@ public struct TopButtonView: View {
             borderThickness: button.style.borderThickness.toCGFloat(),
             cornerRadius: button.style.radius.toCGFloat()
         )
-        .disabled(!button.enabled)
+        .disabled(!button.enabled || !isVisible)
+        .opacity(isVisible ? 1 : 0)
+        .onAppear {
+            let delayInSeconds = Double(button.delay)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delayInSeconds) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    isVisible = true
+                }
+            }
+        }
     }
     
     @ViewBuilder
     private var buttonContent: some View {
         switch button.buttonType {
         case .icon:
-            Image(systemName: systemIconName(for: button.icon.type))
+            Image(systemName: button.icon.type.systemIconName)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 8, height: 8)
+                .frame(width: 10, height: 10)
                 .foregroundColor(button.icon.color.toColor().opacity(button.iconOpacity))
                 .padding(12)
         case .text:
             BotsiTextBlockView(propertiesProvider: button.text,
-                               text: button.text.text,
+                               text: button.text.text ?? "",
                                align: .center,
                                opacity: Double(button.text.opacity ?? 100))
             .padding(.vertical, 4)
@@ -86,14 +96,6 @@ public struct TopButtonView: View {
             .fixedSize(horizontal: true, vertical: false)
         default:
             EmptyView()
-        }
-    }
-    
-    private func systemIconName(for type: String) -> String {
-        switch type.lowercased() {
-        case "close": return "xmark"
-        case "back": return "chevron.backward"
-        default: return "questionmark"
         }
     }
 }

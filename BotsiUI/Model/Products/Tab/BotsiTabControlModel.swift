@@ -12,7 +12,8 @@ public struct BotsiTabControlModel: Decodable, Sendable {
     public let containerStyle: BotsiStyleModel
     public let activeTabStyle: BotsiTabStyleModel
     public let inactiveTabStyle: BotsiTabStyleModel
-    public let tabFont: BotsiLayoutModel.DefaultFont
+    public let tabFont: BotsiLayoutModel.DefaultFont?
+    public let customTabFont: BotsiCustomFont?
     public let selectedTab: String
     public let textSize: String
     public let padding: BotsiEdge
@@ -27,6 +28,29 @@ public struct BotsiTabControlModel: Decodable, Sendable {
         case tabFont = "tab_text_font"
         case verticalOffset = "vertical_offset"
         case selectedTab = "selected_tab"
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        containerStyle = try container.decode(BotsiStyleModel.self, forKey: .containerStyle)
+        activeTabStyle = try container.decode(BotsiTabStyleModel.self, forKey: .activeTabStyle)
+        inactiveTabStyle = try container.decode(BotsiTabStyleModel.self, forKey: .inactiveTabStyle)
+        selectedTab = try container.decode(String.self, forKey: .selectedTab)
+        textSize = try container.decode(String.self, forKey: .textSize)
+        padding = try container.decode(BotsiEdge.self, forKey: .padding)
+        verticalOffset = try container.decode(String.self, forKey: .verticalOffset)
+        
+        if let defaultFont = try? container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .tabFont) {
+            self.tabFont = defaultFont
+            self.customTabFont = nil
+        } else if let customFont = try? container.decode(BotsiCustomFont.self, forKey: .tabFont) {
+            self.tabFont = nil
+            self.customTabFont = customFont
+        } else {
+            self.tabFont = nil
+            self.customTabFont = nil
+        }
     }
 }
 

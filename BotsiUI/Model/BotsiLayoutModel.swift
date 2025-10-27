@@ -75,18 +75,57 @@ public struct BotsiLayoutModel: Decodable, Sendable {
     }
     
     // top_buttons ------------------------------------------------------------
-    public struct ButtonText: Decodable, Sendable, BotsiTextPropertiesProvider {
-        public let text: String
-        public let font: DefaultFont?
-        public let size: String?
-        public let color: BotsiFillColor?
-        public let opacity: Int?
-    }
+    // public struct ButtonText: Decodable, Sendable, BotsiTextPropertiesProvider {
+    //     public let text: String
+    //     public let font: DefaultFont?
+    //     public let customFont: BotsiCustomFont?
+    //     public let size: String?
+    //     public let color: BotsiFillColor?
+    //     public let opacity: Int?
+        
+    //     public init(from decoder: Decoder) throws {
+    //         let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+    //         text = try container.decode(String.self, forKey: .text)
+    //         size = try container.decodeIfPresent(String.self, forKey: .size)
+    //         color = try container.decodeIfPresent(BotsiFillColor.self, forKey: .color)
+    //         opacity = try container.decodeIfPresent(Int.self, forKey: .opacity)
+            
+    //         if let defaultFont = try? container.decode(DefaultFont.self, forKey: .font) {
+    //             self.font = defaultFont
+    //             self.customFont = nil
+    //         } else if let customFont = try? container.decode(BotsiCustomFont.self, forKey: .font) {
+    //             self.font = nil
+    //             self.customFont = customFont
+    //         } else {
+    //             self.font = nil
+    //             self.customFont = nil
+    //         }
+    //     }
+        
+    //     private enum CodingKeys: String, CodingKey {
+    //         case text, size, color, opacity, font
+    //     }
+    // }
     
     public struct ButtonIcon: Decodable, Sendable {
-        public let type:  String
+        public let type:  IconType
         public let color: BotsiFillColor
         public let opacity: Int?
+        
+        public enum IconType: String, Decodable, Sendable {
+            case close = "Close"
+            case back = "Prev"
+            case next = "Next"
+
+            var systemIconName: String {
+                switch self {
+                case .close: return "xmark"
+                case .back: return "chevron.backward"
+                case .next: return "chevron.forward"
+                }
+            }
+        }
     }
     
     public struct TopButton: Decodable, Identifiable, Sendable {
@@ -98,7 +137,7 @@ public struct BotsiLayoutModel: Decodable, Sendable {
         public let buttonAlign: BotsiAlign
         public let delay: Int
         public let style: BotsiButtonStyle
-        public let text: ButtonText
+        public let text: BotsiTextStyleModel
         public let icon: ButtonIcon
         
         public var iconOpacity: CGFloat {
@@ -125,7 +164,7 @@ public struct BotsiLayoutModel: Decodable, Sendable {
             self.buttonAlign = try container.decode(BotsiAlign.self, forKey: .buttonAlign)
             self.delay = try container.decode(Int.self, forKey: .delay)
             self.style = try container.decode(BotsiButtonStyle.self, forKey: .style)
-            self.text = try container.decode(ButtonText.self, forKey: .text)
+            self.text = try container.decode(BotsiTextStyleModel.self, forKey: .text)
             self.icon = try container.decode(ButtonIcon.self, forKey: .icon)
         }
     }
