@@ -25,6 +25,7 @@ public enum BotsiProductOfferState: String, Decodable, Sendable {
 public struct BotsiProductItemModel: Decodable, Sendable, Identifiable {
     
     public var productId: String?
+    public var productElementId: String?
     public let state: BotsiProductState
     public let offerState: BotsiProductOfferState
     public let defaultText: BotsiProductItemTextBlock

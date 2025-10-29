@@ -49,5 +49,6 @@ public struct BotsiFooterBlockView: View {
             borderThickness: footer.model.style.borderWidth ?? 0,
             cornerRadius: footer.radius,
         )
+        .drawingGroup()
     }
 }

@@ -125,6 +125,7 @@ private extension BotsiViewFactory {
                 return nil
             }
             productModel.productId = productId
+            productModel.productElementId = block.meta.id
             return productModel
         }
     }

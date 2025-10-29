@@ -41,6 +41,12 @@ public struct BotsiProductView: View {
             }
             productViewModel.selectProduct(productId: productId)
         }
+        .task {
+            guard let productElementId = styleHelper.product.productElementId, productElementId == styleHelper.productStyle.selectedProduct else {
+                return
+            }
+            productViewModel.selectProduct(productId: Int(styleHelper.product.productId ?? ""), withEvent: false)
+        }
     }
 
     private var isSelected: Bool {

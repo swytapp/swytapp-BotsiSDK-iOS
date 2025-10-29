@@ -60,7 +60,7 @@ private extension BotsiListItemView {
                             imageModifier: { image -> AnyView in
             if item.icon == nil || item.icon == "" {
                 return AnyView(image
-                    .symbolRenderingMode(.hierarchical)
+                    .symbolRenderingMode(.monochrome)
                     .foregroundStyle(defaultIconColor?.toColor() ?? .white)
                 )
             } else {

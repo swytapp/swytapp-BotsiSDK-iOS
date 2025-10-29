@@ -13,8 +13,8 @@ import Botsi
 final class BotsiProductViewModel: ObservableObject {
     private let actionHandler: PaywallActionHandler
     private let paywall: BotsiPaywall
-    @Published var selectedProductId: Int?
-    @Published var isLoading = false
+    @Published private(set) var selectedProductId: Int?
+    @Published private(set) var isLoading = false
     @Published var isBottomProductSheetPresented = false
 
     init(actionHandler: PaywallActionHandler, paywall: BotsiPaywall) {
@@ -56,14 +56,16 @@ final class BotsiProductViewModel: ObservableObject {
         }
     }
 
-    func selectProduct(productId: Int?) {
+    func selectProduct(productId: Int?, withEvent: Bool = true) {
         selectedProductId = productId
 
-        Task {
-            guard let productId, let product = await getProduct(byId: productId) else {
-                return
+        if withEvent {
+            Task {
+                guard let productId, let product = await getProduct(byId: productId) else {
+                    return
+                }
+                actionHandler.handleAction(.didSelectProduct(product))
             }
-             actionHandler.handleAction(.didSelectProduct(product))
         }
     }
 

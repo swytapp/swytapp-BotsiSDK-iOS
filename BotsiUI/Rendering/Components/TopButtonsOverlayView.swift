@@ -84,7 +84,7 @@ public struct TopButtonView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 10, height: 10)
-                .foregroundColor(button.icon.color.toColor().opacity(button.iconOpacity))
+                .foregroundColor(button.icon.color.toColor())
                 .padding(12)
         case .text:
             BotsiTextBlockView(propertiesProvider: button.text,
