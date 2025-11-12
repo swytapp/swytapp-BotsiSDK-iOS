@@ -35,7 +35,7 @@ public struct BotsiProductItemModel: Decodable, Sendable, Identifiable {
     public let defaultState: BotsiProductItemTextState
     public let selectedState: BotsiProductItemTextState
     public let defaultStyle: BotsiStyleModel
-    public let selectedStyle: BotsiStyleModel
+    public let selectedStyle: BotsiStyleModel?
     public let isBadge: Bool
     public let badge: BotsiProductItemBadge
 

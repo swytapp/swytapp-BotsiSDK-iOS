@@ -52,7 +52,7 @@ public struct BotsiProductStyleHelper {
     }
     
     func style(isSelected: Bool) -> BotsiStyleModel {
-        isSelected ? product.selectedStyle : product.defaultStyle
+        isSelected ? (product.selectedStyle ?? product.defaultStyle) : product.defaultStyle
     }
     
     func textAlignment(for index: Int) -> BotsiAlign {
