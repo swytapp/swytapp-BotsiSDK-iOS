@@ -49,9 +49,10 @@ public struct BotsiImageBlockView: View {
                         imageView(from: Image(systemName: fallbackImage ?? ""))
                     }
                 }
-                .drawingGroup()
+                .drawingGroup(),
+                alignment: .top
             )
-            .frame(width: size?.width, height: size?.height ?? model.height?.toCGFloat(default: 150))
+            .frame(width: size?.width, height: size?.height ?? model.height?.toCGFloat(default: 150), alignment: .top)
             .padding(model.padding)
             .clipped()
             .offset(y: model.verticalOffset?.toCGFloat() ?? 0)
@@ -77,7 +78,7 @@ private struct AspectRatioModifier: ViewModifier {
     func body(content: Content) -> some View {
         switch aspect {
         case .fill:
-            content.aspectRatio(2.5, contentMode: .fill)
+            content.aspectRatio(contentMode: .fill)
         case .fit:
             content.aspectRatio(contentMode: .fit)
         case .stretch:
