@@ -101,6 +101,7 @@ private extension BotsiCarouselBlockView {
                             }
                     }
                 }
+                .frame(height: model.height)
                 .offset(x: CGFloat(-currentIndex) * (itemWidth + model.spacing) + dragOffset)
                 .simultaneousGesture(dragGesture)
                 .onAppear {

@@ -36,7 +36,6 @@ public struct BotsiImageBlockView: View {
     }
     
     public var body: some View {
-        let padding = model.padding
         Color.clear
             .overlay (
                 AsyncImage(url: URL(string: model.image), transaction: Transaction(animation: .none)) { phase in
@@ -49,11 +48,11 @@ public struct BotsiImageBlockView: View {
                         imageView(from: Image(systemName: fallbackImage ?? ""))
                     }
                 }
+                .padding(model.padding)
                 .drawingGroup(),
                 alignment: .top
             )
             .frame(width: size?.width, height: size?.height ?? model.height?.toCGFloat(default: 150), alignment: .top)
-            .padding(model.padding)
             .clipped()
             .offset(y: model.verticalOffset?.toCGFloat() ?? 0)
     }

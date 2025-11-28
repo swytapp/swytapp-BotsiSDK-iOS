@@ -38,4 +38,23 @@ public struct BotsiImageModel: Decodable, Sendable, BotsiPaddingProvider {
         self.padding = padding
         self.verticalOffset = verticalOffset
     }
+    
+    public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            
+            image = try container.decode(String.self, forKey: .image)
+            height = try container.decodeIfPresent(String.self, forKey: .height)
+            aspect = try container.decodeIfPresent(BotsiImageAspect.self, forKey: .aspect) ?? .fit
+            padding = try container.decodeIfPresent(BotsiEdge.self, forKey: .padding) ?? .defaultEdge
+            
+            if let offsetString = try? container.decodeIfPresent(String.self, forKey: .verticalOffset) {
+                verticalOffset = offsetString
+            } else if let offsetNumber = try? container.decodeIfPresent(Double.self, forKey: .verticalOffset) {
+                verticalOffset = String(offsetNumber)
+            } else if let offsetInt = try? container.decodeIfPresent(Int.self, forKey: .verticalOffset) {
+                verticalOffset = String(offsetInt)
+            } else {
+                verticalOffset = nil
+            }
+        }
 }

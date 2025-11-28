@@ -65,7 +65,7 @@ extension Color {
     }
     
     private static func parseRGB(_ string: String) -> Color? {
-        let pattern = #"rgb\(([\d.]+), ?([\d.]+), ?([\d.]+)\)"#
+        let pattern = #"rgb\(([\d.]+) ?,?([\d.]+) ?,?([\d.]+)\)"#
         guard let components = extractColorComponents(from: string, pattern: pattern, count: 3) else {
             return nil
         }
