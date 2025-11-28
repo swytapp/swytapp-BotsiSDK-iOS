@@ -13,6 +13,7 @@ public struct BotsiTextStyleModel: Decodable, Sendable, BotsiTextPropertiesProvi
     public let size: String?
     public let align: BotsiAlign?
     public let color: BotsiFillColor?
+    public let selectedColor: BotsiFillColor?
     public let opacity: Int?
     public let text: String?
 
@@ -21,6 +22,7 @@ public struct BotsiTextStyleModel: Decodable, Sendable, BotsiTextPropertiesProvi
         case size
         case align
         case color
+        case selectedColor = "selected_color"
         case opacity
         case text
     }
@@ -31,6 +33,7 @@ public struct BotsiTextStyleModel: Decodable, Sendable, BotsiTextPropertiesProvi
         size = try container.decode(String.self, forKey: .size)
         align = try container.decodeIfPresent(BotsiAlign.self, forKey: .align)
         color = try container.decodeIfPresent(BotsiFillColor.self, forKey: .color) ?? .solid(.white)
+        selectedColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .selectedColor) ?? .solid(.white)
         opacity = try container.decodeIfPresent(Int.self, forKey: .opacity)
         text = try container.decodeIfPresent(String.self, forKey: .text)
         

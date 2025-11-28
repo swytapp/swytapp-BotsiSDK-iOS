@@ -50,6 +50,7 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
         public let customFont: BotsiCustomFont?
         public let size: String?
         public let color: BotsiFillColor?
+        public let selectedColor: BotsiFillColor?
         public let dividersColor: BotsiFillColor?
         public let dividersThicknessString: String?
 
@@ -60,6 +61,7 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
         private enum CodingKeys: String, CodingKey {
             case font, size, color, opacity
             case dividersColor = "dividers_color"
+            case selectedColor = "selected_color"
             case dividersThicknessString = "dividers_thickness"
         }
 
@@ -68,6 +70,7 @@ public struct BotsiLinksModel: Decodable, Sendable, BotsiPaddingProvider {
             
             size = try container.decode(String.self, forKey: .size)
             color = try container.decode(BotsiFillColor.self, forKey: .color)
+            selectedColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .selectedColor)
             dividersColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .dividersColor)
             dividersThicknessString = try container.decodeIfPresent(String.self, forKey: .dividersThicknessString)
             

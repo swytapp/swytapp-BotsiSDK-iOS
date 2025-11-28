@@ -25,10 +25,12 @@ public struct BotsiTextModel: Decodable, Sendable, BotsiPaddingProvider {
         public let size: String?
         public let align: BotsiAlign
         public let color: BotsiFillColor?
+        public let selectedColor: BotsiFillColor?
 
         private enum CodingKeys: String, CodingKey {
             case text, size, align, color, font
             case textFallback = "text_fallback"
+            case selectedColor = "selected_color"
         }
         
         public init(from decoder: Decoder) throws {
@@ -39,6 +41,7 @@ public struct BotsiTextModel: Decodable, Sendable, BotsiPaddingProvider {
             size = try container.decodeIfPresent(String.self, forKey: .size)
             align = try container.decode(BotsiAlign.self, forKey: .align)
             color = try container.decodeIfPresent(BotsiFillColor.self, forKey: .color)
+            selectedColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .selectedColor)
             
             if let defaultFont = try? container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font) {
                 self.font = defaultFont

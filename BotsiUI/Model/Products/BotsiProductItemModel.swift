@@ -108,6 +108,7 @@ public struct BotsiProductItemBadge: Decodable, Sendable, BotsiTextPropertiesPro
     public let customFont: BotsiCustomFont?
     public let size: String?
     public let color: BotsiFillColor?
+    public let selectedColor: BotsiFillColor?
     public let badgeTextOpacity: Int?
 
     private enum CodingKeys: String, CodingKey {
@@ -118,6 +119,7 @@ public struct BotsiProductItemBadge: Decodable, Sendable, BotsiTextPropertiesPro
         case font = "badge_text_font"
         case size = "badge_text_size"
         case color = "badge_text_color"
+        case selectedColor = "selected_color"
         case badgeTextOpacity = "badge_text_opacity"
     }
     
@@ -130,6 +132,7 @@ public struct BotsiProductItemBadge: Decodable, Sendable, BotsiTextPropertiesPro
         badgeRadius = try container.decode(String.self, forKey: .badgeRadius)
         size = try container.decodeIfPresent(String.self, forKey: .size)
         color = try container.decodeIfPresent(BotsiFillColor.self, forKey: .color)
+        selectedColor = try container.decodeIfPresent(BotsiFillColor.self, forKey: .selectedColor)
         badgeTextOpacity = try container.decodeIfPresent(Int.self, forKey: .badgeTextOpacity)
         
         if let defaultFont = try? container.decode(BotsiLayoutModel.DefaultFont.self, forKey: .font) {
