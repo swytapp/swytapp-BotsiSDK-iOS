@@ -103,7 +103,7 @@ private extension BotsiCarouselBlockView {
                 }
                 .frame(height: model.height)
                 .offset(x: CGFloat(-currentIndex) * (itemWidth + model.spacing) + dragOffset)
-                .simultaneousGesture(dragGesture)
+                .gesture(dragGesture)
                 .onAppear {
                     totalChildren = children.count
                 }
@@ -122,18 +122,17 @@ private extension BotsiCarouselBlockView {
     var dragGesture: some Gesture {
         DragGesture()
             .onChanged { value in
-                guard model.timing.interactive != .nonInteractive else { return }
-                
                 if !isInteracting {
                     isInteracting.toggle()
-                    stopAutoScroll()
+                    if(model.timing.interactive != .nonInteractive){
+                        stopAutoScroll()
+                    }
                 }
                 
                 dragOffset = value.translation.width
             }
             .onEnded { value in
-                guard model.timing.interactive != .nonInteractive else { return }
-                
+
                 let translation = value.translation.width
                 let threshold = itemWidth / 4
                 
