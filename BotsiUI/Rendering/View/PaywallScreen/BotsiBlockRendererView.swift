@@ -11,7 +11,13 @@ import SwiftUI
 public struct BotsiBlockRendererView: View {
     
     let block: BotsiPaywallBlock
+    let blockHeight: CGFloat?
     @EnvironmentObject var actionHandler: PaywallActionHandler
+    
+    public init(block: BotsiPaywallBlock, blockHeight: CGFloat? = nil) {
+        self.block = block
+        self.blockHeight = blockHeight
+    }
     
     public var body: some View {
         switch block.content {
@@ -37,7 +43,7 @@ public struct BotsiBlockRendererView: View {
             BotsiListBlockView(block: block)
             
         case .card(let model):
-            BotsiCardBlockView(helper: BotsiCardHelper(block: block, model: model))
+            BotsiCardBlockView(helper: BotsiCardHelper(block: block, model: model, blockHeight: blockHeight))
             
         case .products(let model):
             BotsiProductsContainerView(model: model, block: block)

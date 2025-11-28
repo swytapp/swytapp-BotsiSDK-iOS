@@ -89,7 +89,7 @@ private extension BotsiCarouselBlockView {
             if let children = block.children {
                 HStack(spacing: model.spacing) {
                     ForEach(Array(children.enumerated()), id: \.element.meta.id) { index, childBlock in
-                        BotsiBlockRendererView(block: childBlock)
+                        BotsiBlockRendererView(block: childBlock, blockHeight: model.height)
                             .frame(width: itemWidth, height: model.height)
                             .padding(.leading, index == 0 ? hPadding : 0)
                             .padding(.trailing, index == children.count - 1 ? hPadding : 0)

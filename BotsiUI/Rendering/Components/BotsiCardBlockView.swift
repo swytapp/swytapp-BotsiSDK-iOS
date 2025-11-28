@@ -17,7 +17,7 @@ public struct BotsiCardBlockView: View {
     }
     
     public var body: some View {
-        VStack(spacing: helper.spacing + 6) {
+        VStack(spacing: helper.spacing) {
             ForEach(helper.children, id: \.meta.id) { child in
                 switch child.content {
                 case .text, .image, .button, .list, .timer:
@@ -29,6 +29,7 @@ public struct BotsiCardBlockView: View {
             }
         }
         .padding(helper.padding)
+        .frame(height: helper.blockHeight, alignment: .top)
         .background(backgroundImageIfNeeded())
         .styledContainer(fillColor: helper.hasBackgroundImage ? nil : helper.fillColor,
                          borderColor: helper.borderColor,

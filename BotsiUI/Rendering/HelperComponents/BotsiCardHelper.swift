@@ -12,10 +12,12 @@ public struct BotsiCardHelper {
     
     private let block: BotsiPaywallBlock
     private let model: BotsiCardModel
+    let blockHeight: CGFloat?
 
-    public init(block: BotsiPaywallBlock, model: BotsiCardModel) {
+    public init(block: BotsiPaywallBlock, model: BotsiCardModel, blockHeight: CGFloat? = nil) {
         self.block = block
         self.model = model
+        self.blockHeight = blockHeight
     }
 
     public var children: [BotsiPaywallBlock] {
