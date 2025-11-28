@@ -94,6 +94,7 @@ private extension BotsiProductView {
                 if !text.isEmpty {
                     BotsiTextBlockView(propertiesProvider: textStyle,
                                        text: text,
+                                       isSelected: isSelected,
                                        align: styleHelper.textAlignment(for: index),
                                        height: .infinity)
                     .frame(maxHeight: .infinity)
@@ -107,6 +108,7 @@ private extension BotsiProductView {
         ForEach(texts, id: \.0) { index, textStyle, text in
             BotsiTextBlockView(propertiesProvider: textStyle,
                                text: text,
+                               isSelected: isSelected,
                                align: styleHelper.textAlignment(for: index),
                                height: .infinity)
             .frame(maxHeight: .infinity)
