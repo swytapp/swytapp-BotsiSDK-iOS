@@ -40,7 +40,11 @@ Enter:
 
 `https://github.com/BotsiTeam/BotsiSDK-iOS.git`
 
+<<<<<<< HEAD
 Select Up to Next Major version 1.0.9
+=======
+Select Up to Next Major version 1.0.8
+>>>>>>> 90b72a9 (version up)
 
 **🛠 Quick Start**
 
