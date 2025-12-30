@@ -28,7 +28,7 @@ https://github.com/BotsiTeam/BotsiSDK-iOS.git
 4. **Specify the Version**  
 Under the version rule options, select **Version** and specify the SDK version:
 
-Latest version is: 1.0.7
+Latest version is: 1.0.8
 
 5. **Finalize Installation**  
 Xcode will download and integrate the SDK into your project. Once added, you can start using the SDK immediately.

@@ -26,7 +26,7 @@ A powerful Swift SDK for:
 
 Add to your Podfile:
 
-`pod 'Botsi', '~> 1.0.7'`
+`pod 'Botsi', '~> 1.0.8'`
 
 Then run:
 

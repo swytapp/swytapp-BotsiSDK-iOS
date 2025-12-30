@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@objc
 public protocol BotsiTimerProvider: Sendable {
     func timerEndDate(for timerId: String) -> Date
 }

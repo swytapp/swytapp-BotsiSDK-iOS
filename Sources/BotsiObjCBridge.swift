@@ -146,6 +146,21 @@ public class BotsiObjCProfile: NSObject {
                   nonSubscriptions: nonSubscriptionsDict,
                   custom: customArray)
     }
+    
+    public static func fromSwift(swift: BotsiProfile) -> BotsiObjCProfile {
+        // Convert Swift types to Objective-C compatible types
+        let accessLevelsDict = swift.accessLevels.mapValues { $0 as Any }
+        let subscriptionsDict = swift.subscriptions.mapValues { $0 as Any }
+        let nonSubscriptionsDict = swift.nonSubscriptions.mapValues { $0 as Any }
+        let customArray = swift.custom.map { $0 as Any }
+        
+        return BotsiObjCProfile(profileId: swift.profileId,
+                  customerUserId: swift.customerUserId,
+                  accessLevels: accessLevelsDict,
+                  subscriptions: subscriptionsDict,
+                  nonSubscriptions: nonSubscriptionsDict,
+                  custom: customArray)
+    }
 }
 
 @objc(BotsiObjCProduct)
@@ -191,6 +206,20 @@ public class BotsiObjCProduct: NSObject {
                   isEligibleForIntroOffer: swift.isEligibleForIntroOffer,
                   swiftProduct: swift)
     }
+    
+    public static func fromSwift(swift: BotsiProduct) -> BotsiObjCProduct {
+        return BotsiObjCProduct(productId: swift.productId,
+                  title: swift.title,
+                  descriptionText: swift.descriptionText,
+                  price: NSDecimalNumber(decimal: swift.price),
+                  currencyCode: swift.currencyCode,
+                  localizedPrice: swift.localizedPrice,
+                  introductoryPrice: swift.introductoryPrice,
+                  subscriptionGroupIdentifier: swift.subscriptionGroupIdentifier,
+                  localizedSubscriptionPeriod: swift.localizedSubscriptionPeriod,
+                  isEligibleForIntroOffer: swift.isEligibleForIntroOffer,
+                  swiftProduct: swift)
+    }
 }
 
 @objc(BotsiObjCPaywall)
@@ -201,7 +230,7 @@ public class BotsiObjCPaywall: NSObject {
     @objc public let remoteConfigs: String?
     @objc public let revision: Int
     @objc public let abTestId: Int
-    let swiftPaywall: BotsiPaywall
+    public let swiftPaywall: BotsiPaywall
     
     public init(placementId: String, paywallId: Int, name: String, remoteConfigs: String?, revision: Int, abTestId: Int, swiftPaywall: BotsiPaywall) {
         self.placementId = placementId
@@ -239,6 +268,11 @@ public class BotsiObjCError: NSObject {
     convenience init(swift: Error) {
         let nsError = swift as NSError
         self.init(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)")
+    }
+    
+    public static func fromSwift(swift: Error) -> BotsiObjCError {
+        let nsError = swift as NSError
+        return BotsiObjCError(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)")
     }
 }
 
