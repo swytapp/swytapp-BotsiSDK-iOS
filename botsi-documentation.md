@@ -45,7 +45,7 @@ CocoaPods
 To integrate the BotsiSDK into your project using CocoaPods, follow these steps:
 
 1. **Add the SDK to your Podfile and add the following line:**
-pod 'BotsiSDK', '~> 1.0.7'
+pod 'BotsiSDK', '~> 1.0.8'
 
 2. **Install the PodRun the following command to install the SDK:**
 pod install
