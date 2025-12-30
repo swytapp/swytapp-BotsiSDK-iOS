@@ -14,11 +14,11 @@ extension Botsi {
         handler: StoreKit2Handler
     ) async throws -> [BotsiProduct] {
         
-        let identifiers = paywall.sourceProducts.compactMap { "\($0.sourcePoductId)" }
+        let identifiers = paywall.sourceProducts.compactMap { "\($0.sourceProductId)" }
         
         let products: [ProductTupleSK2] = try await handler.retrieveProductAsync(with: identifiers)
             .compactMap { sk2Product in
-                let sourceProduct = paywall.sourceProducts.first(where: { $0.sourcePoductId == sk2Product.id })!
+                let sourceProduct = paywall.sourceProducts.first(where: { $0.sourceProductId == sk2Product.id })!
                 let (offer, subscriptionGroupId): (BotsiOffer?, String?) =
                     if let subscriptionGroupId = sk2Product.subscription?.subscriptionGroupID,
                        winBackOfferExist(with: sourceProduct.winBackOfferId, from: sk2Product) {
@@ -185,13 +185,13 @@ extension Botsi {
             determinedOffer: Bool
         )
         
-        let identifiers = paywall.sourceProducts.compactMap { "\($0.sourcePoductId)" }
+        let identifiers = paywall.sourceProducts.compactMap { "\($0.sourceProductId)" }
         let sk1Products = try await handler.retrieveSK1Products(from: identifiers)
         
         var products: [ProductTupleSK1] = sk1Products.compactMap { sk1Product in
 
             guard let sourceProduct = paywall.sourceProducts.first(where: {
-                $0.sourcePoductId == sk1Product.productIdentifier
+                $0.sourceProductId == sk1Product.productIdentifier
             }) else { return nil }
             
             let (offer, determined): (BotsiOffer?, Bool) =

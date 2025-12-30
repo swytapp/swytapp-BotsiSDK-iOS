@@ -20,7 +20,15 @@ public struct BotsiPaywall: Sendable, Codable {
 public struct BotsiSourceProduct: Sendable, Codable {
     public let botsiProductId: Int
     public let isConsumable: Bool
-    public let sourcePoductId: String
+    public let sourceProductId: String
     public let promotionalOfferId: String?
     public let winBackOfferId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case botsiProductId
+        case isConsumable
+        case sourceProductId = "sourcePoductId"
+        case promotionalOfferId
+        case winBackOfferId
+    }
 }

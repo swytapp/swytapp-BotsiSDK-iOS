@@ -16,6 +16,7 @@ public struct BotsiRequestIdentifier: Sendable {
     static let updateProfile: String = ""
     
     static let getPaywall: String = "paywalls"
+    static let getPaywallBuilder: String = "paywalls/{paywallId}/builder"
     static let events: String = "events"
    
     static let fetchProductIds: String = ""
