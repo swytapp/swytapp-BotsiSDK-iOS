@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
     s.name             = "Botsi"
-    s.version          = "1.0.9"
+    s.version          = "1.0.10"
     s.summary          = "Botsi SDK for iOS."
     s.description      = "Seamless integration of in-app-purchases in your iOS application."
     s.homepage         = "https://www.botsi.com/"
     s.license          = { :type => 'MIT', :file => 'LICENSE' }
-    s.authors           = { "Botsi, Inc." => "support@botsi.com" }
+    s.authors          = { "Botsi, Inc." => "support@botsi.com" }
     s.source           = { :git => "https://github.com/BotsiTeam/BotsiSDK-iOS.git", :tag => s.version.to_s }
     s.documentation_url = "https://github.com/BotsiTeam/BotsiSDK-iOS/blob/development/botsi-documentation.md"
 

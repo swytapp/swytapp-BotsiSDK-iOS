@@ -105,6 +105,19 @@ import Botsi
 @available(iOS 15.0, *)
 @objc public class BotsiUIObjCBridge: NSObject {
     
+    /// Presents a Botsi paywall with default purchase behavior.
+    ///
+    /// This method presents the paywall using Botsi's internal StoreKit integration.
+    ///
+    /// - Parameters:
+    ///   - viewController: The view controller from which to present the paywall
+    ///   - paywall: BotsiPaywall object
+    ///   - builder: JSON data containing paywall structure
+    ///   - timerProvider: Optional timer provider for countdown functionality
+    ///   - onAction: Callback for handling paywall actions
+    ///   - onUIError: Callback for handling UI errors
+    ///   - animated: Whether to animate the presentation
+    ///   - completion: Optional completion handler
     @MainActor @objc public static func presentBotsiPaywall(
         from viewController: UIViewController,
         paywall: BotsiObjCPaywall?,
@@ -119,6 +132,7 @@ import Botsi
             paywall: paywall?.swiftPaywall,
             builder: builder,
             timerProvider: timerProvider,
+            purchaseDelegate: nil, // Use default behavior
             onAction: {action in
                 onAction(BotsiObjCAction(action))
             },
@@ -126,8 +140,75 @@ import Botsi
                 onUIError(BotsiObjCError.fromSwift(swift: error))
             },
             animated: animated,
-            completion: completion,
+            completion: completion
         )
     }
     
+    /// Presents a Botsi paywall with custom purchase handling.
+    ///
+    /// This method allows you to override the default purchase behavior and use
+    /// your own payment processor (e.g., RevenueCat, custom backend).
+    ///
+    /// Example (Objective-C):
+    /// ```objc
+    /// MyPurchaseDelegate *delegate = [[MyPurchaseDelegate alloc] init];
+    ///
+    /// [BotsiUIObjCBridge presentBotsiPaywallWithCustomPurchaseFrom:self
+    ///                                                       paywall:paywall
+    ///                                                       builder:builder
+    ///                                                 timerProvider:nil
+    ///                                              purchaseDelegate:delegate
+    ///                                                      onAction:^(BotsiObjCAction *action) {
+    ///     if (action.type == BotsiObjCActionTypeDidPurchase) {
+    ///         NSLog(@"Purchase completed!");
+    ///     }
+    /// }
+    ///                                                     onUIError:^(BotsiObjCError *error) {
+    ///     NSLog(@"UI Error: %@", error.localizedDescription);
+    /// }
+    ///                                                      animated:YES
+    ///                                                    completion:nil];
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - viewController: The view controller from which to present the paywall
+    ///   - paywall: BotsiPaywall object
+    ///   - builder: JSON data containing paywall structure
+    ///   - timerProvider: Optional timer provider for countdown functionality
+    ///   - purchaseDelegate: Delegate to handle custom purchase and restore logic
+    ///   - onAction: Callback for handling paywall actions
+    ///   - onUIError: Callback for handling UI errors
+    ///   - animated: Whether to animate the presentation
+    ///   - completion: Optional completion handler
+    @MainActor @objc public static func presentBotsiPaywallWithCustomPurchase(
+        from viewController: UIViewController,
+        paywall: BotsiObjCPaywall?,
+        builder: Data?,
+        timerProvider: BotsiTimerProvider?,
+        purchaseDelegate: BotsiObjCPurchaseDelegateProtocol?,
+        onAction: @escaping @Sendable (BotsiObjCAction) -> Void,
+        onUIError: @escaping @Sendable (BotsiObjCError) -> Void,
+        animated: Bool,
+        completion: (() -> Void)?
+    ) {
+        // Wrap Objective-C delegate in Swift wrapper
+        let swiftDelegate: BotsiPurchaseDelegate? = purchaseDelegate.map { objcDelegate in
+            BotsiObjCPurchaseDelegateWrapper(objcDelegate: objcDelegate)
+        }
+        
+        viewController.presentBotsiPaywall(
+            paywall: paywall?.swiftPaywall,
+            builder: builder,
+            timerProvider: timerProvider,
+            purchaseDelegate: swiftDelegate,
+            onAction: { action in
+                onAction(BotsiObjCAction(action))
+            },
+            onUIError: { error in
+                onUIError(BotsiObjCError.fromSwift(swift: error))
+            },
+            animated: animated,
+            completion: completion
+        )
+    }
 }
