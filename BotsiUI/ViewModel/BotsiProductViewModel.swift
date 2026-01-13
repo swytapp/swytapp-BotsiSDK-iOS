@@ -44,14 +44,33 @@ final class BotsiProductViewModel: ObservableObject {
 
     func restorePurchases() {
         Task {
-            do {
-                isLoading = true
-                let profile = try await Botsi.restorePurchases()
-                isLoading = false
-                actionHandler.handleAction(.didRestorePurchase(profile))
-            } catch {
-                isLoading = false
-                actionHandler.handleAction(.didFailRestorePurchases(BotsiError.restoreFailed))
+            isLoading = true
+            
+            // Check if developer provided custom restore delegate
+            if let delegate = actionHandler.purchaseDelegate {
+                let result = await delegate.handleRestore()
+                
+                switch result {
+                case .success(let profile):
+                    isLoading = false
+                    await delegate.didCompleteRestore(profile)
+                    actionHandler.handleAction(.didRestorePurchase(profile))
+                    
+                case .failure(let error):
+                    isLoading = false
+                    let botsiError = (error as? BotsiError) ?? BotsiError.restoreFailed
+                    actionHandler.handleAction(.didFailRestorePurchases(botsiError))
+                }
+            } else {
+                // Fall back to default Botsi restore behavior
+                do {
+                    let profile = try await Botsi.restorePurchases()
+                    isLoading = false
+                    actionHandler.handleAction(.didRestorePurchase(profile))
+                } catch {
+                    isLoading = false
+                    actionHandler.handleAction(.didFailRestorePurchases(BotsiError.restoreFailed))
+                }
             }
         }
     }
@@ -75,14 +94,44 @@ final class BotsiProductViewModel: ObservableObject {
             isLoading = false
             return
         }
-
-        do {
-            let profile = try await Botsi.makePurchase(product)
-            isLoading = false
-            actionHandler.handleAction(.didPurchase(profile))
-        } catch {
-            isLoading = false
-            actionHandler.handleAction(.didFailPurchase(nil, BotsiError.purchaseFailed(error.localizedDescription)))
+        
+        // Check if developer provided custom purchase delegate
+        if let delegate = actionHandler.purchaseDelegate {
+            // Check if purchase should proceed (optional validation)
+            let shouldProceed = await delegate.shouldPurchase(product)
+            guard shouldProceed else {
+                isLoading = false
+                return
+            }
+            
+            // Use custom purchase handler
+            let result = await delegate.handlePurchase(product)
+            
+            switch result {
+            case .success(let profile):
+                isLoading = false
+                await delegate.didCompletePurchase(product, profile: profile)
+                actionHandler.handleAction(.didPurchase(profile))
+                
+            case .failure(let error):
+                isLoading = false
+                let botsiError = (error as? BotsiError) ?? BotsiError.purchaseFailed(error.localizedDescription)
+                actionHandler.handleAction(.didFailPurchase(product, botsiError))
+                
+            case .cancelled:
+                isLoading = false
+                // User cancelled - just stop loading, don't trigger error
+            }
+        } else {
+            // Fall back to default Botsi purchase behavior
+            do {
+                let profile = try await Botsi.makePurchase(product)
+                isLoading = false
+                actionHandler.handleAction(.didPurchase(profile))
+            } catch {
+                isLoading = false
+                actionHandler.handleAction(.didFailPurchase(product, BotsiError.purchaseFailed(error.localizedDescription)))
+            }
         }
      }
 

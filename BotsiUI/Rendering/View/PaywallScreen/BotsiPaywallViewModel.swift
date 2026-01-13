@@ -35,7 +35,12 @@ public final class BotsiPaywallViewModel: ObservableObject {
         return false
     }
     
-    init(model: BotsiPaywallModel, onAction: ((BotsiAction) -> Void)? = nil, timerProvider: BotsiTimerProvider? = nil) {
+    init(
+        model: BotsiPaywallModel,
+        purchaseDelegate: BotsiPurchaseDelegate? = nil,
+        onAction: ((BotsiAction) -> Void)? = nil,
+        timerProvider: BotsiTimerProvider? = nil
+    ) {
         self.onAction = onAction
         self.timerProvider = timerProvider
         self.layoutVM = BotsiLayoutViewModel(model.layout)

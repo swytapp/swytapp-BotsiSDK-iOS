@@ -19,7 +19,22 @@ public struct BotsiPaywallScreen: View {
     @State private var areImagesLoaded = false
     
     public init(viewModel: BotsiPaywallViewModel, paywall: BotsiPaywall) {
-        let actionHandler = PaywallActionHandler(onAction: viewModel.handleAction, timerProvider: viewModel.timerProvider)
+        let actionHandler = PaywallActionHandler(
+            onAction: viewModel.handleAction,
+            timerProvider: viewModel.timerProvider,
+            purchaseDelegate: nil // Will be set from viewModel if needed
+        )
+        _paywallViewModel = .init(wrappedValue: viewModel)
+        _actionHandler = .init(wrappedValue: actionHandler)
+        _productViewModel = .init(wrappedValue: BotsiProductViewModel(actionHandler: actionHandler, paywall: paywall))
+    }
+    
+    public init(viewModel: BotsiPaywallViewModel, paywall: BotsiPaywall, purchaseDelegate: BotsiPurchaseDelegate?) {
+        let actionHandler = PaywallActionHandler(
+            onAction: viewModel.handleAction,
+            timerProvider: viewModel.timerProvider,
+            purchaseDelegate: purchaseDelegate
+        )
         _paywallViewModel = .init(wrappedValue: viewModel)
         _actionHandler = .init(wrappedValue: actionHandler)
         _productViewModel = .init(wrappedValue: BotsiProductViewModel(actionHandler: actionHandler, paywall: paywall))

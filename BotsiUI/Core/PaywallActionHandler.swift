@@ -30,9 +30,18 @@ public final class PaywallActionHandler: ObservableObject {
     private let onAction: ((BotsiAction) -> Void)?
     public let timerProvider: BotsiTimerProvider?
     
-    public init(onAction: ((BotsiAction) -> Void)? = nil, timerProvider: BotsiTimerProvider? = nil) {
+    /// Optional delegate for custom purchase and restore handling.
+    /// When set, the delegate's methods will be called instead of Botsi's internal StoreKit purchase flow.
+    public let purchaseDelegate: BotsiPurchaseDelegate?
+    
+    public init(
+        onAction: ((BotsiAction) -> Void)? = nil,
+        timerProvider: BotsiTimerProvider? = nil,
+        purchaseDelegate: BotsiPurchaseDelegate? = nil
+    ) {
         self.onAction = onAction
         self.timerProvider = timerProvider
+        self.purchaseDelegate = purchaseDelegate
     }
     
     @MainActor

@@ -14,6 +14,7 @@ enum BotsiUI {
     @MainActor
     static func makePaywall(paywall: BotsiPaywall?,
                                    builder data: Botsi.BotsiBuilder?,
+                                   purchaseDelegate: BotsiPurchaseDelegate? = nil,
                                    onAction: ((BotsiAction) -> Void)? = nil,
                                    timerProvider: BotsiTimerProvider? = nil) throws -> some View {
 
@@ -32,8 +33,13 @@ enum BotsiUI {
                                       footer: structure.footer,
                                       hero: structure.heroImage)
 
-        let rootVM = BotsiPaywallViewModel(model: model, onAction: onAction, timerProvider: timerProvider)
+        let rootVM = BotsiPaywallViewModel(
+            model: model,
+            purchaseDelegate: purchaseDelegate,
+            onAction: onAction,
+            timerProvider: timerProvider
+        )
 
-        return BotsiPaywallScreen(viewModel: rootVM, paywall: paywall)
+        return BotsiPaywallScreen(viewModel: rootVM, paywall: paywall, purchaseDelegate: purchaseDelegate)
     }
 }

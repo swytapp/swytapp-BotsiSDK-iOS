@@ -15,6 +15,7 @@ struct BotsiPaywallViewModifier: ViewModifier {
     private let paywall: BotsiPaywall?
     private let builder: Botsi.BotsiBuilder?
     private let timerProvider: BotsiTimerProvider?
+    private let purchaseDelegate: BotsiPurchaseDelegate?
     private let onAction: ((BotsiAction) -> Void)?
     private let onUIError: (BotsiUIError) -> Void
     
@@ -23,6 +24,7 @@ struct BotsiPaywallViewModifier: ViewModifier {
         paywall: BotsiPaywall?,
         builder: Botsi.BotsiBuilder?,
         timerProvider: BotsiTimerProvider? = nil,
+        purchaseDelegate: BotsiPurchaseDelegate? = nil,
         onAction: ((BotsiAction) -> Void)? = nil,
         onUIError: @escaping (BotsiUIError) -> Void
     ) {
@@ -30,6 +32,7 @@ struct BotsiPaywallViewModifier: ViewModifier {
         self.paywall = paywall
         self.builder = builder
         self.timerProvider = timerProvider
+        self.purchaseDelegate = purchaseDelegate
         self.onAction = onAction
         self.onUIError = onUIError
     }
@@ -66,6 +69,7 @@ struct BotsiPaywallViewModifier: ViewModifier {
             let view = try BotsiUI.makePaywall(
                 paywall: paywall,
                 builder: builder,
+                purchaseDelegate: purchaseDelegate,
                 onAction: onAction,
                 timerProvider: timerProvider
             )
@@ -92,13 +96,42 @@ public extension View {
     ///     - paywall: BotsiPaywall object containing paywall object.
     ///     - builder: JSON data containing paywall structure.
     ///     - timerProvider: Optional timer provider for countdown functionality.
+    ///     - purchaseDelegate: Optional delegate to override default purchase and restore behavior.
+    ///       Use this to integrate with RevenueCat or other payment processors.
     ///     - onAction: Optional callback for handling paywall actions.
     ///     - onUIError: Required callback for handling UI errors.
+    ///
+    /// - Example with custom purchase delegate:
+    /// ```swift
+    /// struct MyRevenueCatDelegate: BotsiPurchaseDelegate {
+    ///     func handlePurchase(_ product: BotsiProduct) async -> BotsiPurchaseResult {
+    ///         // Use RevenueCat instead of Botsi's StoreKit
+    ///         let result = try await Purchases.shared.purchase(...)
+    ///         return .success(profile)
+    ///     }
+    ///
+    ///     func handleRestore() async -> BotsiRestoreResult {
+    ///         let result = try await Purchases.shared.restorePurchases()
+    ///         return .success(profile)
+    ///     }
+    /// }
+    ///
+    /// // Usage:
+    /// .botsiPaywall(
+    ///     isPresented: $showPaywall,
+    ///     paywall: paywall,
+    ///     builder: builder,
+    ///     purchaseDelegate: MyRevenueCatDelegate(),
+    ///     onAction: handleAction,
+    ///     onUIError: handleError
+    /// )
+    /// ```
     func botsiPaywall(
         isPresented: Binding<Bool>,
         paywall: BotsiPaywall?,
         builder: Botsi.BotsiBuilder?,
         timerProvider: BotsiTimerProvider? = nil,
+        purchaseDelegate: BotsiPurchaseDelegate? = nil,
         onAction: ((BotsiAction) -> Void)? = nil,
         onUIError: @escaping (BotsiUIError) -> Void
     ) -> some View {
@@ -108,6 +141,7 @@ public extension View {
                 paywall: paywall,
                 builder: builder,
                 timerProvider: timerProvider,
+                purchaseDelegate: purchaseDelegate,
                 onAction: onAction,
                 onUIError: onUIError
             )
