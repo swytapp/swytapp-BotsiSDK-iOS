@@ -122,13 +122,17 @@ public class BotsiObjCProfile: NSObject {
     @objc public let nonSubscriptions: [String: Any]
     @objc public let custom: [Any]
     
-    @objc public init(profileId: String, customerUserId: String?, accessLevels: [String: Any], subscriptions: [String: Any], nonSubscriptions: [String: Any], custom: [Any]) {
+    // Store the original Swift profile for conversion back
+    let swiftProfile: BotsiProfile
+    
+    public init(profileId: String, customerUserId: String?, accessLevels: [String: Any], subscriptions: [String: Any], nonSubscriptions: [String: Any], custom: [Any], swiftProfile: BotsiProfile) {
         self.profileId = profileId
         self.customerUserId = customerUserId
         self.accessLevels = accessLevels
         self.subscriptions = subscriptions
         self.nonSubscriptions = nonSubscriptions
         self.custom = custom
+        self.swiftProfile = swiftProfile
         super.init()
     }
     
@@ -144,7 +148,8 @@ public class BotsiObjCProfile: NSObject {
                   accessLevels: accessLevelsDict,
                   subscriptions: subscriptionsDict,
                   nonSubscriptions: nonSubscriptionsDict,
-                  custom: customArray)
+                  custom: customArray,
+                  swiftProfile: swift)
     }
     
     public static func fromSwift(swift: BotsiProfile) -> BotsiObjCProfile {
@@ -159,7 +164,13 @@ public class BotsiObjCProfile: NSObject {
                   accessLevels: accessLevelsDict,
                   subscriptions: subscriptionsDict,
                   nonSubscriptions: nonSubscriptionsDict,
-                  custom: customArray)
+                  custom: customArray,
+                  swiftProfile: swift)
+    }
+    
+    /// Convert Objective-C profile back to Swift profile
+    public func toSwift() -> BotsiProfile {
+        return swiftProfile
     }
 }
 
@@ -220,6 +231,11 @@ public class BotsiObjCProduct: NSObject {
                   isEligibleForIntroOffer: swift.isEligibleForIntroOffer,
                   swiftProduct: swift)
     }
+    
+    /// Convert Objective-C product back to Swift product
+    public func toSwift() -> BotsiProduct {
+        return swiftProduct
+    }
 }
 
 @objc(BotsiObjCPaywall)
@@ -259,20 +275,34 @@ public class BotsiObjCError: NSObject {
     @objc public let localizedDescription: String
     @objc public let errorCode: String
     
-    @objc public init(localizedDescription: String, errorCode: String) {
+    // Store the original error for conversion back
+    let error: Error
+    
+    public init(localizedDescription: String, errorCode: String, error: Error) {
         self.localizedDescription = localizedDescription
         self.errorCode = errorCode
+        self.error = error
         super.init()
     }
     
     convenience init(swift: Error) {
         let nsError = swift as NSError
-        self.init(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)")
+        self.init(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)", error: swift)
+    }
+    
+    convenience init(_ error: Error) {
+        let nsError = error as NSError
+        self.init(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)", error: error)
     }
     
     public static func fromSwift(swift: Error) -> BotsiObjCError {
         let nsError = swift as NSError
-        return BotsiObjCError(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)")
+        return BotsiObjCError(localizedDescription: nsError.localizedDescription, errorCode: "\(nsError.domain)-\(nsError.code)", error: swift)
+    }
+    
+    /// Convert Objective-C error back to Swift error
+    public func toSwift() -> Error {
+        return error
     }
 }
 
