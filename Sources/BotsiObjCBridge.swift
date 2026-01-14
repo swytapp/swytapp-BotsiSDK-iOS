@@ -123,7 +123,7 @@ public class BotsiObjCProfile: NSObject {
     @objc public let custom: [Any]
     
     // Store the original Swift profile for conversion back
-    internal let swiftProfile: BotsiProfile
+    let swiftProfile: BotsiProfile
     
     public init(profileId: String, customerUserId: String?, accessLevels: [String: Any], subscriptions: [String: Any], nonSubscriptions: [String: Any], custom: [Any], swiftProfile: BotsiProfile) {
         self.profileId = profileId
@@ -276,7 +276,7 @@ public class BotsiObjCError: NSObject {
     @objc public let errorCode: String
     
     // Store the original error for conversion back
-    internal let error: Error
+    let error: Error
     
     public init(localizedDescription: String, errorCode: String, error: Error) {
         self.localizedDescription = localizedDescription
