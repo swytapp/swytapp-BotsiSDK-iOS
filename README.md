@@ -32,7 +32,7 @@ https://github.com/BotsiTeam/BotsiSDK-iOS.git
 4. **Specify the Version**  
 Under the version rule options, select **Version** and specify the SDK version:
 
-Latest version is: 1.0.10
+Latest version is: 1.0.11
 
 5. **Finalize Installation**  
 Xcode will download and integrate the SDK into your project. Once added, you can start using the SDK immediately.
@@ -41,6 +41,15 @@ Xcode will download and integrate the SDK into your project. Once added, you can
 In your source files, add the following import statement:
 
 ```swift
+=======
+`https://github.com/BotsiTeam/BotsiSDK-iOS.git`
+
+Select Up to Next Major version 1.0.11
+
+**🛠 Quick Start**
+
+```
+>>>>>>> b34a837 (version up)
 import Botsi
 ```
 
@@ -49,7 +58,7 @@ CocoaPods
 To integrate the BotsiSDK into your project using CocoaPods, follow these steps:
 
 1. **Add the SDK to your Podfile and add the following line:**
-pod 'BotsiSDK', '~> 1.0.10'
+pod 'BotsiSDK', '~> 1.0.11'
 
 2. **Install the PodRun the following command to install the SDK:**
 pod install
