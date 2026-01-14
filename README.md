@@ -41,15 +41,6 @@ Xcode will download and integrate the SDK into your project. Once added, you can
 In your source files, add the following import statement:
 
 ```swift
-=======
-`https://github.com/BotsiTeam/BotsiSDK-iOS.git`
-
-Select Up to Next Major version 1.0.11
-
-**🛠 Quick Start**
-
-```
->>>>>>> b34a837 (version up)
 import Botsi
 ```
 
