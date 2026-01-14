@@ -113,7 +113,7 @@ import Botsi
     
     /// Create a failure result with error
     @objc public convenience init(failure error: NSError) {
-        self.init(type: .failure, error: BotsiObjCError(error))
+        self.init(type: .failure, error: BotsiObjCError.fromSwift(swift: error))
     }
     
     /// Create a cancelled result
@@ -137,9 +137,9 @@ import Botsi
     func toSwift() -> BotsiPurchaseResult {
         switch type {
         case .success:
-            return .success(profile!.swiftProfile)
+            return .success(profile!.toSwift())
         case .failure:
-            return .failure(error!.error)
+            return .failure(error!.toSwift())
         case .cancelled:
             return .cancelled
         }
@@ -173,7 +173,7 @@ import Botsi
     
     /// Create a failure result with error
     @objc public convenience init(failure error: NSError) {
-        self.init(type: .failure, error: BotsiObjCError(error))
+        self.init(type: .failure, error: BotsiObjCError.fromSwift(swift: error))
     }
     
     /// Convert from Swift BotsiRestoreResult
@@ -190,9 +190,9 @@ import Botsi
     func toSwift() -> BotsiRestoreResult {
         switch type {
         case .success:
-            return .success(profile!.swiftProfile)
+            return .success(profile!.toSwift())
         case .failure:
-            return .failure(error!.error)
+            return .failure(error!.toSwift())
         }
     }
 }
@@ -201,7 +201,7 @@ import Botsi
 
 /// Internal wrapper that converts Objective-C delegate to Swift BotsiPurchaseDelegate
 @available(iOS 15.0, *)
-internal final class BotsiObjCPurchaseDelegateWrapper: BotsiPurchaseDelegate {
+internal final class BotsiObjCPurchaseDelegateWrapper: BotsiPurchaseDelegate, @unchecked Sendable {
     
     private let objcDelegate: BotsiObjCPurchaseDelegateProtocol
     
