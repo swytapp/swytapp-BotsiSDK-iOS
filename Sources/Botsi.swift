@@ -556,7 +556,9 @@ public extension Botsi {
             paywallId: event.paywallId,
             abTestId: event.abTestId,
             eventType: event.type.rawValue,
-            placementId: event.placementId
+            placementId: event.placementId,
+            aiPricingModelId: event.aiPricingModelId,
+            isExperiment: event.isExperiment
         )
     }
     
@@ -581,7 +583,9 @@ public extension Botsi {
             type: .userPaywallShown,
             name: "userPaywallPresentedLog",
             message: "Paywall presented.",
-            placementId: paywall.placementId
+            placementId: paywall.placementId,
+            aiPricingModelId: paywall.aiPricingModelId,
+            isExperiment: paywall.isExperiment,
         )
         try await loggerWithContext.logEvent(userActionEvent)
     }

@@ -29,6 +29,8 @@ public struct BotsiLogEvent: Sendable {
     public let profileId: String
     public let paywallId: Int?
     public let abTestId: Int?
+    public let aiPricingModelId: Int?
+    public let isExperiment: Bool?
     public let placementId: String
     public let type: BotsiLogEventType
     public let name: String
@@ -45,7 +47,9 @@ public struct BotsiLogEvent: Sendable {
         timestamp: TimeInterval = Date().timeIntervalSince1970,
         message: String? = nil,
         context: BotsiLogEventContext? = nil,
-        placementId: String
+        placementId: String,
+        aiPricingModelId: Int?,
+        isExperiment: Bool? = nil
     ) {
         self.profileId = profileId
         self.paywallId = paywallId
@@ -56,6 +60,8 @@ public struct BotsiLogEvent: Sendable {
         self.message = message
         self.context = context
         self.placementId = placementId
+        self.isExperiment = isExperiment
+        self.aiPricingModelId = aiPricingModelId
     }
 }
 
