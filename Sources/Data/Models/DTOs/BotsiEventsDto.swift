@@ -14,6 +14,8 @@ struct BotsiEventsRequestDto: Encodable {
     let abTestId: Int?
     let eventType: String
     let placementId: String
+    let aiPricingModelId: Int?
+    let isExperiment: Bool?
 }
 
 // MARK: - Response model

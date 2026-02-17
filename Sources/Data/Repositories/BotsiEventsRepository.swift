@@ -13,7 +13,9 @@ protocol BotsiEventsRepository {
         paywallId: Int?,
         abTestId: Int?,
         eventType: String,
-        placementId: String
+        placementId: String,
+        aiPricingModelId: Int?,
+        isExperiment: Bool?
     ) async throws
 }
 
@@ -31,7 +33,9 @@ final class EventsRepository: BotsiEventsRepository {
         paywallId: Int? = nil,
         abTestId: Int? = nil,
         eventType: String,
-        placementId: String
+        placementId: String,
+        aiPricingModelId: Int?,
+        isExperiment: Bool?
     ) async throws {
         do {
             var request = SendEventRequest()
@@ -39,7 +43,7 @@ final class EventsRepository: BotsiEventsRepository {
                 "Authorization": httpClient.sdkApiKey,
                 "Content-type": "application/json"
             ]
-            let parameters = (profileId, paywallId, abTestId, eventType, placementId)
+            let parameters = (profileId, paywallId, abTestId, eventType, placementId, aiPricingModelId, isExperiment)
             let body = try mapper.toDTO(from: parameters).toData()
             request.body = body
             

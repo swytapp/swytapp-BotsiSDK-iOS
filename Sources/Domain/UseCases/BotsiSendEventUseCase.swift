@@ -19,9 +19,11 @@ struct BotsiSendEventUseCase {
         paywallId: Int? = nil,
         abTestId: Int? = nil,
         eventType: String,
-        placementId: String
+        placementId: String,
+        aiPricingModelId: Int?,
+        isExperiment: Bool?
     ) async throws {
-        return try await repository.sendEvent(profileId: profileId, paywallId: paywallId, abTestId: abTestId, eventType: eventType, placementId: placementId)
+        return try await repository.sendEvent(profileId: profileId, paywallId: paywallId, abTestId: abTestId, eventType: eventType, placementId: placementId, aiPricingModelId: aiPricingModelId, isExperiment: isExperiment)
     }
 }
 

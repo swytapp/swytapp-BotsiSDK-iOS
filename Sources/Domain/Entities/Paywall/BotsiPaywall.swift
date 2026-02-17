@@ -14,6 +14,8 @@ public struct BotsiPaywall: Sendable, Codable {
     public let remoteConfigs: String?
     public let revision: Int
     public let abTestId: Int?
+    public let aiPricingModelId: Int?
+    public let isExperiment: Bool?
     public let sourceProducts: [BotsiSourceProduct]
 }
 
